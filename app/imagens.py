@@ -41,10 +41,21 @@ ASSINATURAS = {
     b"\xff\xd8\xff": "jpeg",
     b"\x89PNG\r\n\x1a\n": "png",
     b"RIFF": "webp",                     # RIFF + WEBP no offset 8
+    b"GIF87a": "gif",
+    b"GIF89a": "gif",
+    b"BM": "bmp",
+    b"II*\x00": "tiff",
+    b"MM\x00*": "tiff",
     b"\x00\x00\x00\x18ftypheic": "heic",
     b"\x00\x00\x00\x18ftypheix": "heic",
     b"\x00\x00\x00\x18ftypmif1": "heic",
+    b"\x00\x00\x00\x18ftypheis": "heic",
+    b"\x00\x00\x00\x18ftypmsf1": "heic",
     b"\x00\x00\x00\x20ftypheic": "heic",
+    b"\x00\x00\x00\x1cftypheic": "heic",
+    b"\x00\x00\x00\x1cftypavif": "avif",
+    b"\x00\x00\x00\x18ftypavif": "avif",
+    b"\x00\x00\x00\x20ftypavif": "avif",
 }
 
 
@@ -63,20 +74,41 @@ class ImagemProcessada:
 def _detectar_formato(blob: bytes) -> str:
     if len(blob) < 12:
         raise ImagemInvalida("arquivo muito pequeno")
-    head = blob[:16]
+    head = blob[:32]
     for prefixo, formato in ASSINATURAS.items():
         if head.startswith(prefixo):
             return formato
     # WebP: RIFF????WEBP
     if head[:4] == b"RIFF" and blob[8:12] == b"WEBP":
         return "webp"
-    raise ImagemInvalida("formato de imagem nao suportado")
+    # ftyp genérico (HEIC/AVIF/HEIF variações): byte 4-7 == "ftyp"
+    if len(blob) >= 12 and blob[4:8] == b"ftyp":
+        marca = blob[8:12]
+        if marca in (b"avif", b"avis"):
+            return "avif"
+        # tudo que tem ftyp e não é avif tratamos como heic/heif (Pillow + pillow_heif decodificam)
+        return "heic"
+    # Fallback: tenta abrir com Pillow — se funcionar, aceita.
+    try:
+        with Image.open(io.BytesIO(blob)) as probe:
+            probe.verify()
+        with Image.open(io.BytesIO(blob)) as probe:
+            return (probe.format or "desconhecido").lower()
+    except Exception:
+        raise ImagemInvalida("formato de imagem nao suportado") from None
 
 
 def _abrir_e_normalizar(blob: bytes) -> Image.Image:
     img = Image.open(io.BytesIO(blob))
+    img.load()
     img = ImageOps.exif_transpose(img)  # respeita rotação do celular
-    if img.mode not in ("RGB", "RGBA"):
+    # Normaliza modos exóticos (CMYK, P, L, 1, I, F, YCbCr) para RGB/RGBA
+    if img.mode == "P":
+        # paleta com transparência → RGBA, sem → RGB
+        img = img.convert("RGBA" if "transparency" in img.info else "RGB")
+    elif img.mode in ("LA",):
+        img = img.convert("RGBA")
+    elif img.mode not in ("RGB", "RGBA"):
         img = img.convert("RGB")
     return img
 
@@ -104,7 +136,15 @@ def processar_upload(
     # Original — sem EXIF, mas preservando qualidade ao salvar como JPEG q=95
     sem_exif = Image.new(img.mode, img.size)
     sem_exif.putdata(list(img.getdata()))
-    sem_exif.save(base / "original.jpg", format="JPEG", quality=95, optimize=True)
+    # JPEG não suporta alpha: achata RGBA/LA/P sobre fundo branco antes de salvar
+    if sem_exif.mode in ("RGBA", "LA", "P"):
+        rgba = sem_exif.convert("RGBA")
+        fundo = Image.new("RGB", rgba.size, (255, 255, 255))
+        fundo.paste(rgba, mask=rgba.split()[-1])
+        para_jpeg = fundo
+    else:
+        para_jpeg = sem_exif if sem_exif.mode == "RGB" else sem_exif.convert("RGB")
+    para_jpeg.save(base / "original.jpg", format="JPEG", quality=95, optimize=True)
 
     # Variantes WebP, mantendo aspect ratio
     for largura_alvo, qualidade in TAMANHOS_WEBP:

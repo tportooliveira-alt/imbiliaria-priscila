@@ -25,11 +25,17 @@ class SimulacaoRequest(BaseModel):
     renda_mensal: float | None = Field(None, ge=0)
     nome: str | None = Field(None, max_length=120)
     contato: str | None = Field(None, max_length=120)
+    bairro: str | None = Field(None, max_length=80)
+    tipo_imovel: str | None = Field(None, max_length=40)
 
 
 @router.get("/api/financiamento/taxas")
 def taxas_referenciais() -> dict:
-    return {"taxas": financiamento.TAXAS_BANCOS}
+    return {
+        "taxas": financiamento.TAXAS_BANCOS,
+        "fonte": "Sites oficiais dos bancos (SBPE)",
+        "atualizado_em": "abril/2026",
+    }
 
 
 @router.post("/api/simular-financiamento")
@@ -51,12 +57,14 @@ def simular(payload: SimulacaoRequest) -> dict:
         cur = conn.execute(
             """INSERT INTO simulacoes
                  (valor_imovel, entrada, prazo_meses, taxa_anual, sistema,
-                  parcela_inicial, total_pago, renda_minima, nome, contato)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                  parcela_inicial, total_pago, renda_minima, nome, contato,
+                  bairro, tipo_imovel)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 r.valor_imovel, r.entrada, r.prazo_meses, r.taxa_anual, r.sistema,
                 r.parcela_inicial, r.total_pago, r.renda_minima,
                 payload.nome, payload.contato,
+                payload.bairro, payload.tipo_imovel,
             ),
         )
         sim_id = int(cur.lastrowid)
@@ -64,6 +72,32 @@ def simular(payload: SimulacaoRequest) -> dict:
     comprometimento_ok = (
         r.comprometimento_renda is not None and r.comprometimento_renda <= 0.30
     )
+
+    # Comparativo entre bancos com taxas reais (mesmo prazo/entrada/sistema)
+    comparativo: list[dict] = []
+    for chave, info in financiamento.TAXAS_BANCOS.items():
+        try:
+            sim_banco = financiamento.simular(
+                valor_imovel=payload.valor_imovel,
+                entrada=payload.entrada,
+                prazo_meses=payload.prazo_meses,
+                taxa_anual=info["taxa_anual"],
+                sistema=payload.sistema,
+                renda_mensal=payload.renda_mensal,
+            )
+            comparativo.append({
+                "chave": chave,
+                "banco": info["nome"],
+                "taxa_anual": info["taxa_anual"],
+                "lt_max": info["lt_max"],
+                "parcela_inicial": sim_banco.parcela_inicial,
+                "parcela_final": sim_banco.parcela_final,
+                "total_pago": sim_banco.total_pago,
+                "total_juros": sim_banco.total_juros,
+            })
+        except ValueError:
+            continue
+    comparativo.sort(key=lambda b: b["parcela_inicial"])
 
     # Vira lead automaticamente se houver contato
     if payload.nome or payload.contato:
@@ -73,18 +107,32 @@ def simular(payload: SimulacaoRequest) -> dict:
             email=payload.contato if payload.contato and "@" in payload.contato else None,
             origem="simulador",
         )
+        descricao_partes = [
+            f"Simulou {r.sistema}: {r.valor_imovel:.0f}",
+            f"parcela {r.parcela_inicial:.0f}",
+        ]
+        if payload.bairro:
+            descricao_partes.append(f"bairro {payload.bairro}")
+        if payload.tipo_imovel:
+            descricao_partes.append(payload.tipo_imovel)
         leads_repo.registrar_interacao(
             lead_id,
             tipo="simulacao",
-            descricao=f"Simulou {r.sistema}: {r.valor_imovel:.0f} - parcela {r.parcela_inicial:.0f}",
+            descricao=" - ".join(descricao_partes),
             metadata={
                 "valor_imovel": r.valor_imovel,
                 "parcela_inicial": r.parcela_inicial,
                 "comprometimento_renda": r.comprometimento_renda,
                 "comprometimento_ok": comprometimento_ok,
+                "bairro": payload.bairro,
+                "tipo_imovel": payload.tipo_imovel,
             },
             referencia_id=sim_id,
         )
+        if payload.bairro:
+            leads_repo.adicionar_tag(lead_id, f"bairro:{payload.bairro.lower()}")
+        if payload.tipo_imovel:
+            leads_repo.adicionar_tag(lead_id, f"tipo:{payload.tipo_imovel.lower()}")
 
     return {
         "sistema": r.sistema,
@@ -102,6 +150,8 @@ def simular(payload: SimulacaoRequest) -> dict:
         "comprometimento_renda": r.comprometimento_renda,
         "comprometimento_ok": comprometimento_ok,
         "primeiras_parcelas": r.primeiras_parcelas,
+        "comparativo_bancos": comparativo,
+        "fonte_taxas": "Sites oficiais dos bancos (SBPE) - abril/2026",
     }
 
 

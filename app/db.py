@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS simulacoes (
     renda_minima REAL NOT NULL,
     nome TEXT,
     contato TEXT,
+    bairro TEXT,
+    tipo_imovel TEXT,
     criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -153,7 +155,16 @@ def init_db() -> None:
     """Cria tabelas se não existirem. Seguro chamar várias vezes."""
     with conectar() as conn:
         conn.executescript(SCHEMA)
+        # Migracoes idempotentes (ALTER TABLE so se coluna nao existir)
+        _migrar_coluna(conn, "simulacoes", "bairro", "TEXT")
+        _migrar_coluna(conn, "simulacoes", "tipo_imovel", "TEXT")
         conn.commit()
+
+
+def _migrar_coluna(conn: sqlite3.Connection, tabela: str, coluna: str, tipo: str) -> None:
+    cols = [r["name"] for r in conn.execute(f"PRAGMA table_info({tabela})")]
+    if coluna not in cols:
+        conn.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {tipo}")
 
 
 @contextmanager

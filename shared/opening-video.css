@@ -303,3 +303,26 @@
 .ov-realvideo .ov-hud,
 .ov-realvideo .ov-skip,
 .ov-realvideo .ov-bracket { z-index: 5; }
+
+/* ─── Variante "soft" — entrada suave, tipo pano de fundo cinematográfico ─── */
+.ov-realvideo-soft .ov-realvideo-el {
+  animation: ovSoftIn 2.4s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes ovSoftIn {
+  0%   { opacity: 0; filter: blur(14px) brightness(.55) saturate(.7); transform: scale(1.06); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; filter: blur(0)    brightness(1)   saturate(1);  transform: scale(1); }
+}
+.ov-soft-vignette {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.45) 100%),
+    linear-gradient(180deg, rgba(15,35,64,.18) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 78%, rgba(15,35,64,.35) 100%);
+  animation: ovSoftVignetteIn 2.4s ease both;
+}
+@keyframes ovSoftVignetteIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

@@ -2,22 +2,6 @@
 // Revista de arquitetura/imobiliário, tipografia grande, crema+azul, vídeo em frame retangular,
 // numbered sections, big quote, layouts assimétricos.
 
-async function abrirAdminDev() {
-  // Modo dev local: backend com DEV_OPEN_ADMIN=1 aceita qualquer credencial.
-  try {
-    const r = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "dev@local.dev", senha: "dev-open" }),
-    });
-    const data = await r.json().catch(() => ({}));
-    if (r.ok && data.token) {
-      try { localStorage.setItem("pv_admin_token", data.token); } catch {}
-    }
-  } catch {}
-  window.open("/admin/", "_blank", "noopener");
-}
-
 function App() {
   const [filter, setFilter] = React.useState({ bairro: "", tipo: "", faixa: "" });
   const [introOpen, setIntroOpen] = React.useState(true);
@@ -228,9 +212,6 @@ function App() {
             <span className="footH-mark-sub">Imóveis com IA · Vitória da Conquista · CRECI/BA 29.231</span>
           </div>
           <span className="footH-copy">© {new Date().getFullYear()} · Edição Permanente · Vol. 01</span>
-          <button type="button" className="footH-admin" onClick={abrirAdminDev}>
-            Área da corretora
-          </button>
         </div>
       </footer>
 
