@@ -63,3 +63,12 @@ build/
 *.avi
 *.mkv
 uploads/originals/
+
+# ═══════════════════════════════════════════════════════════
+# DADOS LOCAIS DO ADMIN (NUNCA COMMITAR)
+# ═══════════════════════════════════════════════════════════
+data/
+*.db
+*.sqlite
+*.sqlite3
+assets/imoveis/

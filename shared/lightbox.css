@@ -1,0 +1,138 @@
+/* Lightbox + galeria — Priscila Vasconcelos Imoveis */
+.gal { position: relative; }
+.gal-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: #0a0a0a;
+  cursor: zoom-in;
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+}
+.gal-trigger img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform .6s ease;
+}
+.gal-trigger:hover img { transform: scale(1.02); }
+.gal-badge {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  padding: 8px 14px;
+  background: rgba(0,0,0,.78);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  border-radius: 999px;
+}
+
+.lbx {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0a0a0a;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  color: #f4f0e6;
+}
+.lbx-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.lbx-close:hover { background: rgba(255,255,255,.18); }
+
+.lbx-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 56px 60px;
+  min-height: 0;
+}
+.lbx-picture { display: contents; }
+.lbx-img {
+  max-width: 100%;
+  max-height: calc(100vh - 220px);
+  object-fit: contain;
+}
+.lbx-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.lbx-arrow:hover { background: rgba(255,255,255,.18); }
+.lbx-arrow-prev { left: 14px; }
+.lbx-arrow-next { right: 14px; }
+
+.lbx-meta {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 13px;
+  letter-spacing: .1em;
+  color: #c9c2af;
+}
+.lbx-meta em { font-style: normal; color: #f4f0e6; }
+
+.lbx-thumbs {
+  padding: 12px 18px 18px;
+  overflow-x: auto;
+  display: flex;
+  gap: 22px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.lbx-thumb-group { display: flex; flex-direction: column; gap: 6px; min-width: max-content; }
+.lbx-thumb-group strong {
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #c9c2af;
+  font-weight: 500;
+}
+.lbx-thumb-row { display: flex; gap: 6px; }
+.lbx-thumb {
+  width: 80px;
+  height: 56px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: #1a1a1a;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 4px;
+}
+.lbx-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: .72; }
+.lbx-thumb:hover img { opacity: 1; }
+.lbx-thumb.is-active { border-color: #f4f0e6; }
+.lbx-thumb.is-active img { opacity: 1; }
+
+@media (max-width: 600px) {
+  .lbx-stage { padding: 56px 12px; }
+  .lbx-arrow { width: 38px; height: 38px; }
+  .lbx-thumb { width: 64px; height: 48px; }
+}

@@ -1,0 +1,90 @@
+"""SQLite local — usuarios, imoveis, imagens.
+
+Banco fica em `data/site.db`. Conexão é por requisição (FastAPI dependency).
+Migrations são idempotentes: rodam sempre no startup.
+"""
+from __future__ import annotations
+
+import os
+import sqlite3
+from contextlib import contextmanager
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+DB_PATH = Path(os.getenv("SITE_DB_PATH", ROOT / "data" / "site.db"))
+
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    senha_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'admin',
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS imoveis (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT NOT NULL UNIQUE,
+    titulo TEXT NOT NULL,
+    bairro TEXT NOT NULL,
+    tipo TEXT NOT NULL,
+    quartos INTEGER DEFAULT 0,
+    suites INTEGER DEFAULT 0,
+    vagas INTEGER DEFAULT 0,
+    area_util REAL DEFAULT 0,
+    preco REAL NOT NULL,
+    descricao TEXT,
+    caracteristicas TEXT DEFAULT '[]',
+    destaque INTEGER DEFAULT 0,
+    ativo INTEGER DEFAULT 1,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS imagens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    imovel_id INTEGER NOT NULL,
+    arquivo TEXT NOT NULL,
+    legenda TEXT DEFAULT '',
+    ordem INTEGER DEFAULT 0,
+    tipo TEXT DEFAULT 'sala',
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (imovel_id) REFERENCES imoveis(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_imagens_imovel ON imagens(imovel_id);
+CREATE INDEX IF NOT EXISTS idx_imoveis_bairro ON imoveis(bairro);
+CREATE INDEX IF NOT EXISTS idx_imoveis_ativo ON imoveis(ativo);
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+    ip TEXT NOT NULL,
+    quando TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_login_ip ON login_attempts(ip, quando);
+"""
+
+
+def conectar() -> sqlite3.Connection:
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+
+def init_db() -> None:
+    """Cria tabelas se não existirem. Seguro chamar várias vezes."""
+    with conectar() as conn:
+        conn.executescript(SCHEMA)
+        conn.commit()
+
+
+@contextmanager
+def db_session():
+    conn = conectar()
+    try:
+        yield conn
+        conn.commit()
+    finally:
+        conn.close()

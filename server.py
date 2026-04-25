@@ -21,28 +21,57 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from starlette.middleware.base import BaseHTTPMiddleware
 
+from app import auth
+from app.db import init_db
 from app.dispatcher import analisar_pos_conversa, responder
 from app.lead import funnel_summary
+from app.routes_admin import router as admin_router
 
 # Carrega .env local (se existir)
 load_dotenv()
 
 ROOT = Path(__file__).resolve().parent
 
-app = FastAPI(title="Priscila Vasconcelos Imóveis", version="0.1.0")
+app = FastAPI(title="Priscila Vasconcelos Imóveis", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:8000", "http://127.0.0.1:8000"],
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
+
+
+class HeadersDeSeguranca(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        resp = await call_next(request)
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("X-Frame-Options", "DENY")
+        resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        resp.headers.setdefault(
+            "Permissions-Policy", "camera=(), microphone=(), geolocation=()"
+        )
+        return resp
+
+
+app.add_middleware(HeadersDeSeguranca)
+app.include_router(admin_router)
+
+
+@app.on_event("startup")
+def _bootstrap() -> None:
+    init_db()
+    email = os.getenv("ADMIN_BOOTSTRAP_EMAIL")
+    senha = os.getenv("ADMIN_BOOTSTRAP_SENHA")
+    if email and senha and not auth.buscar_usuario_por_email(email):
+        auth.criar_usuario(email, senha, role="admin")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -124,6 +153,9 @@ def funnel() -> dict:
 app.mount("/assets", StaticFiles(directory=ROOT / "assets"), name="assets")
 app.mount("/shared", StaticFiles(directory=ROOT / "shared"), name="shared")
 app.mount("/v3-editorial", StaticFiles(directory=ROOT / "v3-editorial", html=True), name="v3")
+admin_dir = ROOT / "admin"
+if admin_dir.exists():
+    app.mount("/admin", StaticFiles(directory=admin_dir, html=True), name="admin_ui")
 
 
 @app.get("/")

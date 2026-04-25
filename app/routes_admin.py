@@ -1,0 +1,209 @@
+"""Rotas de autenticação e CRUD admin."""
+from __future__ import annotations
+
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel, Field
+
+from app import auth, imagens, imoveis
+
+router = APIRouter()
+bearer = HTTPBearer(auto_error=False)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Schemas
+# ─────────────────────────────────────────────────────────────────────────────
+class LoginRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=200, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    senha: str = Field(..., min_length=6, max_length=200)
+
+
+class LoginResponse(BaseModel):
+    token: str
+    email: str
+    role: str
+    expires_in_hours: int
+
+
+class ImovelPayload(BaseModel):
+    titulo: str = Field(..., min_length=3, max_length=200)
+    bairro: str = Field(..., min_length=2, max_length=120)
+    tipo: str = Field(..., max_length=40)
+    quartos: int = 0
+    suites: int = 0
+    vagas: int = 0
+    area_util: float = 0
+    preco: float = Field(..., gt=0)
+    descricao: str = ""
+    caracteristicas: list[str] = Field(default_factory=list)
+    destaque: bool = False
+    ativo: bool = True
+
+
+class ImovelUpdate(BaseModel):
+    titulo: str | None = None
+    bairro: str | None = None
+    tipo: str | None = None
+    quartos: int | None = None
+    suites: int | None = None
+    vagas: int | None = None
+    area_util: float | None = None
+    preco: float | None = None
+    descricao: str | None = None
+    caracteristicas: list[str] | None = None
+    destaque: bool | None = None
+    ativo: bool | None = None
+
+
+class ReordemPayload(BaseModel):
+    ordem: list[int]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Dependências
+# ─────────────────────────────────────────────────────────────────────────────
+def usuario_atual(cred: HTTPAuthorizationCredentials | None = Depends(bearer)) -> dict:
+    if not cred:
+        raise HTTPException(status_code=401, detail="token ausente")
+    payload = auth.decodar_token(cred.credentials)
+    if not payload:
+        raise HTTPException(status_code=401, detail="token invalido ou expirado")
+    return payload
+
+
+def requer_admin(user: dict = Depends(usuario_atual)) -> dict:
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="acesso restrito a administrador")
+    return user
+
+
+def _ip_de(req: Request) -> str:
+    if req.client:
+        return req.client.host
+    return "0.0.0.0"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Auth
+# ─────────────────────────────────────────────────────────────────────────────
+@router.post("/api/auth/login", response_model=LoginResponse)
+def login(payload: LoginRequest, request: Request) -> LoginResponse:
+    ip = _ip_de(request)
+    auth.limpar_tentativas_antigas()
+    if auth.excedeu_limite(ip):
+        raise HTTPException(status_code=429, detail="muitas tentativas, aguarde 15 minutos")
+
+    user = auth.autenticar(payload.email, payload.senha)
+    auth.registrar_tentativa(ip)
+    if not user:
+        raise HTTPException(status_code=401, detail="email ou senha invalidos")
+
+    token = auth.gerar_token(user["id"], user["email"], user["role"])
+    return LoginResponse(
+        token=token,
+        email=user["email"],
+        role=user["role"],
+        expires_in_hours=auth.JWT_TTL_HOURS,
+    )
+
+
+@router.get("/api/auth/me")
+def me(user: dict = Depends(usuario_atual)) -> dict:
+    return {"email": user["email"], "role": user["role"]}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Imóveis (público)
+# ─────────────────────────────────────────────────────────────────────────────
+@router.get("/api/imoveis")
+def listar(bairro: str | None = None) -> dict:
+    items = imoveis.listar_imoveis(bairro=bairro)
+    for it in items:
+        it["imagens"] = imoveis.listar_imagens(it["id"])
+    return {"total": len(items), "items": items}
+
+
+@router.get("/api/imoveis/{slug}")
+def detalhe(slug: str) -> dict:
+    item = imoveis.buscar_por_slug(slug)
+    if not item or not item.get("ativo"):
+        raise HTTPException(status_code=404, detail="imovel nao encontrado")
+    item["imagens"] = imoveis.listar_imagens(item["id"])
+    return item
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Imóveis (admin)
+# ─────────────────────────────────────────────────────────────────────────────
+@router.post("/api/admin/imoveis", status_code=status.HTTP_201_CREATED)
+def criar(body: ImovelPayload, _: dict = Depends(requer_admin)) -> dict:
+    return imoveis.criar_imovel(body.model_dump())
+
+
+@router.put("/api/admin/imoveis/{imovel_id}")
+def atualizar(imovel_id: int, body: ImovelUpdate, _: dict = Depends(requer_admin)) -> dict:
+    novo = imoveis.atualizar_imovel(
+        imovel_id, {k: v for k, v in body.model_dump().items() if v is not None}
+    )
+    if not novo:
+        raise HTTPException(status_code=404, detail="imovel nao encontrado")
+    return novo
+
+
+@router.delete("/api/admin/imoveis/{imovel_id}", status_code=204)
+def remover(imovel_id: int, _: dict = Depends(requer_admin)) -> None:
+    if not imoveis.desativar_imovel(imovel_id):
+        raise HTTPException(status_code=404, detail="imovel nao encontrado")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Imagens (admin)
+# ─────────────────────────────────────────────────────────────────────────────
+@router.post("/api/admin/imoveis/{imovel_id}/imagens", status_code=201)
+async def upload_imagens(
+    imovel_id: int,
+    files: list[UploadFile] = File(...),
+    tipo: str = Form("sala"),
+    _: dict = Depends(requer_admin),
+) -> dict:
+    imovel = imoveis.buscar_por_id(imovel_id)
+    if not imovel:
+        raise HTTPException(status_code=404, detail="imovel nao encontrado")
+    if len(files) > 30:
+        raise HTTPException(status_code=400, detail="maximo de 30 arquivos por upload")
+
+    pasta_assets = Path(__file__).resolve().parent.parent / "assets"
+    enviados: list[dict] = []
+
+    for file in files:
+        if file.content_type and not file.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail=f"tipo invalido: {file.content_type}")
+        blob = await file.read()
+        try:
+            processada = imagens.processar_upload(
+                blob, slug=imovel["slug"], pasta_destino=pasta_assets
+            )
+        except imagens.ImagemInvalida as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
+        registro = imoveis.adicionar_imagem(
+            imovel_id, arquivo=processada.arquivo, tipo=tipo, legenda=""
+        )
+        enviados.append(registro)
+
+    return {"total": len(enviados), "imagens": enviados}
+
+
+@router.put("/api/admin/imoveis/{imovel_id}/imagens/ordem")
+def reordenar(imovel_id: int, body: ReordemPayload, _: dict = Depends(requer_admin)) -> dict:
+    imoveis.reordenar_imagens(imovel_id, body.ordem)
+    return {"ok": True, "imagens": imoveis.listar_imagens(imovel_id)}
+
+
+@router.delete("/api/admin/imagens/{imagem_id}", status_code=204)
+def remover_imagem(imagem_id: int, _: dict = Depends(requer_admin)) -> None:
+    if not imoveis.remover_imagem(imagem_id):
+        raise HTTPException(status_code=404, detail="imagem nao encontrada")

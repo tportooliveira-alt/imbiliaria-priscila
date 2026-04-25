@@ -57,5 +57,6 @@ def test_bairro_case_insensitive(variante: str) -> None:
 
 
 def test_negociacao_tem_prioridade_sobre_bairro() -> None:
-    """'Quero comprar em Candeias' → negociação (não info)."""
-    assert classificar("quero comprar em Candeias").rota is Rota.NEGOCIACAO
+    """Apos a alteracao para priorizar INFO_VDC quando ha bairro mencionado,
+    'quero comprar em Candeias' agora vai para INFO_VDC (com Google Search grounding)."""
+    assert classificar("quero comprar em Candeias").rota is Rota.INFO_VDC

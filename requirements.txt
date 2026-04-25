@@ -5,6 +5,15 @@ anthropic>=0.40
 google-genai>=0.3
 pydantic>=2.5
 
+# Auth
+bcrypt>=4.2
+PyJWT>=2.9
+python-multipart>=0.0.12
+
+# Imagens
+Pillow>=11.0
+pillow-heif>=0.18
+
 # Dev / testes
 pytest>=8.3
 httpx>=0.27

@@ -1,4 +1,4 @@
-# Plano de Ação — Site Priscila Vasconcelos Imóveis
+﻿# Plano de Ação — Site Priscila Vasconcelos Imóveis
 
 > Documento vivo. Atualize conforme avançar. Cada passo tem checkbox.
 
@@ -258,9 +258,8 @@ site-imobiliaria/
 **Objetivo:** Priscila acessa `/admin`, faz login e cadastra/edita imóveis sem mexer em código.
 
 1. **Autenticação — semana 1**
-   - [ ] Tabela `usuarios` em SQLite (`app/db.py`): `id`, `email`, `senha_hash` (bcrypt), `role` (`admin` | `corretor`), `criado_em`
-   - [ ] Endpoints:
-     - `POST /api/auth/login` → JWT (`PyJWT`) com expiração de 8h
+   - [x] Tabela `usuarios` em SQLite (`app/db.py`): `id`, `email`, `senha_hash` (bcrypt), `role` (`admin` | `corretor`), `criado_em`
+   - [x] Endpoints:`r`n     - `POST /api/auth/login` → JWT (`PyJWT`) com expiração de 8h
      - `POST /api/auth/logout`
      - `GET /api/auth/me`
    - [ ] Middleware `requer_admin` para proteger rotas `/api/admin/*`
@@ -295,32 +294,33 @@ site-imobiliaria/
 **Objetivo:** visitante vê o card do imóvel, clica na foto → abre lightbox em tela cheia com carrossel mostrando todos os cômodos (sala, quarto, banheiro, cozinha, área externa, planta).
 
 1. **Galeria simples no card — semana 1**
-   - [ ] Card de imóvel com foto principal + indicador "📸 12 fotos"
+   - [x] Card de imóvel com foto principal + indicador "📸 12 fotos"
    - [ ] Hover desktop: troca lenta entre 3 primeiras fotos (preview animado)
 
 2. **Lightbox em tela cheia — semana 1**
-   - [ ] Componente `<GaleriaImovel/>` com:
+   - [x] Componente `<GaleriaImovel/>` com:
      - Backdrop preto 95% + animação editorial de entrada
      - Foto principal grande (cabe na tela, sem cortar)
      - Setas ◄ ► (teclado, swipe mobile, click)
      - Miniaturas embaixo agrupadas por cômodo: `Sala (3) | Cozinha (2) | Quarto 1 (4)…`
      - Contador `5 / 18`
      - Tecla `Esc` fecha
-     - URL muda para `/imovel/{slug}/foto/{n}` (deep link compartilhável)
+     - [ ] URL muda para `/imovel/{slug}/foto/{n}` (deep link compartilhável)
 
 3. **Pipeline de imagens preservando qualidade — semana 1**
    > Regra: a Priscila joga a foto original do celular/câmera (geralmente 4-12 MB) e o site não pode degradar visualmente.
-   - [ ] Dependência: `Pillow` + `pillow-heif` (HEIC do iPhone)
-   - [ ] Ao subir, gerar 4 versões em WebP/AVIF + 1 original guardada:
-     - `original.jpg` (intacto, só servido para download)
+   - [x] Dependência: `Pillow` + `pillow-heif` (HEIC do iPhone)
+   - [x] Ao subir, gerar 4 versões em WebP + 1 original guardada:
+     - `original.jpg` (intacto, q=95)
      - `2400.webp` (lightbox/4K, qualidade 85)
      - `1200.webp` (card grande, qualidade 82)
      - `600.webp` (thumb, qualidade 78)
      - `200.webp` (placeholder/blur, qualidade 60)
-   - [ ] HTML usa `<picture>` com `srcset` + `loading="lazy"` + `decoding="async"`
-   - [ ] Servir via FastAPI `StaticFiles` com `Cache-Control: public, max-age=31536000, immutable`
-   - [ ] Não usar JPEG progressivo abaixo de 1200px — WebP/AVIF têm compressão melhor sem artefatos
-   - [ ] Limite por imóvel: 30 fotos × ~5 MB médio = 150 MB; pasta `assets/imoveis/{slug}/`
+   - [x] HTML usa `<picture>` com `srcset` + `loading="lazy"` + `decoding="async"`
+   - [x] Servir via FastAPI `StaticFiles`
+   - [ ] `Cache-Control: public, max-age=31536000, immutable` (a configurar no deploy)
+   - [x] Magic-byte validation + EXIF strip + max 15 MB
+   - [x] Limite de 30 fotos por upload; pasta `assets/imoveis/{slug}/{uuid}/`
 
 ### Módulo E — Políticas de URL e segurança
 
@@ -334,10 +334,10 @@ site-imobiliaria/
 2. **Cabeçalhos de segurança (FastAPI middleware)**
    - [ ] `Content-Security-Policy` (whitelist: self, CDN React/Babel, googleapis, anthropic, fontes Google)
    - [ ] `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` (após HTTPS)
-   - [ ] `X-Content-Type-Options: nosniff`
-   - [ ] `X-Frame-Options: DENY`
-   - [ ] `Referrer-Policy: strict-origin-when-cross-origin`
-   - [ ] `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+   - [x] `X-Content-Type-Options: nosniff`
+   - [x] `X-Frame-Options: DENY`
+   - [x] `Referrer-Policy: strict-origin-when-cross-origin`
+   - [x] `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 
 3. **Hardening do upload**
    - [ ] Aceitar somente `image/jpeg`, `image/png`, `image/webp`, `image/heic`
@@ -375,3 +375,4 @@ site-imobiliaria/
 
 - `c16b9fb` — Inicial: site v3-editorial com vídeos de abertura encadeados
 - `83d8bc8` — chore: adiciona requirements.txt (FastAPI + Anthropic + Gemini)
+
