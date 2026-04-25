@@ -17,6 +17,7 @@ class RespostaLLM:
     texto: str
     modelo: str
     fallback: bool = False
+    metadata: dict | None = None
 
 
 class LLMClient(Protocol):
@@ -42,6 +43,7 @@ class ClienteFallback:
             ),
             modelo="fallback",
             fallback=True,
+            metadata=None,
         )
 
 
@@ -49,8 +51,9 @@ class ClienteFallback:
 # Gemini
 # ─────────────────────────────────────────────────────────────────────────────
 class ClienteGemini:
-    def __init__(self, modelo: str = "gemini-2.0-flash"):
+    def __init__(self, modelo: str = "gemini-2.0-flash", *, use_google_search: bool = False):
         self.modelo = modelo
+        self.use_google_search = use_google_search
         self._client = None
 
     def available(self) -> bool:
@@ -62,6 +65,16 @@ class ClienteGemini:
             self._client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
         return self._client
 
+    def _build_config(self, system: str):
+        from google.genai import types
+
+        kwargs = {
+            "system_instruction": system,
+        }
+        if self.use_google_search:
+            kwargs["tools"] = [types.Tool(google_search=types.GoogleSearch())]
+        return types.GenerateContentConfig(**kwargs)
+
     def gerar(self, system: str, mensagem: str, historico: list[dict] | None = None) -> RespostaLLM:
         if not self.available():
             return ClienteFallback().gerar(system, mensagem, historico)
@@ -69,14 +82,19 @@ class ClienteGemini:
         try:
             resp = client.models.generate_content(
                 model=self.modelo,
-                contents=f"{system}\n\nUsuário: {mensagem}",
+                contents=f"Usuário: {mensagem}",
+                config=self._build_config(system),
             )
-            return RespostaLLM(texto=resp.text or "", modelo=self.modelo)
+            metadata = {
+                "grounded": bool(getattr(resp.candidates[0], "grounding_metadata", None)) if getattr(resp, "candidates", None) else False,
+            }
+            return RespostaLLM(texto=resp.text or "", modelo=self.modelo, metadata=metadata)
         except Exception as exc:  # rede / cota / etc.
             return RespostaLLM(
                 texto=f"(erro Gemini: {type(exc).__name__}) — retornando ao fallback.",
                 modelo=self.modelo,
                 fallback=True,
+                metadata=None,
             )
 
 
@@ -110,10 +128,11 @@ class ClienteClaude:
                 messages=msgs,
             )
             texto = "".join(b.text for b in resp.content if hasattr(b, "text"))
-            return RespostaLLM(texto=texto, modelo=self.modelo)
+            return RespostaLLM(texto=texto, modelo=self.modelo, metadata=None)
         except Exception as exc:
             return RespostaLLM(
                 texto=f"(erro Claude: {type(exc).__name__}) — retornando ao fallback.",
                 modelo=self.modelo,
                 fallback=True,
+                metadata=None,
             )

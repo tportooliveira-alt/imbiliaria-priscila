@@ -59,6 +59,14 @@ BAIRROS_VDC = {
     "vdc", "conquista",
 }
 
+PALAVRAS_INFO_VDC = {
+    "bairro", "bairros", "regiao", "região", "zona", "localizacao",
+    "localização", "mercado", "valorizado", "valorizada", "valorizacao",
+    "valorização", "seguranca", "segurança", "escola", "escolas",
+    "mobilidade", "infraestrutura", "condominio", "condomínio",
+    "apartamento", "apartamentos", "casa", "casas",
+}
+
 PADRAO_PRECO = re.compile(r"\b(r\$|reais?|mil|milh[ãa]o|milh[õo]es)\b", re.IGNORECASE)
 PADRAO_IMAGEM = re.compile(r"\b(foto|imagem|anexo|anexei|olha essa|esta foto)\b", re.IGNORECASE)
 
@@ -87,10 +95,6 @@ def classificar(mensagem: str, *, tem_imagem: bool = False) -> Classificacao:
     if not texto:
         return Classificacao(Rota.TRIAGEM, 0.5, "mensagem vazia")
 
-    # Negociação tem prioridade alta
-    if any(p in texto for p in PALAVRAS_NEGOCIACAO):
-        return Classificacao(Rota.NEGOCIACAO, 0.9, "léxico de negociação")
-
     # Descrição editorial (uso interno da Priscila)
     if any(p in texto for p in PALAVRAS_DESCRICAO):
         return Classificacao(Rota.DESCRICAO, 0.85, "pedido de redação")
@@ -102,6 +106,13 @@ def classificar(mensagem: str, *, tem_imagem: bool = False) -> Classificacao:
     # Pergunta sobre VDC (bairro, escola, segurança, mercado)
     if any(b in texto for b in BAIRROS_VDC):
         return Classificacao(Rota.INFO_VDC, 0.8, "menção a bairro/cidade")
+
+    if any(p in texto for p in PALAVRAS_INFO_VDC) and any(c in texto for c in {"vitoria da conquista", "vitória da conquista", "vdc", "conquista"}):
+        return Classificacao(Rota.INFO_VDC, 0.78, "pergunta de mercado/localidade em VDC")
+
+    # Negociação tem prioridade alta, mas depois das perguntas de contexto local.
+    if any(p in texto for p in PALAVRAS_NEGOCIACAO):
+        return Classificacao(Rota.NEGOCIACAO, 0.9, "léxico de negociação")
 
     # Pergunta envolvendo preço sem intenção clara → triagem
     if PADRAO_PRECO.search(texto):

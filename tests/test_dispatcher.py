@@ -8,7 +8,7 @@ import pytest
 from app import dispatcher
 from app.clients import ClienteClaude, ClienteFallback, ClienteGemini
 from app.dispatcher import analisar_pos_conversa, cliente_para, responder
-from app.router import Rota
+from app.router import Rota, classificar
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -31,6 +31,18 @@ def test_claude_indisponivel_sem_chave(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_gemini_disponivel_com_chave(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GOOGLE_API_KEY", "fake-key")
     assert ClienteGemini().available() is True
+
+
+def test_info_vdc_usa_gemini_com_google_search(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GOOGLE_API_KEY", "fake-key")
+    cliente = cliente_para(Rota.INFO_VDC)
+    assert isinstance(cliente, ClienteGemini)
+    assert cliente.use_google_search is True
+
+
+def test_classificador_prioriza_info_vdc_em_pergunta_de_mercado_local() -> None:
+    out = classificar("Quais bairros de Vitoria da Conquista estao mais valorizados hoje para comprar apartamento?")
+    assert out.rota == Rota.INFO_VDC
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -64,12 +76,14 @@ def test_responder_pipeline_sem_chave(monkeypatch: pytest.MonkeyPatch) -> None:
     assert set(out) == {
         "rota", "confianca", "motivo", "modelo", "fallback", "resposta",
         "lead_score", "lead_stage", "lead_next_question", "lead_fields",
+        "provider_metadata",
     }
     assert out["rota"] == Rota.TRIAGEM.value
     assert out["fallback"] is True
     assert out["resposta"]
     assert isinstance(out["lead_score"], int)
     assert isinstance(out["lead_fields"], dict)
+    assert isinstance(out["provider_metadata"], dict)
 
 
 def test_responder_negociacao_seleciona_claude_quando_disponivel(monkeypatch: pytest.MonkeyPatch) -> None:

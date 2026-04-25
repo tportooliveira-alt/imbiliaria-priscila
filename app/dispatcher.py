@@ -25,7 +25,7 @@ MODEL_CLAUDE_HAIKU = "claude-haiku-4-5"
 # Mapa rota → fábrica de cliente (lazy)
 _FABRICAS: dict[Rota, callable] = {
     Rota.TRIAGEM: lambda: ClienteGemini(MODEL_GEMINI_FAST),
-    Rota.INFO_VDC: lambda: ClienteGemini(MODEL_GEMINI_PRO),
+    Rota.INFO_VDC: lambda: ClienteGemini(MODEL_GEMINI_PRO, use_google_search=True),
     Rota.NEGOCIACAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
     Rota.DESCRICAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
     Rota.FOLLOWUP: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
@@ -86,6 +86,7 @@ def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem:
         "lead_stage": lead.stage,
         "lead_next_question": lead.next_question,
         "lead_fields": lead.fields,
+        "provider_metadata": resp.metadata or {},
     }
 
 

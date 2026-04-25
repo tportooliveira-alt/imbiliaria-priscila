@@ -46,6 +46,7 @@ def test_chat_aceita_mensagem_simples(client: TestClient) -> None:
     assert body["resposta"]
     assert "lead_score" in body
     assert "lead_stage" in body
+    assert "provider_metadata" in body
 
 
 def test_chat_classifica_negociacao(client: TestClient) -> None:

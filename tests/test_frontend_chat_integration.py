@@ -16,6 +16,12 @@ def test_chat_usa_endpoint_api_chat(shared_dir: Path) -> None:
     assert 'fetch("/api/chat"' in src
 
 
+def test_chat_busca_funil_e_analise(shared_dir: Path) -> None:
+    src = _src(shared_dir)
+    assert 'fetch("/api/funnel")' in src
+    assert 'fetch("/api/analisar-lead"' in src
+
+
 def test_chat_envia_post_json(shared_dir: Path) -> None:
     src = _src(shared_dir)
     assert 'method: "POST"' in src
@@ -38,6 +44,14 @@ def test_chat_mostra_estado_de_erro(shared_dir: Path) -> None:
     src = _src(shared_dir)
     assert "setNetError(" in src
     assert "Conexao instavel" in src
+
+
+def test_chat_renderiza_painel_da_conversa(shared_dir: Path) -> None:
+    src = _src(shared_dir)
+    assert "Painel da conversa" in src
+    assert "Analise pos-conversa" in src
+    assert "Funil local" in src
+    assert "Grounding ativo nesta resposta" in src
 
 
 def test_chat_para_typing_em_sucesso_e_erro(shared_dir: Path) -> None:

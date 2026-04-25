@@ -70,6 +70,7 @@ class ChatResponse(BaseModel):
     lead_stage: str
     lead_next_question: str
     lead_fields: dict[str, bool]
+    provider_metadata: dict = Field(default_factory=dict)
 
 
 class LeadAnalysisRequest(BaseModel):
