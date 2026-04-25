@@ -1,0 +1,305 @@
+/* ═══════════════════════════════════════════════════════════
+   OPENING VIDEO — shared cinematic component
+   Simulates a "video gerado por IA em 4K" with layered CSS:
+   - letterbox bars
+   - Ken Burns on image scenes (crossfade)
+   - HUD overlays (IA rendering label, scene ticker, timecode)
+   - skip button + progress bar with scene markers
+   - film grain + scene grading (drone, interior, portrait, outro)
+   ═══════════════════════════════════════════════════════════ */
+
+.ov {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  overflow: hidden;
+  font-family: var(--ff-body);
+  color: #fff;
+  animation: ovFadeIn .6s ease;
+}
+@keyframes ovFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.ov-full { /* full viewport, default */ }
+.ov-16x9 .ov-letterbox { display: none; } /* no bars */
+.ov-21x9 .ov-letterbox-top,
+.ov-21x9 .ov-letterbox-bot {
+  position: absolute; left: 0; right: 0;
+  height: 14vh; background: #000;
+  z-index: 4;
+  border-bottom: 1px solid rgba(232,181,90,.12);
+}
+.ov-21x9 .ov-letterbox-top { top: 0; }
+.ov-21x9 .ov-letterbox-bot { bottom: 0; border-top: 1px solid rgba(232,181,90,.12); border-bottom: none; }
+
+.ov-scenes {
+  position: absolute;
+  inset: 0;
+}
+.ov-scene {
+  position: absolute;
+  inset: 0;
+}
+.ov-scene-img-wrap {
+  position: absolute; inset: 0;
+  overflow: hidden;
+}
+.ov-scene-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .1s linear;
+  transform-origin: center center;
+}
+.ov-scene-grade {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+/* Color grade per scene type */
+.ov-scene-grade[data-type="drone-wide"] {
+  background: linear-gradient(180deg, rgba(15,35,64,.45) 0%, rgba(15,35,64,.05) 40%, rgba(15,35,64,.55) 100%);
+}
+.ov-scene-grade[data-type="drone-neighborhood"] {
+  background: linear-gradient(180deg, rgba(201,148,58,.15) 0%, rgba(15,35,64,.1) 50%, rgba(15,35,64,.6) 100%);
+}
+.ov-scene-grade[data-type="interior"] {
+  background: linear-gradient(180deg, rgba(15,35,64,.3) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 70%, rgba(15,35,64,.55) 100%);
+}
+.ov-scene-grade[data-type="portrait"] {
+  background: linear-gradient(180deg, rgba(15,35,64,.55) 0%, rgba(15,35,64,.1) 40%, rgba(15,35,64,.7) 100%);
+}
+/* Outro scene (text-only) */
+.ov-outro {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, #0f2340 0%, #050d1f 70%);
+  gap: 1.8rem; text-align: center;
+  animation: ovOutroIn 1s ease;
+}
+@keyframes ovOutroIn { from { opacity: 0; } to { opacity: 1; } }
+.ov-outro-mono {
+  font: 500 11px/1 var(--ff-mono);
+  letter-spacing: .32em;
+  color: var(--dourado-claro);
+}
+.ov-outro-title {
+  font: 500 clamp(2.4rem, 6vw, 5.5rem)/1 var(--ff-display);
+  letter-spacing: -.02em;
+  color: #fff;
+}
+.ov-outro-title em {
+  font-style: italic;
+  font-weight: 500;
+  background: linear-gradient(180deg, var(--dourado-claro), var(--dourado));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.ov-outro-sub {
+  font: 400 clamp(.95rem, 1.4vw, 1.15rem)/1.5 var(--ff-body);
+  color: rgba(255,255,255,.7);
+  max-width: 560px;
+  padding: 0 2rem;
+}
+
+/* Film grain */
+.ov-grain {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: .28;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  animation: grainShift 0.4s steps(3) infinite;
+}
+@keyframes grainShift {
+  0%   { transform: translate(0,0); }
+  33%  { transform: translate(-2%, 1%); }
+  66%  { transform: translate(1%, -2%); }
+  100% { transform: translate(0,0); }
+}
+
+/* HUD elements */
+.ov-hud {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 11px/1 var(--ff-body);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.88);
+  z-index: 5;
+  padding: 10px 14px;
+  background: rgba(5,13,31,.55);
+  backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(232,181,90,.28);
+  border-radius: 3px;
+  animation: ovHudIn .6s .3s both cubic-bezier(.2,.8,.2,1);
+}
+@keyframes ovHudIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ov-hud-tl { top: calc(14vh + 22px); left: 22px; }
+.ov-hud-tr { top: calc(14vh + 22px); right: 22px; }
+.ov-hud-br { bottom: calc(14vh + 22px); right: 22px; color: var(--dourado-claro); }
+.ov-16x9 .ov-hud-tl, .ov-16x9 .ov-hud-tr { top: 22px; }
+.ov-16x9 .ov-hud-br { bottom: 60px; }
+
+.ov-hud-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--dourado-claro);
+  box-shadow: 0 0 8px rgba(232,181,90,.8);
+  animation: ovPulse 1.6s infinite;
+}
+.ov-rec-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #ff3b30;
+  box-shadow: 0 0 0 3px rgba(255,59,48,.25);
+  animation: ovPulse 1.2s infinite;
+}
+@keyframes ovPulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+.ov-mono { font-family: var(--ff-mono); letter-spacing: .05em; }
+
+/* Scene caption bottom-left */
+.ov-caption {
+  position: absolute;
+  bottom: calc(14vh + 56px);
+  left: 22px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: ovCaptionIn .6s cubic-bezier(.2,.8,.2,1);
+}
+.ov-16x9 .ov-caption { bottom: 94px; }
+@keyframes ovCaptionIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.ov-caption-bar {
+  width: 48px; height: 2px;
+  background: var(--dourado);
+}
+.ov-caption-text {
+  font: 500 clamp(1rem, 1.8vw, 1.4rem)/1.2 var(--ff-display);
+  font-style: italic;
+  color: #fff;
+  letter-spacing: -.005em;
+  max-width: 320px;
+}
+
+/* Progress bar */
+.ov-progress {
+  position: absolute;
+  bottom: calc(14vh + 22px);
+  left: 22px;
+  right: 22px;
+  height: 2px;
+  background: rgba(255,255,255,.12);
+  z-index: 5;
+}
+.ov-16x9 .ov-progress { bottom: 22px; }
+.ov-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--dourado), var(--dourado-claro));
+  box-shadow: 0 0 12px rgba(232,181,90,.4);
+  transition: width .08s linear;
+}
+.ov-progress-ticks {
+  position: absolute; inset: 0;
+}
+.ov-progress-tick {
+  position: absolute;
+  top: -3px;
+  width: 1px;
+  height: 8px;
+  background: rgba(255,255,255,.3);
+}
+
+/* Skip button */
+.ov-skip {
+  position: absolute;
+  bottom: calc(14vh + 48px);
+  right: 22px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(5,13,31,.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  font: 500 12px/1 var(--ff-body);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .2s ease;
+  animation: ovHudIn .6s 1.2s both;
+}
+.ov-16x9 .ov-skip { bottom: 48px; }
+.ov-skip:hover {
+  background: var(--dourado);
+  color: #0a1830;
+  border-color: var(--dourado);
+  padding-right: 20px;
+  transform: translateX(-2px);
+}
+
+/* Corner brackets */
+.ov-bracket {
+  position: absolute;
+  width: 28px; height: 28px;
+  border: 1.5px solid rgba(232,181,90,.6);
+  z-index: 4;
+  pointer-events: none;
+}
+.ov-br-tl { top: calc(14vh + 8px); left: 8px; border-right: none; border-bottom: none; }
+.ov-br-tr { top: calc(14vh + 8px); right: 8px; border-left: none; border-bottom: none; }
+.ov-br-bl { bottom: calc(14vh + 8px); left: 8px; border-right: none; border-top: none; }
+.ov-br-br { bottom: calc(14vh + 8px); right: 8px; border-left: none; border-top: none; }
+.ov-16x9 .ov-br-tl, .ov-16x9 .ov-br-tr { top: 8px; }
+.ov-16x9 .ov-br-bl, .ov-16x9 .ov-br-br { bottom: 8px; }
+
+/* Variant tweaks */
+.ov-cerulean .ov-caption-bar,
+.ov-cerulean .ov-progress-fill { background: linear-gradient(90deg, #2a5298, var(--dourado)); }
+
+.ov-cinema .ov-hud { border-color: rgba(232,181,90,.5); background: rgba(0,0,0,.7); }
+.ov-cinema .ov-bracket { border-color: var(--dourado); }
+
+.ov-editorial .ov-hud {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.2);
+  font-family: var(--ff-mono);
+  letter-spacing: .22em;
+}
+.ov-editorial .ov-outro-title em {
+  -webkit-text-fill-color: var(--dourado);
+  background: none;
+}
+
+@media (max-width: 720px) {
+  .ov-hud { font-size: 9px; padding: 8px 10px; letter-spacing: .14em; }
+  .ov-caption-text { font-size: 1rem; }
+  .ov-skip { font-size: 10px; padding: 8px 12px; }
+}
+
+/* ═════ FASE 2/3 — Vídeos reais (IA + Priscila) ═════ */
+.ov-realvideo { background: #000; }
+.ov-realvideo-el {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+.ov-realvideo .ov-letterbox,
+.ov-realvideo .ov-hud,
+.ov-realvideo .ov-skip,
+.ov-realvideo .ov-bracket { z-index: 5; }

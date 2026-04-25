@@ -1,0 +1,188 @@
+/* ═══════════════════════════════════════════════════════════
+   PRISCILA VASCONCELOS IMÓVEIS — CERULEAN HARVEST
+   colors_and_type.css — base tokens + semantic roles
+   Paleta: Azul Petróleo + Dourado Queimado + Areia
+   ═══════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  /* ── BRAND · AZUL (Cerulean) ─────────────────────── */
+  --azul-escuro:   #0f2340;  /* Hero/night, anchoring voids  */
+  --azul:          #1b3a5c;  /* Primary brand blue            */
+  --azul-medio:    #2a5298;  /* Gradient lift                 */
+  --azul-10:       rgba(27, 58, 92, .10);
+  --azul-20:       rgba(27, 58, 92, .20);
+
+  /* ── BRAND · DOURADO (Harvest Gold) ───────────────── */
+  --dourado:       #c9943a;  /* Primary accent — CTAs, metrics */
+  --dourado-claro: #e8b55a;  /* Hover / highlights             */
+  --dourado-15:    rgba(201, 148, 58, .15);
+  --dourado-25:    rgba(201, 148, 58, .25);
+  --dourado-35:    rgba(201, 148, 58, .35);
+
+  /* ── NEUTRAL · AREIA (Warm sand skin) ─────────────── */
+  --areia:         #f5f0e8;
+  --branco:        #ffffff;
+  --cinza-1:       #f9f9f9;
+  --cinza-2:       #e8e8e8;
+  --cinza-texto:   #555f6e;
+  --texto:         #1a1a2e;
+
+  /* ── SEMANTIC · FG / BG ───────────────────────────── */
+  --fg-1:          var(--texto);         /* body default       */
+  --fg-2:          var(--cinza-texto);   /* secondary / caption */
+  --fg-muted:      rgba(255,255,255,.72);/* on dark            */
+  --fg-faint:      rgba(255,255,255,.5); /* eyebrow on dark    */
+  --fg-brand:      var(--azul);          /* links, headings    */
+  --fg-accent:     var(--dourado);       /* accents            */
+
+  --bg-canvas:     var(--branco);
+  --bg-soft:       var(--cinza-1);
+  --bg-warm:       var(--areia);
+  --bg-dark:       var(--azul-escuro);
+  --bg-dark-soft:  rgba(255,255,255,.06); /* cards on dark     */
+
+  --hair:          var(--cinza-2);        /* hairlines         */
+  --hair-dark:     rgba(255,255,255,.12); /* hairlines on dark */
+
+  /* ── SEMANTIC · STATUS ────────────────────────────── */
+  --whatsapp:      #25d366;
+  --live:          #4ade80;
+
+  /* ── RADII ────────────────────────────────────────── */
+  --radius-sm:     8px;
+  --radius:        12px;
+  --radius-lg:     20px;
+  --radius-pill:   999px;
+
+  /* ── ELEVATION ────────────────────────────────────── */
+  --shadow-sm:     0 2px 8px rgba(0,0,0,.08);
+  --shadow-md:     0 6px 24px rgba(0,0,0,.12);
+  --shadow-lg:     0 16px 48px rgba(0,0,0,.16);
+  --shadow-hero:   0 24px 48px rgba(0,0,0,.4);
+  --shadow-gold:   0 4px 16px rgba(201,148,58,.35);
+  --shadow-gold-hover: 0 8px 24px rgba(201,148,58,.4);
+
+  /* ── SPACING ──────────────────────────────────────── */
+  --space-1:       .25rem;
+  --space-2:       .5rem;
+  --space-3:       .75rem;
+  --space-4:       1rem;
+  --space-5:       1.25rem;
+  --space-6:       1.5rem;
+  --space-8:       2rem;
+  --space-10:      2.5rem;
+  --space-12:      3rem;
+  --space-16:      4rem;
+  --space-20:      5rem;
+  --section-y:     clamp(3rem, 8vw, 6rem);
+  --px:            clamp(1rem, 4vw, 2rem);
+  --max-w:         1200px;
+
+  /* ── MOTION ───────────────────────────────────────── */
+  --ease:          cubic-bezier(.2, .7, .2, 1);
+  --duration:      .25s;
+  --transition:    .25s ease;
+
+  /* ── TYPE · FAMILIES ──────────────────────────────── */
+  --ff-display:    "Playfair Display", Georgia, "Times New Roman", serif;
+  --ff-body:       "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --ff-mono:       ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* ── TYPE · SIZES (responsive) ────────────────────── */
+  --fs-display:    clamp(2.4rem, 6vw, 4rem);     /* Hero      */
+  --fs-h1:         clamp(2rem, 5vw, 3.4rem);
+  --fs-h2:         clamp(1.5rem, 3.5vw, 2.4rem);
+  --fs-h3:         1.15rem;
+  --fs-body:       1rem;                         /* 16px base */
+  --fs-lead:       1.05rem;                      /* intro     */
+  --fs-small:      .92rem;
+  --fs-caption:    .82rem;
+  --fs-eyebrow:    .75rem;
+  --fs-micro:      .72rem;
+
+  --lh-tight:      1.2;
+  --lh-snug:       1.4;
+  --lh-body:       1.65;
+
+  --tracking-eyebrow: .12em;
+  --tracking-caps:    .08em;
+  --tracking-wide:    .04em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SEMANTIC ELEMENT STYLES
+   Apply these via classes (.h1, .eyebrow, .lead…) or rely on
+   the bare tag styles below when writing prose.
+   ═══════════════════════════════════════════════════════════ */
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--ff-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--fg-1);
+  background: var(--bg-canvas);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, .h1, .h2, .h3, .h4 {
+  font-family: var(--ff-display);
+  line-height: var(--lh-tight);
+  color: var(--fg-1);
+  font-weight: 700;
+}
+h1, .h1 { font-size: var(--fs-h1); letter-spacing: -0.01em; }
+h2, .h2 { font-size: var(--fs-h2); letter-spacing: -0.005em; }
+h3, .h3 { font-size: var(--fs-h3); font-weight: 600; }
+
+p { color: var(--fg-2); }
+a { color: inherit; text-decoration: none; transition: color var(--transition); }
+
+.display {
+  font-family: var(--ff-display);
+  font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+.lead {
+  font-size: var(--fs-lead);
+  color: var(--fg-2);
+  line-height: var(--lh-body);
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: var(--ff-body);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--fg-accent);
+}
+.eyebrow-light { color: var(--dourado-claro); }
+
+.caption    { font-size: var(--fs-caption); color: var(--fg-2); }
+.micro-caps {
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  font-weight: 600;
+  color: var(--fg-2);
+}
+
+.destaque-dourado { color: var(--fg-accent); }
+.text-light       { color: rgba(255,255,255,.88); }
+
+/* Italic serif accent — used in "encontrado pela IA" moment. */
+.display-italic {
+  font-family: var(--ff-display);
+  font-style: italic;
+  font-weight: 600;
+}
+
+code, .mono { font-family: var(--ff-mono); font-size: .92em; }
