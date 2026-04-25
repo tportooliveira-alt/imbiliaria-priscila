@@ -541,3 +541,70 @@ img { max-width: 100%; display: block; }
   .entrevistaH-grid { grid-template-columns: 1fr; gap: 2rem; padding-left: 0; }
   .navH-links { display: none; }
 }
+
+/* ═══════ Acesso discreto da corretora (rodapé) ═══════ */
+.footH-admin {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: .55;
+  font: inherit;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-left: 1.5rem;
+  padding: .25rem .5rem;
+  transition: opacity .2s;
+}
+.footH-admin:hover { opacity: 1; text-decoration: underline; }
+
+/* ═══════ Modal de login (sobreposto, site continua atrás) ═══════ */
+.adminLoginH {
+  position: fixed; inset: 0;
+  background: rgba(20, 18, 14, .55);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+  animation: adminLoginH-in .18s ease-out;
+}
+@keyframes adminLoginH-in { from { opacity: 0; } to { opacity: 1; } }
+.adminLoginH-card {
+  background: #f6f1e6;
+  color: #1a1814;
+  border-radius: 4px;
+  padding: 2.5rem 2rem 2rem;
+  width: min(380px, 92vw);
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,.35);
+  font-family: inherit;
+}
+.adminLoginH-card h3 { margin: .25rem 0 .35rem; font-size: 1.5rem; }
+.adminLoginH-sub { margin: 0 0 1.25rem; opacity: .65; font-size: .85rem; }
+.adminLoginH-vol {
+  font-size: .68rem; letter-spacing: .25em; text-transform: uppercase;
+  opacity: .55;
+}
+.adminLoginH-x {
+  position: absolute; top: .5rem; right: .75rem;
+  background: none; border: none; font-size: 1.6rem; cursor: pointer;
+  opacity: .5;
+}
+.adminLoginH-x:hover { opacity: 1; }
+.adminLoginH-card label {
+  display: block;
+  font-size: .72rem; letter-spacing: .15em; text-transform: uppercase;
+  opacity: .65; margin: .85rem 0 .35rem;
+}
+.adminLoginH-card input {
+  width: 100%; padding: .65rem .75rem;
+  border: 1px solid rgba(0,0,0,.2);
+  background: #fff; font: inherit; border-radius: 2px;
+}
+.adminLoginH-card input:focus { outline: 2px solid #2b3f6f; outline-offset: 1px; }
+.adminLoginH-card .btnH { width: 100%; margin-top: 1.25rem; justify-content: center; }
+.adminLoginH-erro {
+  background: #f6c5b5; color: #6b1b0a;
+  padding: .55rem .75rem; border-radius: 2px;
+  font-size: .85rem; margin-bottom: .5rem;
+}

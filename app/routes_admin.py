@@ -91,6 +91,22 @@ def _ip_de(req: Request) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 @router.post("/api/auth/login", response_model=LoginResponse)
 def login(payload: LoginRequest, request: Request) -> LoginResponse:
+    # ─── Modo dev local: DEV_OPEN_ADMIN=1 → entra com qualquer credencial ───
+    import os as _os
+    if _os.getenv("DEV_OPEN_ADMIN") == "1":
+        email = (payload.email or "dev@local").lower().strip()
+        user = auth.buscar_usuario_por_email(email)
+        if not user:
+            auth.criar_usuario(email, payload.senha or "dev-open", role="admin")
+            user = auth.buscar_usuario_por_email(email)
+        token = auth.gerar_token(user["id"], user["email"], user["role"])
+        return LoginResponse(
+            token=token,
+            email=user["email"],
+            role=user["role"],
+            expires_in_hours=auth.JWT_TTL_HOURS,
+        )
+
     ip = _ip_de(request)
     auth.limpar_tentativas_antigas()
     if auth.excedeu_limite(ip):
@@ -207,3 +223,19 @@ def reordenar(imovel_id: int, body: ReordemPayload, _: dict = Depends(requer_adm
 def remover_imagem(imagem_id: int, _: dict = Depends(requer_admin)) -> None:
     if not imoveis.remover_imagem(imagem_id):
         raise HTTPException(status_code=404, detail="imagem nao encontrada")
+
+
+class ImagemUpdate(BaseModel):
+    tipo: str | None = None
+    legenda: str | None = None
+
+
+@router.patch("/api/admin/imagens/{imagem_id}")
+def atualizar_imagem(imagem_id: int, body: ImagemUpdate, _: dict = Depends(requer_admin)) -> dict:
+    try:
+        out = imoveis.atualizar_imagem(imagem_id, tipo=body.tipo, legenda=body.legenda)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not out:
+        raise HTTPException(status_code=404, detail="imagem nao encontrada")
+    return out

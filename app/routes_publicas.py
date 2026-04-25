@@ -6,7 +6,7 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app import avaliacao, financiamento
+from app import avaliacao, financiamento, leads as leads_repo
 from app.db import db_session
 from app.m2_vdc import BAIRROS_DISPONIVEIS
 
@@ -48,7 +48,7 @@ def simular(payload: SimulacaoRequest) -> dict:
 
     # Persiste para alimentar funil
     with db_session() as conn:
-        conn.execute(
+        cur = conn.execute(
             """INSERT INTO simulacoes
                  (valor_imovel, entrada, prazo_meses, taxa_anual, sistema,
                   parcela_inicial, total_pago, renda_minima, nome, contato)
@@ -58,6 +58,32 @@ def simular(payload: SimulacaoRequest) -> dict:
                 r.parcela_inicial, r.total_pago, r.renda_minima,
                 payload.nome, payload.contato,
             ),
+        )
+        sim_id = int(cur.lastrowid)
+
+    comprometimento_ok = (
+        r.comprometimento_renda is not None and r.comprometimento_renda <= 0.30
+    )
+
+    # Vira lead automaticamente se houver contato
+    if payload.nome or payload.contato:
+        lead_id = leads_repo.upsert_lead(
+            nome=payload.nome,
+            telefone=payload.contato,
+            email=payload.contato if payload.contato and "@" in payload.contato else None,
+            origem="simulador",
+        )
+        leads_repo.registrar_interacao(
+            lead_id,
+            tipo="simulacao",
+            descricao=f"Simulou {r.sistema}: {r.valor_imovel:.0f} - parcela {r.parcela_inicial:.0f}",
+            metadata={
+                "valor_imovel": r.valor_imovel,
+                "parcela_inicial": r.parcela_inicial,
+                "comprometimento_renda": r.comprometimento_renda,
+                "comprometimento_ok": comprometimento_ok,
+            },
+            referencia_id=sim_id,
         )
 
     return {
@@ -74,9 +100,7 @@ def simular(payload: SimulacaoRequest) -> dict:
         "total_juros": r.total_juros,
         "renda_minima": r.renda_minima,
         "comprometimento_renda": r.comprometimento_renda,
-        "comprometimento_ok": (
-            r.comprometimento_renda is not None and r.comprometimento_renda <= 0.30
-        ),
+        "comprometimento_ok": comprometimento_ok,
         "primeiras_parcelas": r.primeiras_parcelas,
     }
 
@@ -123,7 +147,7 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
     texto = avaliacao.texto_editorial(r, payload.bairro)
 
     with db_session() as conn:
-        conn.execute(
+        cur = conn.execute(
             """INSERT INTO avaliacoes
                  (bairro, area_util, quartos, suites, vagas, padrao, estado, idade,
                   valor_central, valor_minimo, valor_maximo, confianca, nome, contato)
@@ -134,6 +158,30 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
                 r.valor_central, r.valor_minimo, r.valor_maximo, r.confianca,
                 payload.nome, payload.contato,
             ),
+        )
+        av_id = int(cur.lastrowid)
+
+    # Vira lead automaticamente (vendedor) se houver contato
+    if payload.nome or payload.contato:
+        lead_id = leads_repo.upsert_lead(
+            nome=payload.nome,
+            telefone=payload.contato,
+            email=payload.contato if payload.contato and "@" in payload.contato else None,
+            origem="avaliacao",
+        )
+        leads_repo.adicionar_tag(lead_id, "vendedor")
+        leads_repo.registrar_interacao(
+            lead_id,
+            tipo="avaliacao",
+            descricao=f"Avaliou imovel em {payload.bairro}: faixa {r.valor_minimo:.0f} - {r.valor_maximo:.0f}",
+            metadata={
+                "bairro": payload.bairro,
+                "area_util": payload.area_util,
+                "valor_central": r.valor_central,
+                "valor_minimo": r.valor_minimo,
+                "valor_maximo": r.valor_maximo,
+            },
+            referencia_id=av_id,
         )
 
     return {

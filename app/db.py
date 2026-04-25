@@ -96,6 +96,48 @@ CREATE TABLE IF NOT EXISTS avaliacoes (
     contato TEXT,
     criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- CRM / Leads
+-- ─────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT,
+    telefone TEXT,
+    email TEXT,
+    origem TEXT NOT NULL DEFAULT 'site',     -- site | simulador | avaliacao | chat | whatsapp | manual
+    estagio TEXT NOT NULL DEFAULT 'novo',     -- novo | contatado | qualificado | visita | proposta | fechado | perdido
+    temperatura TEXT NOT NULL DEFAULT 'frio', -- quente | morno | frio
+    score INTEGER NOT NULL DEFAULT 0,         -- 0-100
+    observacoes TEXT DEFAULT '',
+    responsavel_id INTEGER,                   -- usuario admin responsavel
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (responsavel_id) REFERENCES usuarios(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_leads_estagio ON leads(estagio);
+CREATE INDEX IF NOT EXISTS idx_leads_temperatura ON leads(temperatura);
+CREATE INDEX IF NOT EXISTS idx_leads_telefone ON leads(telefone);
+CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email);
+
+CREATE TABLE IF NOT EXISTS lead_interacoes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_id INTEGER NOT NULL,
+    tipo TEXT NOT NULL,                       -- simulacao | avaliacao | chat | visita | nota | email | whatsapp
+    descricao TEXT NOT NULL,
+    metadata TEXT DEFAULT '{}',                -- json com detalhes (valor_simulado, etc)
+    referencia_id INTEGER,                    -- id da simulacao/avaliacao/conversa relacionada
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_interacoes_lead ON lead_interacoes(lead_id);
+
+CREATE TABLE IF NOT EXISTS lead_tags (
+    lead_id INTEGER NOT NULL,
+    tag TEXT NOT NULL,
+    PRIMARY KEY (lead_id, tag),
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE
+);
 """
 
 

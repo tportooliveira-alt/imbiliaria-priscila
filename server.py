@@ -33,6 +33,7 @@ from app.db import init_db
 from app.dispatcher import analisar_pos_conversa, responder
 from app.lead import funnel_summary
 from app.routes_admin import router as admin_router
+from app.routes_crm import router as crm_router
 from app.routes_publicas import router as publicas_router
 
 # Carrega .env local (se existir)
@@ -64,6 +65,7 @@ class HeadersDeSeguranca(BaseHTTPMiddleware):
 
 app.add_middleware(HeadersDeSeguranca)
 app.include_router(admin_router)
+app.include_router(crm_router)
 app.include_router(publicas_router)
 
 

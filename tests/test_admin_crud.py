@@ -15,6 +15,7 @@ from PIL import Image
 def cliente(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     db_path = tmp_path / "test.db"
     monkeypatch.setenv("SITE_DB_PATH", str(db_path))
+    monkeypatch.setenv("DEV_OPEN_ADMIN", "0")
     monkeypatch.setenv(
         "JWT_SECRET",
         "test-secret-key-com-tamanho-suficiente-para-hmac-sha256-aaaaaa",
