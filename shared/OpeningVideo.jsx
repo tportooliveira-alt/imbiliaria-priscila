@@ -1,10 +1,12 @@
-// OpeningVideo — sequência cinematográfica em 3 fases:
+// OpeningVideo — sequência cinematográfica em 4 fases:
 //   FASE 1 — 18s de cenas Ken Burns (cidade, bairros, imóveis, Priscila, outro)
 //   FASE 2 — vídeo real gerado por IA (ia-falando.mp4)
-//   FASE 3 — vídeo da Priscila falando (priscila-fala.mp4) [opcional]
+//   FASE 3 — segundo vídeo gerado por IA (ia-casa.mp4)
+//   FASE 4 — vídeo da Priscila falando (priscila-fala.mp4) [opcional]
 // Props: variant = "cerulean" | "cinema" | "editorial", onSkip = fn,
 //        aspect = "21:9" | "16:9" | "full",
 //        videoIa = caminho do mp4 da IA (default ../assets/ia-falando.mp4),
+//        videoCasa = caminho do segundo mp4 (default ../assets/ia-casa.mp4),
 //        videoPriscila = caminho do mp4 da Priscila falando (opcional)
 
 function OpeningVideo({
@@ -13,14 +15,16 @@ function OpeningVideo({
   aspect = "16:9",
   assetBase = "../assets/",
   videoIa = "../assets/ia-falando.mp4",
+  videoCasa = "../assets/ia-casa.mp4",
   videoPriscila = "../assets/priscila-fala.mp4",
 }) {
-  // phase: 'kenburns' | 'video-ia' | 'video-priscila' | 'done'
+  // phase: 'kenburns' | 'video-ia' | 'video-casa' | 'video-priscila' | 'done'
   const [phase, setPhase] = React.useState("kenburns");
   const [elapsed, setElapsed] = React.useState(0);
   const DURATION = 18; // seconds da fase Ken Burns
   const startRef = React.useRef(performance.now());
   const videoIaRef = React.useRef(null);
+  const videoCasaRef = React.useRef(null);
   const videoPriscilaRef = React.useRef(null);
 
   // Loop de tempo só durante a fase Ken Burns
@@ -78,9 +82,10 @@ function OpeningVideo({
   const pct = elapsed / DURATION;
 
   const skip = () => {
-    // Avança fase a fase: kenburns → video-ia → video-priscila → done
+    // Avança fase a fase: kenburns → video-ia → video-casa → video-priscila → done
     if (phase === "kenburns") setPhase("video-ia");
-    else if (phase === "video-ia") setPhase(hasPriscilaVideo ? "video-priscila" : "done");
+    else if (phase === "video-ia") setPhase("video-casa");
+    else if (phase === "video-casa") setPhase(hasPriscilaVideo ? "video-priscila" : "done");
     else if (phase === "video-priscila") setPhase("done");
     else { setPhase("done"); onSkip && onSkip(); }
   };
@@ -90,7 +95,8 @@ function OpeningVideo({
     if (phase === "done") onSkip && onSkip();
   }, [phase]);
 
-  const handleVideoIaEnded = () => {
+  const handleVideoIaEnded = () => setPhase("video-casa");
+  const handleVideoCasaEnded = () => {
     setPhase(hasPriscilaVideo ? "video-priscila" : "done");
   };
   const handleVideoPriscilaEnded = () => setPhase("done");
@@ -138,7 +144,45 @@ function OpeningVideo({
     );
   }
 
-  // ───── FASE 3: vídeo real da Priscila falando ─────
+  // ───── FASE 3: segundo vídeo gerado por IA (casa) ─────
+  if (phase === "video-casa") {
+    return (
+      <div className={`ov ${aspectCls} ${variantCls} ov-realvideo`}>
+        <div className="ov-letterbox ov-letterbox-top" aria-hidden="true"/>
+        <div className="ov-letterbox ov-letterbox-bot" aria-hidden="true"/>
+        <video
+          ref={videoCasaRef}
+          className="ov-realvideo-el"
+          src={videoCasa}
+          autoPlay
+          muted={false}
+          playsInline
+          onEnded={handleVideoCasaEnded}
+          onError={handleVideoCasaEnded}
+        />
+        <div className="ov-hud ov-hud-tl">
+          <span className="ov-hud-dot"/>
+          <span>VÍDEO GERADO POR IA · IMÓVEL</span>
+        </div>
+        <div className="ov-hud ov-hud-tr">
+          <span className="ov-rec-dot"/>
+          <span>08 · O IMÓVEL EM FOCO</span>
+        </div>
+        <button className="ov-skip" onClick={skip}>
+          Pular
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+            <path d="M3 4l5 4-5 4M9 4l5 4-5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <span className="ov-bracket ov-br-tl"/>
+        <span className="ov-bracket ov-br-tr"/>
+        <span className="ov-bracket ov-br-bl"/>
+        <span className="ov-bracket ov-br-br"/>
+      </div>
+    );
+  }
+
+  // ───── FASE 4: vídeo real da Priscila falando ─────
   if (phase === "video-priscila") {
     return (
       <div className={`ov ${aspectCls} ${variantCls} ov-realvideo`}>
