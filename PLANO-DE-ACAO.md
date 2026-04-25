@@ -147,6 +147,108 @@ site-imobiliaria/
 
 ---
 
+## 🧮 Plano primordial — Simulador de financiamento + Avaliação de imóvel
+
+> Dois módulos comerciais que multiplicam a captura: o cliente sai do site sabendo "quanto vai pagar por mês" e "quanto a casa dele vale". Ambos viram lead automático.
+
+### Módulo A — Simulador de financiamento
+
+**Objetivo:** o visitante digita preço do imóvel + entrada + prazo e recebe parcela mensal estimada (SAC e PRICE), CET aproximado e quanto precisa de renda.
+
+**Como funciona em 3 níveis:**
+
+1. **MVP local (sem API externa) — semana 1**
+   - [ ] Calculadora 100% Python no backend (`app/financiamento.py`):
+     - SAC: amortização constante, parcela decrescente
+     - PRICE (Tabela Price): parcela fixa, juros decrescentes
+     - Entrada: `valor_imovel`, `entrada`, `prazo_meses`, `taxa_anual`
+     - Saída: `parcela_inicial`, `parcela_final`, `total_pago`, `total_juros`, `renda_minima`
+   - [ ] Endpoint `POST /api/simular-financiamento`
+   - [ ] Componente React `<SimuladorFinanciamento/>` no v3-editorial:
+     - Sliders para preço, entrada %, prazo (120/240/360 meses)
+     - Toggle SAC ↔ PRICE
+     - Gráfico simples de evolução das parcelas
+     - Botão "Quero falar com a Priscila" → joga no chat já preenchido
+   - [ ] Tabela de taxas-base por banco (Caixa, BB, Itaú, Bradesco, Santander) atualizada manualmente no `app/taxas.py` — começa estática, depois automatiza
+
+2. **Integração SBPE/Caixa — semana 2**
+   - [ ] Replicar regras do **Pró-Cotista / SBPE / Casa Verde e Amarela** (faixas de renda, % máx. financiável, idade máxima do mutuário)
+   - [ ] Validador: comparar parcela com 30% da renda informada → flag "comprometimento ok/alto"
+   - [ ] Buscar taxas atualizadas via grounding Gemini (rota `INFO_VDC` já tem Google Search) com cache diário em arquivo JSON
+
+3. **Pré-aprovação real (médio prazo)**
+   - [ ] Avaliar parceria com correspondente bancário local (CrediHome / Melhortaxa / direto Caixa)
+   - [ ] Formulário curto pré-aprovação (CPF, renda, score Serasa via API paga)
+   - [ ] Webhook do parceiro devolvendo "aprovado / análise / reprovado" no chat
+
+**Métricas-alvo:**
+- Tempo médio simulação → contato: < 2 min
+- Conversão simulação → lead qualificado: > 25%
+- Lead com renda informada vira automaticamente `stage = quente`
+
+---
+
+### Módulo B — Avaliação de imóvel (AVM editorial)
+
+**Objetivo:** dono que quer vender informa endereço/bairro + características e recebe faixa de valor estimada + relatório curto. Captura lead vendedor (lado mais escasso da imobiliária).
+
+**Como funciona em 3 níveis:**
+
+1. **MVP heurístico — semana 1**
+   - [ ] Base de m² médio por bairro de VDC em `app/m2_vdc.py` (Candeias, Boa Vista, Recreio, Patagônia, Centro, Ibirapuera, Alto Maron, Guarani, Primavera, Felícia, Urbis)
+   - [ ] Fórmula: `valor = m2_bairro × area × fator_padrão × fator_idade × fator_estado`
+     - `fator_padrão`: simples / médio / alto / luxo
+     - `fator_idade`: novo / 0-10 / 10-20 / 20+
+     - `fator_estado`: reformado / bom / regular / precisa reforma
+   - [ ] Endpoint `POST /api/avaliar-imovel`
+   - [ ] Componente `<AvaliacaoImovel/>` com:
+     - Stepper de 5 perguntas (bairro, tipo, área, quartos, padrão/estado)
+     - Resultado: faixa mínima/máxima + texto editorial gerado pelo Claude Sonnet
+     - "Quer que eu faça uma avaliação presencial?" → vira lead de captação
+
+2. **Análise multimodal — semana 2**
+   - [ ] Upload de até 5 fotos do imóvel
+   - [ ] Gemini 2.5 Pro (rota `VISAO`) descreve o que vê: padrão de acabamento, estado de conservação, pontos fortes/fracos
+   - [ ] Ajusta os fatores automaticamente com base na análise da imagem
+   - [ ] Gera mini-relatório PDF (ReportLab) com fotos + faixa de valor + texto
+
+3. **Comparativo de mercado — médio prazo**
+   - [ ] Scraper leve em imóveis ativos da própria Priscila + portais (OLX/Vivareal/Zap) com `httpx` + parser
+   - [ ] Banco SQLite com histórico de preços por bairro
+   - [ ] Modelo de regressão simples (`scikit-learn`) treinado com 100-200 imóveis reais
+   - [ ] Atualização semanal automática
+
+**Métricas-alvo:**
+- Cada avaliação online vira contato em até 48h
+- Captação de imóveis para vender: meta 5 novos/mês via canal digital
+- Relatório PDF entregue como brinde mesmo se o lead não converter (marketing orgânico)
+
+---
+
+### Ordem sugerida de execução
+
+1. **Semana 1** — Simulador MVP (calculadora pura) + Avaliação MVP (heurística por bairro)
+   - Os dois ficam prontos no mesmo sprint pois compartilham a base de dados de VDC.
+2. **Semana 2** — Multimodal nas duas pontas (Gemini Pro com Search no simulador, Gemini Pro com fotos na avaliação)
+3. **Semana 3** — Tracking integrado: cada simulação/avaliação alimenta o `/api/funnel` com novo estágio `simulou_financiamento` e `pediu_avaliacao`
+4. **Semana 4** — Geração de PDF + envio por e-mail/WhatsApp
+5. **Mês 2** — Pré-aprovação real e scraper de comparativos
+
+### Dependências técnicas novas
+
+- [ ] `numpy` + `pandas` (cálculo financeiro e dataset de m²)
+- [ ] `reportlab` (PDF do relatório de avaliação)
+- [ ] `recharts` ou `chart.js` no frontend (gráfico do simulador)
+- [ ] Tabela `simulacoes` e `avaliacoes` no banco SQLite local
+
+### Testes obrigatórios (regra do projeto: sempre testar)
+
+- [ ] `tests/test_financiamento.py`: SAC vs PRICE, casos de borda (entrada 0%, prazo mínimo, taxa zero)
+- [ ] `tests/test_avaliacao.py`: cada bairro retorna faixa coerente, fatores aplicam corretamente
+- [ ] `tests/test_server_simulacao.py`: endpoints respondem 200 + payload validado
+
+---
+
 ## 📝 Histórico de commits
 
 - `c16b9fb` — Inicial: site v3-editorial com vídeos de abertura encadeados
