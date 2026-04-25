@@ -44,6 +44,8 @@ def test_chat_aceita_mensagem_simples(client: TestClient) -> None:
     body = r.json()
     assert body["rota"] == "triagem"
     assert body["resposta"]
+    assert "lead_score" in body
+    assert "lead_stage" in body
 
 
 def test_chat_classifica_negociacao(client: TestClient) -> None:
@@ -77,6 +79,28 @@ def test_chat_aceita_historico(client: TestClient) -> None:
         ],
     })
     assert r.status_code == 200
+
+
+def test_analisar_lead_responde_200(client: TestClient) -> None:
+    r = client.post("/api/analisar-lead", json={
+        "history": [
+            {"role": "user", "content": "quero comprar em Candeias"},
+            {"role": "assistant", "content": "qual faixa de investimento?"},
+            {"role": "user", "content": "ate 700 mil"},
+        ],
+    })
+    assert r.status_code == 200
+    body = r.json()
+    assert "resumo" in body
+    assert "lead_stage" in body
+
+
+def test_funnel_responde_200(client: TestClient) -> None:
+    r = client.get("/api/funnel")
+    assert r.status_code == 200
+    body = r.json()
+    assert "total" in body
+    assert "stages" in body
 
 
 # ─────────────────────────────────────────────────────────────────────────────

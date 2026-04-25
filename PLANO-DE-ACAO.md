@@ -13,7 +13,7 @@
 
 Site editorial com **IA híbrida (Gemini + Claude)** que:
 
-1. Abre com vídeo cinematográfico (vídeo prédios → vídeo Priscila falando → IA ativa)
+1. Abre com vídeo cinematográfico (Ken Burns → IA falando → IA casa → Priscila opcional → site)
 2. Capta lead via chat real plugado em modelos de IA
 3. Faz triagem + qualificação + busca de imóvel + negociação
 4. Roda local em `http://localhost:8000` agora; depois sobe para VPS
@@ -25,13 +25,14 @@ Site editorial com **IA híbrida (Gemini + Claude)** que:
 ```
 Mensagem chega
    ↓
-[Roteador — Gemini Flash, ~3ms]
-   ├─ Triagem simples       → Gemini Flash       (R$ 0,30/1M tok)
-   ├─ Pergunta sobre VDC    → Gemini Pro+Search  (info Google em tempo real)
+[Roteador — Gemini 2.5 Flash, baixa latência]
+   ├─ Triagem simples       → Gemini 2.5 Flash
+   ├─ Pergunta sobre VDC    → Gemini 2.5 Pro + Search grounding
    ├─ Negociar lead quente  → Claude Sonnet      (PT-BR formal, fechamento)
-   ├─ Avaliar imóvel        → Gemini Pro Vision  (foto + preço)
+   ├─ Avaliar imóvel        → Gemini 2.5 Pro     (foto + leitura multimodal)
    ├─ Descrição editorial   → Claude Sonnet      (texto rico, tom revista)
-   └─ Follow-up frio        → Claude Haiku       (barato, cordial)
+   ├─ Follow-up frio        → Claude Haiku       (barato, cordial)
+   └─ Análise pós-conversa  → Gemini 2.5 Pro     (resumo executivo + score do lead)
 ```
 
 **Custo estimado:** ~R$ 170/mês para 3.000 conversas (vs R$ 400 só Claude).
@@ -74,48 +75,49 @@ site-imobiliaria/
 ## 📍 PASSO A PASSO
 
 ### Etapa 0 — Higiene & segurança
-- [ ] Mover `notas.txt` (chaves de API) de `Desktop` (OneDrive) para `C:\segredos\notas.txt` (fora da nuvem)
-- [ ] Confirmar que `.gitignore` cobre `.env`, `notas.txt`, `chave*`, `secrets/`
+- [x] Copiar `notas.txt` (chaves de API) para `C:\segredos\notas.txt` (fora da nuvem)
+- [ ] Apagar `notas.txt` original do OneDrive (`C:\Users\Thiago Porto\OneDrive\Desktop\notas.txt`)
+- [x] Confirmar que `.gitignore` cobre `.env`, `notas.txt`, `chave*`, `secrets/`
 - [ ] Resolver resíduos do IObit Uninstaller (pasta + serviço `IObitUnSvr` parado)
 
 ### Etapa 1 — Restaurar mídias da abertura
-- [ ] Decidir nomes finais: `predios.mp4` → `priscila-fala.mp4` → (futuro) `ia-falando.mp4`
-- [ ] Restaurar `predios.mp4` e `priscila-new-hero.jpeg` se forem necessários
-- [ ] Adicionar **vídeo da IA falando** logo depois do vídeo da Priscila (pedido explícito)
-- [ ] Garantir encadeamento: prédios → Priscila → IA → site fica visível
+- [x] Decidir nomes finais de vídeos atuais: `ia-falando.mp4` + `ia-casa.mp4` + `priscila-fala.mp4` (opcional)
+- [x] Restaurar estrutura completa de assets/shared e imagem `priscila-new-hero.jpeg`
+- [x] Adicionar vídeo da IA e segundo vídeo na sequência de abertura
+- [x] Garantir encadeamento atual: Ken Burns → IA falando → IA casa → Priscila opcional → site
 
 ### Etapa 2 — Backend (server.py)
-- [ ] Criar `.env.exemplo` com `GOOGLE_API_KEY=` e `ANTHROPIC_API_KEY=`
-- [ ] Criar `server.py` (FastAPI) com:
-  - [ ] Endpoint `POST /api/chat` recebendo `{message, history}`
-  - [ ] Função `roteador()` que classifica a mensagem (triagem/vdc/negociacao/visao/descricao/followup)
-  - [ ] Cliente Gemini (Flash + Pro com Search)
-  - [ ] Cliente Claude (Sonnet + Haiku)
-  - [ ] Fallback automático se uma chave estiver faltando
-  - [ ] CORS liberado para `localhost`
-  - [ ] Servir arquivos estáticos de `v3-editorial/`
-- [ ] Criar `python-dotenv` carregando `.env`
+- [x] Criar `.env.exemplo` com `GOOGLE_API_KEY=` e `ANTHROPIC_API_KEY=`
+- [x] Criar `server.py` (FastAPI) com:
+   - [x] Endpoint `POST /api/chat` recebendo `{message, history}`
+   - [x] Função `roteador()` que classifica a mensagem (triagem/vdc/negociacao/visao/descricao/followup)
+   - [x] Cliente Gemini (Flash + Pro com Search)
+   - [x] Cliente Claude (Sonnet + Haiku)
+   - [x] Fallback automático se uma chave estiver faltando
+   - [x] CORS liberado para `localhost`
+   - [x] Servir arquivos estáticos de `v3-editorial/`
+- [x] Criar `python-dotenv` carregando `.env`
 
 ### Etapa 3 — Frontend conectado
-- [ ] Localizar widget de chat no `v3-editorial/index.html`
-- [ ] Substituir mock por `fetch('/api/chat', ...)` real
+- [x] Localizar widget de chat no `v3-editorial/index.html`
+- [x] Substituir mock por `fetch('/api/chat', ...)` real
 - [ ] Streaming opcional (SSE) para resposta token-a-token
-- [ ] Tratar erros (rate limit, chave inválida, modelo offline)
+- [x] Tratar erros básicos de conexão/offline no chat
 
 ### Etapa 4 — Dados de Vitória da Conquista
-- [ ] Tabela de bairros (Candeias, Boa Vista, Recreio, Patagônia, Centro, etc.)
-- [ ] Catálogo inicial de imóveis (mock JSON ou tabela simples)
-- [ ] Prompts do sistema com tom da Priscila
+- [x] Tabela de bairros (Candeias, Boa Vista, Recreio, Patagônia, Centro, etc.)
+- [x] Catálogo inicial de imóveis (mock JSON)
+- [x] Prompts do sistema com tom da Priscila
 
 ### Etapa 5 — Rodar local
-- [ ] `python -m venv venv && .\venv\Scripts\Activate.ps1`
-- [ ] `pip install -r requirements.txt`
+- [x] `python -m venv venv && .\venv\Scripts\Activate.ps1`
+- [x] `pip install -r requirements.txt`
 - [ ] Renomear `.env.exemplo` → `.env` e colar as 2 chaves
-- [ ] `python server.py` → abrir `http://localhost:8000`
-- [ ] Testar 5 fluxos: oi / preço / "como é Candeias?" / "quero ver foto" / "tô interessado"
+- [x] `python server.py` (via uvicorn) e abrir `http://localhost:8000`
+- [x] Testar 5 fluxos com chaves reais: oi / preço / "como é Candeias?" / "quero ver foto" / "tô interessado"
 
 ### Etapa 6 — Versionamento
-- [ ] Commits incrementais por etapa
+- [x] Commits incrementais por etapa
 - [ ] Criar repositório no GitHub (privado) e fazer push
 - [ ] Adicionar README com instruções de setup
 

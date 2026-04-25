@@ -27,7 +27,8 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from app.dispatcher import responder
+from app.dispatcher import analisar_pos_conversa, responder
+from app.lead import funnel_summary
 
 # Carrega .env local (se existir)
 load_dotenv()
@@ -65,6 +66,24 @@ class ChatResponse(BaseModel):
     modelo: str
     fallback: bool
     resposta: str
+    lead_score: int
+    lead_stage: str
+    lead_next_question: str
+    lead_fields: dict[str, bool]
+
+
+class LeadAnalysisRequest(BaseModel):
+    history: list[MensagemHistorico] = Field(default_factory=list)
+
+
+class LeadAnalysisResponse(BaseModel):
+    modelo: str
+    fallback: bool
+    resumo: str
+    lead_score: int
+    lead_stage: str
+    lead_next_question: str
+    lead_fields: dict[str, bool]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -84,6 +103,18 @@ def chat(req: ChatRequest) -> ChatResponse:
     historico = [m.model_dump() for m in req.history]
     out = responder(req.message, historico=historico, tem_imagem=req.has_image)
     return ChatResponse(**out)
+
+
+@app.post("/api/analisar-lead", response_model=LeadAnalysisResponse)
+def analisar_lead(req: LeadAnalysisRequest) -> LeadAnalysisResponse:
+    historico = [m.model_dump() for m in req.history]
+    out = analisar_pos_conversa(historico)
+    return LeadAnalysisResponse(**out)
+
+
+@app.get("/api/funnel")
+def funnel() -> dict:
+    return funnel_summary()
 
 
 # ─────────────────────────────────────────────────────────────────────────────

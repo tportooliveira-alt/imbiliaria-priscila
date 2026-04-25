@@ -10,6 +10,7 @@ function AIChat({ variant = "cerulean" }) {
   const [typing, setTyping] = React.useState(false);
   const [input, setInput] = React.useState("");
   const [showTeaser, setShowTeaser] = React.useState(false);
+  const [netError, setNetError] = React.useState("");
   const bodyRef = React.useRef(null);
 
   // Scroll to bottom on new message
@@ -24,17 +25,47 @@ function AIChat({ variant = "cerulean" }) {
     return () => clearTimeout(t);
   }, [open]);
 
-  const send = text => {
+  const toApiHistory = list => list
+    .filter(m => m.role === "user" || m.role === "ai")
+    .slice(-12)
+    .map(m => ({
+      role: m.role === "ai" ? "assistant" : "user",
+      content: m.text,
+    }));
+
+  const send = async text => {
     const userText = (text ?? input).trim();
     if (!userText) return;
+
+    setNetError("");
     setMsgs(m => [...m, { role: "user", text: userText, t: Date.now() }]);
     setInput("");
     setTyping(true);
-    // Typing delay based on response length feel (~1.2s)
-    setTimeout(() => {
+
+    const historyPayload = toApiHistory(msgs);
+
+    try {
+      const r = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: userText,
+          history: historyPayload,
+        }),
+      });
+
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status}`);
+      }
+
+      const data = await r.json();
       setTyping(false);
+      setMsgs(m => [...m, { role: "ai", text: data.resposta || "Sem resposta no momento.", t: Date.now() }]);
+    } catch (err) {
+      setTyping(false);
+      setNetError("Conexao instavel. Vou te responder em modo local.");
       setMsgs(m => [...m, { role: "ai", text: window.aiChatResponse(userText), t: Date.now() }]);
-    }, 1200 + Math.random() * 600);
+    }
   };
 
   const sugestoesVisiveis = msgs.length <= 2;
@@ -82,6 +113,12 @@ function AIChat({ variant = "cerulean" }) {
           </header>
 
           <div className="aic-body" ref={bodyRef}>
+            {netError && (
+              <div className="aic-msg aic-msg-ai">
+                <span className="aic-msg-mark">IA</span>
+                <div className="aic-bubble-msg">{netError}</div>
+              </div>
+            )}
             {msgs.map((m, i) => (
               <div key={i} className={`aic-msg aic-msg-${m.role}`}>
                 {m.role === "ai" && <span className="aic-msg-mark">IA</span>}
