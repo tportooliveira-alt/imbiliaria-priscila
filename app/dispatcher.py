@@ -42,36 +42,49 @@ _FABRICAS_FAILOVER: dict[Rota, callable] = {
 }
 
 
-def cliente_para(rota: Rota) -> LLMClient:
-    cliente = _FABRICAS[rota]()
+def _construir(fabricas: dict[Rota, callable], rota: Rota) -> LLMClient:
+    cliente = fabricas[rota]()
     if not cliente.available():
         return ClienteFallback()
     return cliente
+
+
+def cliente_para(rota: Rota) -> LLMClient:
+    return _construir(_FABRICAS, rota)
 
 
 def cliente_failover_para(rota: Rota) -> LLMClient:
-    cliente = _FABRICAS_FAILOVER[rota]()
-    if not cliente.available():
-        return ClienteFallback()
-    return cliente
+    return _construir(_FABRICAS_FAILOVER, rota)
+
+
+def _cascata(rota: Rota, system: str, mensagem: str, historico: list[dict] | None) -> RespostaLLM:
+    """Tenta primário, depois secundário, depois fallback estático.
+
+    Cada provedor entra automaticamente se o anterior falhar (sem chave,
+    erro de rede, cota etc.).
+    """
+    primario = _construir(_FABRICAS, rota)
+    if not isinstance(primario, ClienteFallback):
+        resp = primario.gerar(system, mensagem, historico)
+        if not resp.fallback:
+            return resp
+
+    secundario = _construir(_FABRICAS_FAILOVER, rota)
+    if not isinstance(secundario, ClienteFallback):
+        resp2 = secundario.gerar(system, mensagem, historico)
+        if not resp2.fallback:
+            return resp2
+
+    return ClienteFallback().gerar(system, mensagem, historico)
 
 
 def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem: bool = False) -> dict:
-    """Pipeline completo: classifica → escolhe cliente → gera resposta."""
+    """Pipeline completo: classifica → cascata Gemini → Claude → fallback."""
     cls = classificar(mensagem, tem_imagem=tem_imagem)
     lead = qualify_lead(mensagem, history=historico)
     system = system_prompt(cls.rota)
 
-    cliente = cliente_para(cls.rota)
-    resp: RespostaLLM = cliente.gerar(system, mensagem, historico)
-
-    # Se o provedor primário falhar, tenta o secundário automaticamente.
-    if resp.fallback and not isinstance(cliente, ClienteFallback):
-        secundario = cliente_failover_para(cls.rota)
-        if not isinstance(secundario, ClienteFallback):
-            tentativa2 = secundario.gerar(system, mensagem, historico)
-            if not tentativa2.fallback:
-                resp = tentativa2
+    resp = _cascata(cls.rota, system, mensagem, historico)
 
     track_stage(lead.stage)
 
@@ -91,17 +104,25 @@ def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem:
 
 
 def analisar_pos_conversa(historico: list[dict]) -> dict:
-    """Resume e qualifica uma conversa finalizada para uso da corretora."""
+    """Resume e qualifica uma conversa finalizada (cascata Gemini → Claude)."""
     joined = "\n".join(f"{m.get('role', 'user')}: {m.get('content', '')}" for m in historico)
     lead = qualify_lead("", history=historico)
+    system = analysis_prompt()
+
+    resp: RespostaLLM = ClienteFallback().gerar(system, joined)
 
     primario = ClienteGemini(MODEL_GEMINI_PRO)
-    resp = primario.gerar(analysis_prompt(), joined)
+    if primario.available():
+        tentativa = primario.gerar(system, joined)
+        if not tentativa.fallback:
+            resp = tentativa
+
     if resp.fallback:
         secundario = ClienteClaude(MODEL_CLAUDE_SONNET)
-        resp2 = secundario.gerar(analysis_prompt(), joined)
-        if not resp2.fallback:
-            resp = resp2
+        if secundario.available():
+            tentativa2 = secundario.gerar(system, joined)
+            if not tentativa2.fallback:
+                resp = tentativa2
 
     return {
         "modelo": resp.modelo,

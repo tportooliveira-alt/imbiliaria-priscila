@@ -120,6 +120,33 @@ def test_failover_para_secundario_quando_primario_falha(monkeypatch: pytest.Monk
     assert out["fallback"] is False
 
 
+def test_cascata_pula_primario_indisponivel_e_usa_secundario(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Se Gemini estiver sem chave, Claude entra direto sem cair em fallback estatico."""
+    class PrimarioIndisponivel:
+        def available(self) -> bool:
+            return False
+
+        def gerar(self, system: str, mensagem: str, historico=None):
+            from app.clients import RespostaLLM
+            return RespostaLLM(texto="nao deveria ser chamado", modelo="primario", fallback=True)
+
+    class SecundarioOk:
+        def available(self) -> bool:
+            return True
+
+        def gerar(self, system: str, mensagem: str, historico=None):
+            from app.clients import RespostaLLM
+            return RespostaLLM(texto="resposta claude", modelo="claude-haiku-4-5", fallback=False)
+
+    monkeypatch.setitem(dispatcher._FABRICAS, Rota.INFO_VDC, lambda: PrimarioIndisponivel())
+    monkeypatch.setitem(dispatcher._FABRICAS_FAILOVER, Rota.INFO_VDC, lambda: SecundarioOk())
+
+    out = responder("quero saber sobre o bairro Candeias")
+    assert out["rota"] == Rota.INFO_VDC.value
+    assert out["modelo"] == "claude-haiku-4-5"
+    assert out["fallback"] is False
+
+
 def test_analisar_pos_conversa_sem_chave(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
