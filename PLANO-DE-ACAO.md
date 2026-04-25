@@ -157,19 +157,19 @@ site-imobiliaria/
 
 **Como funciona em 3 níveis:**
 
-1. **MVP local (sem API externa) — semana 1**
-   - [ ] Calculadora 100% Python no backend (`app/financiamento.py`):
+1. **MVP local (sem API externa) — semana 1** ✅ FEITO 25/04/2026
+   - [x] Calculadora 100% Python no backend (`app/financiamento.py`):
      - SAC: amortização constante, parcela decrescente
      - PRICE (Tabela Price): parcela fixa, juros decrescentes
      - Entrada: `valor_imovel`, `entrada`, `prazo_meses`, `taxa_anual`
      - Saída: `parcela_inicial`, `parcela_final`, `total_pago`, `total_juros`, `renda_minima`
-   - [ ] Endpoint `POST /api/simular-financiamento`
-   - [ ] Componente React `<SimuladorFinanciamento/>` no v3-editorial:
+   - [x] Endpoint `POST /api/simular-financiamento`
+   - [x] Componente React `<SimuladorFinanciamento/>` no v3-editorial:
      - Sliders para preço, entrada %, prazo (120/240/360 meses)
      - Toggle SAC ↔ PRICE
      - Gráfico simples de evolução das parcelas
      - Botão "Quero falar com a Priscila" → joga no chat já preenchido
-   - [ ] Tabela de taxas-base por banco (Caixa, BB, Itaú, Bradesco, Santander) atualizada manualmente no `app/taxas.py` — começa estática, depois automatiza
+   - [x] Tabela de taxas-base por banco (Caixa SBPE, Pró-Cotista, BB, Itaú, Bradesco, Santander) em `app/financiamento.py::TAXAS_BANCOS`
 
 2. **Integração SBPE/Caixa — semana 2**
    - [ ] Replicar regras do **Pró-Cotista / SBPE / Casa Verde e Amarela** (faixas de renda, % máx. financiável, idade máxima do mutuário)
@@ -194,17 +194,18 @@ site-imobiliaria/
 
 **Como funciona em 3 níveis:**
 
-1. **MVP heurístico — semana 1**
-   - [ ] Base de m² médio por bairro de VDC em `app/m2_vdc.py` (Candeias, Boa Vista, Recreio, Patagônia, Centro, Ibirapuera, Alto Maron, Guarani, Primavera, Felícia, Urbis)
-   - [ ] Fórmula: `valor = m2_bairro × area × fator_padrão × fator_idade × fator_estado`
+1. **MVP heurístico — semana 1** ✅ FEITO 25/04/2026
+   - [x] Base de m² médio por bairro de VDC em `app/m2_vdc.py` (14 bairros: Candeias, Boa Vista, Recreio, Patagônia, Centro, Ibirapuera, Alto Maron, Guarani, Primavera, Felícia, Urbis, Brasil, Panorama, Bateias)
+   - [x] Fórmula: `valor = m2_bairro × area × fator_padrão × fator_idade × fator_estado × fator_extras`
      - `fator_padrão`: simples / médio / alto / luxo
      - `fator_idade`: novo / 0-10 / 10-20 / 20+
      - `fator_estado`: reformado / bom / regular / precisa reforma
-   - [ ] Endpoint `POST /api/avaliar-imovel`
-   - [ ] Componente `<AvaliacaoImovel/>` com:
-     - Stepper de 5 perguntas (bairro, tipo, área, quartos, padrão/estado)
-     - Resultado: faixa mínima/máxima + texto editorial gerado pelo Claude Sonnet
-     - "Quer que eu faça uma avaliação presencial?" → vira lead de captação
+     - `fator_extras`: suíte +3%, vaga +2-4%, área externa +5%, 4+ quartos +4%
+   - [x] Endpoint `POST /api/avaliar-imovel`
+   - [x] Componente `<AvaliacaoImovel/>` com:
+     - Stepper de 5 perguntas (bairro, área, quartos+suítes+vagas, padrão+estado, idade+área externa)
+     - Resultado: faixa mínima/máxima + texto editorial (fallback estático, Claude na semana 2)
+     - "Quer avaliação presencial?" → vira lead de captação via chat
 
 2. **Análise multimodal — semana 2**
    - [ ] Upload de até 5 fotos do imóvel

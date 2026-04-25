@@ -62,6 +62,40 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     quando TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_login_ip ON login_attempts(ip, quando);
+
+CREATE TABLE IF NOT EXISTS simulacoes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    valor_imovel REAL NOT NULL,
+    entrada REAL NOT NULL,
+    prazo_meses INTEGER NOT NULL,
+    taxa_anual REAL NOT NULL,
+    sistema TEXT NOT NULL,
+    parcela_inicial REAL NOT NULL,
+    total_pago REAL NOT NULL,
+    renda_minima REAL NOT NULL,
+    nome TEXT,
+    contato TEXT,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS avaliacoes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bairro TEXT NOT NULL,
+    area_util REAL NOT NULL,
+    quartos INTEGER DEFAULT 0,
+    suites INTEGER DEFAULT 0,
+    vagas INTEGER DEFAULT 0,
+    padrao TEXT,
+    estado TEXT,
+    idade TEXT,
+    valor_central REAL NOT NULL,
+    valor_minimo REAL NOT NULL,
+    valor_maximo REAL NOT NULL,
+    confianca TEXT,
+    nome TEXT,
+    contato TEXT,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 

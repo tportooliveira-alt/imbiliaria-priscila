@@ -1,0 +1,138 @@
+/* Simulador de financiamento + Avaliacao de imovel — estilo editorial */
+.sim-fin, .aval-stepper, .aval-result {
+  max-width: 1100px;
+  margin: 80px auto;
+  padding: 56px 48px;
+  background: #faf7ee;
+  border: 1px solid #d8d2c1;
+  border-radius: 4px;
+}
+.sim-head, .aval-head { text-align: center; margin-bottom: 40px; }
+.sim-eyebrow, .aval-eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: #2d4a3e;
+  margin-bottom: 8px;
+}
+.sim-head h2, .aval-head h2, .aval-result h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-size: 34px;
+  margin: 0 0 8px;
+  color: #1a1a1a;
+}
+.sim-head p { color: #555; margin: 0; font-size: 15px; }
+
+.sim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: start;
+}
+.sim-form { display: flex; flex-direction: column; gap: 22px; }
+.sim-field label { display: block; font-size: 13px; color: #555; margin-bottom: 8px; }
+.sim-field label strong { color: #1a1a1a; font-weight: 500; }
+.sim-field input[type="range"] { width: 100%; accent-color: #2d4a3e; }
+.sim-field input[type="number"] {
+  width: 100%; padding: 10px 12px; border: 1px solid #d8d2c1; background: #fff; border-radius: 4px;
+}
+.sim-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.sim-prazo, .sim-toggle { display: flex; gap: 6px; flex-wrap: wrap; }
+.sim-prazo button, .sim-toggle button {
+  padding: 8px 14px; border: 1px solid #d8d2c1; background: #fff; border-radius: 4px; font-size: 13px;
+}
+.sim-prazo button.is-active, .sim-toggle button.is-active {
+  background: #2d4a3e; color: #fff; border-color: #2d4a3e;
+}
+.sim-cta, .aval-cta {
+  padding: 14px 28px;
+  background: #2d4a3e;
+  color: #fff;
+  border: 0;
+  font-size: 13px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.sim-cta:disabled, .aval-cta:disabled { opacity: .5; cursor: not-allowed; }
+.sim-erro { color: #a23a2c; font-size: 13px; margin-top: 8px; }
+
+.sim-resultado { background: #fff; padding: 32px; border-radius: 6px; border: 1px solid #d8d2c1; }
+.sim-parcela { text-align: center; margin-bottom: 24px; }
+.sim-parcela span { display: block; font-size: 12px; color: #555; letter-spacing: .12em; text-transform: uppercase; }
+.sim-parcela strong { display: block; font-size: 42px; font-family: Georgia, serif; color: #2d4a3e; line-height: 1.1; margin-top: 4px; }
+.sim-parcela small { display: block; font-size: 12px; color: #888; margin-top: 4px; }
+
+.sim-stats { list-style: none; padding: 0; margin: 0 0 20px; border-top: 1px solid #eee2c8; }
+.sim-stats li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee2c8; font-size: 14px; }
+.sim-stats span { color: #555; }
+
+.sim-flag { padding: 10px 14px; border-radius: 4px; font-size: 13px; margin-bottom: 16px; }
+.sim-flag.ok { background: #e8f3ec; color: #2d6a4f; }
+.sim-flag.alta { background: #fcebea; color: #a23a2c; }
+
+.sim-grafico { margin: 20px 0; }
+.sim-grafico-titulo { display: block; font-size: 12px; color: #555; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; }
+.sim-bars { display: flex; gap: 4px; align-items: flex-end; height: 80px; }
+.sim-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.sim-bar-fill { width: 100%; background: linear-gradient(180deg, #4a7062, #2d4a3e); border-radius: 2px 2px 0 0; min-height: 4px; }
+.sim-bar small { font-size: 10px; color: #888; }
+
+.sim-fechar {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  background: transparent;
+  color: #2d4a3e;
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  border: 1px solid #2d4a3e;
+  border-radius: 4px;
+}
+.sim-fechar:hover { background: #2d4a3e; color: #fff; }
+
+/* Avaliacao */
+.aval-progress { display: flex; gap: 6px; justify-content: center; margin-top: 20px; }
+.aval-progress span { width: 36px; height: 3px; background: #d8d2c1; border-radius: 2px; }
+.aval-progress span.is-active { background: #2d4a3e; }
+
+.aval-corpo h3 { font-family: Georgia, serif; font-weight: 400; font-size: 22px; text-align: center; margin: 0 0 24px; }
+.aval-corpo input[type="number"], .aval-corpo select {
+  width: 100%; padding: 12px; border: 1px solid #d8d2c1; background: #fff; border-radius: 4px; font-size: 16px;
+}
+.aval-hint { display: inline-block; margin-left: 8px; color: #888; }
+.aval-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.aval-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.aval-grid3 label { display: block; }
+.aval-grid3 label > span, .aval-corpo label { font-size: 12px; color: #555; letter-spacing: .1em; text-transform: uppercase; }
+.aval-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.aval-chips button {
+  padding: 8px 14px; border: 1px solid #d8d2c1; background: #fff; border-radius: 999px; font-size: 13px; cursor: pointer;
+}
+.aval-chips button.is-active { background: #2d4a3e; color: #fff; border-color: #2d4a3e; }
+.aval-check { display: flex; align-items: center; gap: 8px; margin-top: 18px; font-size: 14px; color: #1a1a1a; text-transform: none; letter-spacing: 0; }
+.aval-check input { width: auto; }
+.aval-nav { display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; }
+.btn-secondary { padding: 14px 24px; background: #fff; border: 1px solid #d8d2c1; border-radius: 4px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+
+.aval-result .aval-faixa { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 12px; margin: 32px 0; align-items: end; }
+.aval-min, .aval-max, .aval-central { background: #fff; padding: 20px; text-align: center; border: 1px solid #d8d2c1; border-radius: 4px; }
+.aval-central { background: #2d4a3e; color: #fff; padding: 32px 20px; border-color: #2d4a3e; }
+.aval-min small, .aval-max small, .aval-central small { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .8; margin-bottom: 6px; }
+.aval-min strong, .aval-max strong { font-size: 18px; color: #1a1a1a; font-weight: 500; }
+.aval-central strong { font-size: 28px; font-family: Georgia, serif; font-weight: 400; }
+.aval-texto { font-size: 16px; line-height: 1.6; color: #333; max-width: 720px; margin: 0 auto 16px; text-align: center; }
+.aval-confianca { text-align: center; font-size: 13px; color: #555; margin-bottom: 24px; }
+.aval-acoes { display: flex; gap: 12px; justify-content: center; }
+
+@media (max-width: 720px) {
+  .sim-fin, .aval-stepper, .aval-result { padding: 32px 20px; margin: 32px 16px; }
+  .sim-grid, .aval-grid2, .aval-grid3 { grid-template-columns: 1fr; gap: 24px; }
+  .sim-head h2, .aval-head h2 { font-size: 24px; }
+  .aval-result .aval-faixa { grid-template-columns: 1fr; }
+}

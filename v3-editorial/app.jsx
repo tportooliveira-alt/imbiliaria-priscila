@@ -88,6 +88,9 @@ function App() {
       {/* ═══════ IMÓVEIS ═══════ */}
       <PropertyGrid filter={filter} variant="editorial" subtitle="A IA já cruzou perfil, orçamento e bairro. Estes são os matches."/>
 
+      {/* ═══════ SIMULADOR DE FINANCIAMENTO ═══════ */}
+      <SimuladorFinanciamento/>
+
       {/* ═══════ MANIFESTO / QUOTE ═══════ */}
       <section className="manifestoH">
         <div className="manifestoH-inner">
@@ -182,6 +185,9 @@ function App() {
           </div>
         </div>
       </section>
+
+      {/* ═══════ AVALIACAO DE IMOVEL ═══════ */}
+      <AvaliacaoImovel/>
 
       {/* ═══════ CTA ═══════ */}
       <section className="ctaH" id="contato">
