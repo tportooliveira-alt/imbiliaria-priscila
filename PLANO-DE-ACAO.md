@@ -249,6 +249,128 @@ site-imobiliaria/
 
 ---
 
+## 🔐 Painel admin da Priscila + galeria/carrossel + políticas de URL
+
+> Hoje o catálogo de imóveis é estático em `shared/data.jsx`. Para escalar, a Priscila precisa de uma área logada onde ela mesma cadastra/edita imóveis com várias fotos preservando a qualidade, e o site precisa de URLs amigáveis e seguras.
+
+### Módulo C — Área de login da corretora
+
+**Objetivo:** Priscila acessa `/admin`, faz login e cadastra/edita imóveis sem mexer em código.
+
+1. **Autenticação — semana 1**
+   - [ ] Tabela `usuarios` em SQLite (`app/db.py`): `id`, `email`, `senha_hash` (bcrypt), `role` (`admin` | `corretor`), `criado_em`
+   - [ ] Endpoints:
+     - `POST /api/auth/login` → JWT (`PyJWT`) com expiração de 8h
+     - `POST /api/auth/logout`
+     - `GET /api/auth/me`
+   - [ ] Middleware `requer_admin` para proteger rotas `/api/admin/*`
+   - [ ] Rate limit no login (5 tentativas / 15 min) para evitar brute force
+   - [ ] Variável `.env`: `JWT_SECRET=` (gerada com `secrets.token_urlsafe(64)`)
+
+2. **CRUD de imóveis — semana 1**
+   - [ ] Tabela `imoveis`: `id`, `slug`, `titulo`, `bairro`, `tipo`, `quartos`, `suites`, `vagas`, `area_util`, `preco`, `descricao`, `caracteristicas` (JSON), `destaque` (bool), `ativo` (bool), `criado_em`, `atualizado_em`
+   - [ ] Tabela `imagens`: `id`, `imovel_id` (FK), `arquivo`, `legenda`, `ordem`, `tipo` (`capa` | `sala` | `cozinha` | `quarto` | `banheiro` | `area_externa` | `planta`)
+   - [ ] Endpoints:
+     - `GET /api/imoveis` (público, com filtros)
+     - `GET /api/imoveis/{slug}` (público)
+     - `POST /api/admin/imoveis` (cria)
+     - `PUT /api/admin/imoveis/{id}` (edita)
+     - `DELETE /api/admin/imoveis/{id}` (soft delete via `ativo=false`)
+     - `POST /api/admin/imoveis/{id}/imagens` (upload múltiplo)
+     - `PUT /api/admin/imoveis/{id}/imagens/ordem` (reordenar)
+     - `DELETE /api/admin/imagens/{id}`
+
+3. **Painel React em `/admin` — semana 2**
+   - [ ] Tela de login editorial (mesmo tom do site)
+   - [ ] Lista de imóveis com busca + ordenação + toggle ativo/destaque
+   - [ ] Formulário de imóvel com:
+     - Campos básicos (título, preço, bairro, etc.)
+     - Drop zone de imagens (drag-drop múltiplo, preview, reordenar arrastando)
+     - Editor de descrição com botão "✨ Reescrever com IA" (chama Claude Sonnet)
+     - Sugestão automática de tags pela IA com base nas fotos (Gemini Pro Vision)
+   - [ ] "Visualizar como visitante" antes de publicar
+
+### Módulo D — Galeria + carrossel ao clicar na foto
+
+**Objetivo:** visitante vê o card do imóvel, clica na foto → abre lightbox em tela cheia com carrossel mostrando todos os cômodos (sala, quarto, banheiro, cozinha, área externa, planta).
+
+1. **Galeria simples no card — semana 1**
+   - [ ] Card de imóvel com foto principal + indicador "📸 12 fotos"
+   - [ ] Hover desktop: troca lenta entre 3 primeiras fotos (preview animado)
+
+2. **Lightbox em tela cheia — semana 1**
+   - [ ] Componente `<GaleriaImovel/>` com:
+     - Backdrop preto 95% + animação editorial de entrada
+     - Foto principal grande (cabe na tela, sem cortar)
+     - Setas ◄ ► (teclado, swipe mobile, click)
+     - Miniaturas embaixo agrupadas por cômodo: `Sala (3) | Cozinha (2) | Quarto 1 (4)…`
+     - Contador `5 / 18`
+     - Tecla `Esc` fecha
+     - URL muda para `/imovel/{slug}/foto/{n}` (deep link compartilhável)
+
+3. **Pipeline de imagens preservando qualidade — semana 1**
+   > Regra: a Priscila joga a foto original do celular/câmera (geralmente 4-12 MB) e o site não pode degradar visualmente.
+   - [ ] Dependência: `Pillow` + `pillow-heif` (HEIC do iPhone)
+   - [ ] Ao subir, gerar 4 versões em WebP/AVIF + 1 original guardada:
+     - `original.jpg` (intacto, só servido para download)
+     - `2400.webp` (lightbox/4K, qualidade 85)
+     - `1200.webp` (card grande, qualidade 82)
+     - `600.webp` (thumb, qualidade 78)
+     - `200.webp` (placeholder/blur, qualidade 60)
+   - [ ] HTML usa `<picture>` com `srcset` + `loading="lazy"` + `decoding="async"`
+   - [ ] Servir via FastAPI `StaticFiles` com `Cache-Control: public, max-age=31536000, immutable`
+   - [ ] Não usar JPEG progressivo abaixo de 1200px — WebP/AVIF têm compressão melhor sem artefatos
+   - [ ] Limite por imóvel: 30 fotos × ~5 MB médio = 150 MB; pasta `assets/imoveis/{slug}/`
+
+### Módulo E — Políticas de URL e segurança
+
+1. **URLs amigáveis (slugs)**
+   - [ ] `/imovel/casa-3-suites-candeias-vdc` (slug = `slugify(titulo + bairro + cidade)`)
+   - [ ] Redirect 301 de IDs antigos → slug novo
+   - [ ] `/bairro/candeias`, `/bairro/boa-vista` (página por bairro com SEO)
+   - [ ] Sitemap automático em `/sitemap.xml`
+   - [ ] `robots.txt` permitindo crawl do site público e bloqueando `/admin/*` e `/api/admin/*`
+
+2. **Cabeçalhos de segurança (FastAPI middleware)**
+   - [ ] `Content-Security-Policy` (whitelist: self, CDN React/Babel, googleapis, anthropic, fontes Google)
+   - [ ] `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` (após HTTPS)
+   - [ ] `X-Content-Type-Options: nosniff`
+   - [ ] `X-Frame-Options: DENY`
+   - [ ] `Referrer-Policy: strict-origin-when-cross-origin`
+   - [ ] `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+
+3. **Hardening do upload**
+   - [ ] Aceitar somente `image/jpeg`, `image/png`, `image/webp`, `image/heic`
+   - [ ] Validar magic bytes (não confiar só no `Content-Type`)
+   - [ ] Tamanho máximo 15 MB por arquivo, 30 arquivos por upload
+   - [ ] Renomear todo arquivo para UUID (nunca usar nome original)
+   - [ ] Stripping de EXIF (remove geolocalização da Priscila ou do dono do imóvel — LGPD)
+
+4. **LGPD básico**
+   - [ ] Página `/politica-de-privacidade` (cliente Priscila aprova)
+   - [ ] Banner de cookies opcional (só se tiver analytics)
+   - [ ] Endpoint `POST /api/lead/excluir-meus-dados` (LGPD art. 18)
+   - [ ] Logs com retenção de 90 dias e anonimização
+
+### Testes obrigatórios
+
+- [ ] `tests/test_auth.py`: hash bcrypt, JWT válido/expirado, rate limit de login
+- [ ] `tests/test_admin_imoveis.py`: CRUD completo + autorização (sem token = 401)
+- [ ] `tests/test_upload_imagens.py`: rejeita PDF disfarçado, redimensiona corretamente, mantém aspect ratio, EXIF removido
+- [ ] `tests/test_galeria.py` (frontend estrutural): `<GaleriaImovel/>` tem setas, miniaturas, contador, fecha com Esc
+- [ ] `tests/test_url_policies.py`: headers de segurança presentes em toda resposta, slugs válidos, sitemap responde 200
+
+### Ordem sugerida (alinhada com simulador/avaliação)
+
+| Sprint | Foco |
+|--------|------|
+| Semana 1 | Simulador MVP + Avaliação MVP + Auth + CRUD imóveis + Pipeline de imagens + Lightbox |
+| Semana 2 | Multimodal (Gemini Pro Vision em fotos) + Painel admin completo + URLs amigáveis |
+| Semana 3 | Headers de segurança + LGPD + tracking unificado no funil |
+| Semana 4 | PDF de avaliação + e-mail/WhatsApp + sitemap + SEO por bairro |
+
+---
+
 ## 📝 Histórico de commits
 
 - `c16b9fb` — Inicial: site v3-editorial com vídeos de abertura encadeados
