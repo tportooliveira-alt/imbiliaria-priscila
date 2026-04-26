@@ -159,6 +159,9 @@ function App() {
         <SimuladorFinanciamento/>
       </div>
 
+      {/* ═══════ CALCULADORA DE PODER DE COMPRA ═══════ */}
+      <CalculadoraPoderCompra/>
+
       {/* ═══════ MANIFESTO / QUOTE ═══════ */}
       <section className="manifestoH">
         <div className="manifestoH-inner">
