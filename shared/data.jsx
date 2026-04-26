@@ -161,6 +161,33 @@ function aiChatResponse(text) {
   return IA_CHAT_FALLBACK;
 }
 
+// Codigos PV-XXX e temas (derivados das tags + faixa de preco)
+function _temasDe(im) {
+  const t = [];
+  if (im.preco <= 500_000) t.push("primeira_casa");
+  if (im.preco > 1_000_000) t.push("alto_padrao");
+  if (im.preco > 2_000_000) t.push("luxo");
+  if (im.tags?.some(x => /investi|valoriz|rent/i.test(x))) t.push("investimento");
+  if (im.tags?.some(x => /quintal|jardim|terra|piscina|gourmet|varanda/i.test(x))) t.push("area_externa");
+  if (im.bairro === "Centro") t.push("perto_centro");
+  t.push(im.tipo === "Casa" ? "casa" : "apartamento");
+  return t;
+}
+IMOVEIS.forEach((im, idx) => {
+  im.codigo = `PV-${String(idx + 1).padStart(3, "0")}`;
+  im.temas = _temasDe(im);
+});
+
+const TEMAS = [
+  { id: "primeira_casa", nome: "Primeira casa",      emoji: "🔑", desc: "Até R$ 500 mil" },
+  { id: "alto_padrao",   nome: "Alto padrão",        emoji: "✨", desc: "Acima de R$ 1 mi" },
+  { id: "luxo",          nome: "Luxo",               emoji: "💎", desc: "Mansões e coberturas" },
+  { id: "investimento",  nome: "Para investir",      emoji: "📈", desc: "Yield ou valorização" },
+  { id: "area_externa",  nome: "Quintal / piscina",  emoji: "🌳", desc: "Área externa generosa" },
+  { id: "casa",          nome: "Casas",              emoji: "🏡", desc: "Térreas e sobrados" },
+  { id: "apartamento",   nome: "Apartamentos",       emoji: "🏢", desc: "Edifícios e coberturas" },
+];
+
 // Live ticker data
 const TICKER_ITEMS = [
   "12 imóveis adicionados hoje",
@@ -171,4 +198,4 @@ const TICKER_ITEMS = [
   "Tempo médio de 1ª resposta · 94 ms",
 ];
 
-Object.assign(window, { BAIRROS, IMOVEIS, DEPOIMENTOS, IA_CAPACIDADES, IA_CHAT_INTRO, IA_CHAT_SUGESTOES, aiChatResponse, TICKER_ITEMS });
+Object.assign(window, { BAIRROS, IMOVEIS, DEPOIMENTOS, IA_CAPACIDADES, IA_CHAT_INTRO, IA_CHAT_SUGESTOES, aiChatResponse, TICKER_ITEMS, TEMAS });

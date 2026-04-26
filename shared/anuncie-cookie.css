@@ -1,0 +1,333 @@
+/* ═════════════════════════════════════════════════════════════════════════
+   Anuncie seu imóvel + Toggle transação + Cards temáticos + Cookie banner
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─────────── Toggle Comprar/Alugar/Lançamento ─────────── */
+.transacao-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--cinza-1);
+  border: 1px solid var(--cinza-2);
+  border-radius: 999px;
+  padding: 4px;
+  margin: 0 0 1.4rem;
+}
+.transacao-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: 600 .82rem/1 var(--ff-body);
+  letter-spacing: .04em;
+  color: var(--cinza-texto);
+  padding: 9px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.transacao-tab.is-active {
+  background: var(--azul-escuro);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.12);
+}
+.transacao-tab:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+.transacao-em-breve {
+  font: 500 9px/1 var(--ff-mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  background: rgba(232,181,90,.18);
+  color: #8a6020;
+  padding: 3px 6px;
+  border-radius: 3px;
+}
+
+/* ─────────── Cards temáticos ─────────── */
+.temas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin-top: 1.4rem;
+}
+.tema-card {
+  appearance: none;
+  text-align: left;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid var(--cinza-2);
+  border-radius: 10px;
+  padding: 14px 14px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+  transition: all .2s;
+}
+.tema-card:hover {
+  border-color: var(--dourado);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+.tema-card.is-active {
+  border-color: var(--azul-escuro);
+  background: var(--azul-escuro);
+  color: #fff;
+}
+.tema-card.is-active .tema-desc { color: rgba(255,255,255,.72); }
+.tema-emoji { font-size: 1.5rem; line-height: 1; }
+.tema-nome  { font: 600 .92rem/1.2 var(--ff-display); letter-spacing: -.005em; }
+.tema-desc  { font: 400 .72rem/1.4 var(--ff-body); color: var(--cinza-texto); }
+
+/* ─────────── Modal "Anuncie seu imóvel" ─────────── */
+.anuncie-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,20,32,.74);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: grid; place-items: center;
+  padding: 16px;
+  animation: anuncie-fade .2s ease-out;
+}
+@keyframes anuncie-fade { from { opacity: 0 } to { opacity: 1 } }
+
+.anuncie-modal {
+  background: #fff;
+  border-radius: 14px;
+  width: min(640px, 100%);
+  max-height: 92vh;
+  overflow-y: auto;
+  position: relative;
+  padding: 1.8rem 1.8rem 1.5rem;
+  box-shadow: 0 24px 60px rgba(0,0,0,.35);
+  animation: anuncie-pop .25s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes anuncie-pop {
+  from { transform: translateY(12px) scale(.97); opacity: 0 }
+  to   { transform: translateY(0) scale(1); opacity: 1 }
+}
+
+.anuncie-close {
+  position: absolute;
+  top: 12px; right: 14px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--cinza-2);
+  background: #fff;
+  font-size: 1.4rem; line-height: 1;
+  color: var(--cinza-texto);
+  cursor: pointer;
+}
+.anuncie-close:hover { background: var(--cinza-1); }
+
+.anuncie-eyebrow {
+  font: 500 10px/1 var(--ff-mono);
+  letter-spacing: .18em;
+  color: var(--dourado);
+  text-transform: uppercase;
+}
+.anuncie-head h2 {
+  font: italic 400 1.7rem/1.15 var(--ff-display);
+  color: var(--azul-escuro);
+  margin: .35rem 0 .5rem;
+}
+.anuncie-head p {
+  font: 400 .92rem/1.55 var(--ff-body);
+  color: var(--cinza-texto);
+  margin: 0 0 1.3rem;
+}
+
+.anuncie-form { display: flex; flex-direction: column; gap: 14px; }
+.anuncie-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.anuncie-row-3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 540px) {
+  .anuncie-row, .anuncie-row-3 { grid-template-columns: 1fr; }
+}
+.anuncie-form label {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.anuncie-form label > span {
+  font: 600 11px/1 var(--ff-body);
+  letter-spacing: .04em;
+  color: var(--cinza-texto);
+  text-transform: uppercase;
+}
+.anuncie-form input,
+.anuncie-form select,
+.anuncie-form textarea {
+  font: 400 .92rem/1.4 var(--ff-body);
+  color: var(--azul-escuro);
+  border: 1px solid var(--cinza-2);
+  border-radius: 8px;
+  padding: 9px 11px;
+  background: #fff;
+  transition: border-color .15s;
+  font-family: inherit;
+}
+.anuncie-form input:focus,
+.anuncie-form select:focus,
+.anuncie-form textarea:focus {
+  outline: 0;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(28,69,135,.12);
+}
+.anuncie-textarea textarea { resize: vertical; min-height: 70px; }
+
+.anuncie-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-top: 6px; flex-wrap: wrap;
+}
+.anuncie-actions small {
+  font: 400 .72rem/1.4 var(--ff-body);
+  color: var(--cinza-texto);
+  flex: 1; min-width: 200px;
+}
+.anuncie-actions a { color: var(--azul); text-decoration: underline; }
+.anuncie-submit {
+  appearance: none; cursor: pointer;
+  background: var(--azul-escuro);
+  color: #fff;
+  border: 0;
+  font: 600 .9rem/1 var(--ff-body);
+  letter-spacing: .03em;
+  padding: 12px 22px;
+  border-radius: 999px;
+  transition: background .2s, transform .15s;
+}
+.anuncie-submit:hover:not(:disabled) {
+  background: var(--dourado);
+  transform: translateY(-1px);
+}
+.anuncie-submit:disabled { opacity: .65; cursor: progress; }
+
+.anuncie-erro {
+  background: #fef3f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: 400 .85rem/1.45 var(--ff-body);
+  color: #b91c1c;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.anuncie-erro p { margin: 0; }
+.anuncie-fallback {
+  align-self: flex-start;
+  appearance: none; cursor: pointer;
+  background: #128c7e; color: #fff; border: 0;
+  font: 600 .8rem/1 var(--ff-body);
+  padding: 8px 14px; border-radius: 999px;
+}
+
+.anuncie-ok {
+  text-align: center;
+  padding: 1.5rem 0 .5rem;
+}
+.anuncie-ok-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: #dcf7e3;
+  color: #128c7e;
+  display: grid; place-items: center;
+  font-size: 1.8rem; font-weight: 700;
+  margin: 0 auto 1rem;
+}
+.anuncie-ok h2 {
+  font: italic 400 1.6rem/1.15 var(--ff-display);
+  color: var(--azul-escuro);
+  margin: 0 0 .5rem;
+}
+.anuncie-ok p {
+  font: 400 .9rem/1.5 var(--ff-body);
+  color: var(--cinza-texto);
+  margin: 0 0 1.2rem;
+}
+.anuncie-whats {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #128c7e; color: #fff !important;
+  text-decoration: none !important;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font: 600 .88rem/1 var(--ff-body);
+  margin-bottom: 1rem;
+}
+.anuncie-fechar {
+  display: block;
+  margin: .5rem auto 0;
+  appearance: none; cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--cinza-2);
+  color: var(--cinza-texto);
+  font: 600 .82rem/1 var(--ff-body);
+  padding: 9px 22px;
+  border-radius: 999px;
+}
+
+/* ─────────── Footer extra links ─────────── */
+.footH-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 400 .78rem/1 var(--ff-body);
+  color: rgba(255,255,255,.55);
+  margin-top: .7rem;
+  flex-wrap: wrap;
+}
+.footH-links a {
+  color: rgba(255,255,255,.78);
+  text-decoration: none;
+  transition: color .2s;
+}
+.footH-links a:hover { color: var(--dourado-claro); }
+
+/* ─────────── Cookie banner ─────────── */
+.cookie-banner {
+  position: fixed;
+  left: 16px; right: 16px; bottom: 16px;
+  z-index: 9998;
+  background: rgba(15,20,32,.96);
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.35);
+  animation: cookie-up .3s ease-out;
+}
+@keyframes cookie-up {
+  from { transform: translateY(20px); opacity: 0 }
+  to   { transform: translateY(0); opacity: 1 }
+}
+.cookie-inner {
+  display: flex; align-items: center; gap: 18px;
+  padding: 14px 18px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.cookie-inner p {
+  flex: 1; min-width: 240px;
+  margin: 0;
+  font: 400 .82rem/1.5 var(--ff-body);
+  color: rgba(255,255,255,.85);
+}
+.cookie-inner a {
+  color: var(--dourado-claro);
+  text-decoration: underline;
+}
+.cookie-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.cookie-btn {
+  appearance: none; cursor: pointer;
+  font: 600 .8rem/1 var(--ff-body);
+  letter-spacing: .03em;
+  padding: 9px 16px;
+  border-radius: 999px;
+  transition: all .2s;
+}
+.cookie-btn-ghost {
+  background: transparent;
+  color: rgba(255,255,255,.85);
+  border: 1px solid rgba(255,255,255,.25);
+}
+.cookie-btn-ghost:hover { background: rgba(255,255,255,.1); }
+.cookie-btn-solid {
+  background: var(--dourado);
+  color: var(--azul-escuro);
+  border: 0;
+}
+.cookie-btn-solid:hover { background: var(--dourado-claro); }

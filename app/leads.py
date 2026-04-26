@@ -35,7 +35,7 @@ PONTOS_INTERACAO = {
 
 ESTAGIOS_VALIDOS = ("novo", "contatado", "qualificado", "visita", "proposta", "fechado", "perdido")
 TEMPERATURAS = ("quente", "morno", "frio")
-ORIGENS = ("site", "simulador", "avaliacao", "chat", "whatsapp", "indicacao", "manual")
+ORIGENS = ("site", "simulador", "avaliacao", "chat", "whatsapp", "indicacao", "manual", "vendedor")
 
 
 @dataclass

@@ -18,10 +18,11 @@ Uso:
 from __future__ import annotations
 
 import os
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -29,15 +30,17 @@ from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app import auth
-from app.db import init_db
+from app.conversas import registrar_analise_conversa, registrar_conversa_site, resumir_funil
+from app.db import DB_PATH, init_db
 from app.dispatcher import analisar_pos_conversa, responder
-from app.lead import funnel_summary
-from app.routes_admin import router as admin_router
+from app.logging_config import setup_logging
+from app.routes_admin import router as admin_router, requer_admin
 from app.routes_crm import router as crm_router
 from app.routes_publicas import router as publicas_router
 
 # Carrega .env local (se existir)
 load_dotenv()
+setup_logging()
 
 ROOT = Path(__file__).resolve().parent
 
@@ -59,6 +62,22 @@ class HeadersDeSeguranca(BaseHTTPMiddleware):
         resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         resp.headers.setdefault(
             "Permissions-Policy", "camera=(), microphone=(), geolocation=()"
+        )
+        # CSP — permite React/Babel via unpkg + WhatsApp/Google fonts.
+        # 'unsafe-inline' e 'unsafe-eval' continuam necessarios enquanto Babel
+        # standalone roda no navegador; ao migrar para build esses some.
+        resp.headers.setdefault(
+            "Content-Security-Policy",
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com data:; "
+            "img-src 'self' data: blob: https:; "
+            "media-src 'self' blob:; "
+            "connect-src 'self' https://wa.me; "
+            "frame-ancestors 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'"
         )
         return resp
 
@@ -90,6 +109,7 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
     history: list[MensagemHistorico] = Field(default_factory=list)
     has_image: bool = False
+    session_id: str | None = Field(None, max_length=120)
 
 
 class ChatResponse(BaseModel):
@@ -104,10 +124,13 @@ class ChatResponse(BaseModel):
     lead_next_question: str
     lead_fields: dict[str, bool]
     provider_metadata: dict = Field(default_factory=dict)
+    session_id: str | None = None
+    conversation_id: int | None = None
 
 
 class LeadAnalysisRequest(BaseModel):
     history: list[MensagemHistorico] = Field(default_factory=list)
+    session_id: str | None = Field(None, max_length=120)
 
 
 class LeadAnalysisResponse(BaseModel):
@@ -132,23 +155,76 @@ def health() -> dict:
     }
 
 
+@app.get("/api/admin/health")
+def admin_health(_: dict = Depends(requer_admin)) -> dict:
+    """Diagnóstico detalhado — só admin."""
+    from app.db import db_session
+
+    info: dict = {
+        "status": "ok",
+        "versao": app.version,
+        "db_path": str(DB_PATH),
+        "db_existe": DB_PATH.exists(),
+        "db_tamanho_kb": round(DB_PATH.stat().st_size / 1024, 1) if DB_PATH.exists() else 0,
+        "chaves": {
+            "google": bool(os.getenv("GOOGLE_API_KEY")),
+            "anthropic": bool(os.getenv("ANTHROPIC_API_KEY")),
+            "jwt_secret": bool(os.getenv("JWT_SECRET")),
+        },
+        "flags": {
+            "dev_open_admin": os.getenv("DEV_OPEN_ADMIN") == "1",
+        },
+    }
+    try:
+        with db_session() as conn:
+            for tabela in (
+                "usuarios", "imoveis", "imagens", "leads", "simulacoes", "avaliacoes",
+                "conversas", "mensagens_conversa", "execucoes_ia", "eventos_funil",
+            ):
+                try:
+                    n = conn.execute(f"SELECT COUNT(*) AS n FROM {tabela}").fetchone()["n"]
+                    info[f"n_{tabela}"] = n
+                except Exception:
+                    info[f"n_{tabela}"] = None
+    except Exception as e:
+        info["db_erro"] = str(e)
+    return info
+
+
 @app.post("/api/chat", response_model=ChatResponse)
 def chat(req: ChatRequest) -> ChatResponse:
     historico = [m.model_dump() for m in req.history]
+    inicio = time.perf_counter()
     out = responder(req.message, historico=historico, tem_imagem=req.has_image)
+    persistencia = registrar_conversa_site(
+        sessao_id=req.session_id,
+        historico=historico,
+        mensagem=req.message,
+        resposta=out,
+        tem_imagem=req.has_image,
+        duracao_ms=int((time.perf_counter() - inicio) * 1000),
+    )
+    out.update(persistencia)
     return ChatResponse(**out)
 
 
 @app.post("/api/analisar-lead", response_model=LeadAnalysisResponse)
 def analisar_lead(req: LeadAnalysisRequest) -> LeadAnalysisResponse:
     historico = [m.model_dump() for m in req.history]
+    inicio = time.perf_counter()
     out = analisar_pos_conversa(historico)
+    registrar_analise_conversa(
+        sessao_id=req.session_id,
+        historico=historico,
+        resposta=out,
+        duracao_ms=int((time.perf_counter() - inicio) * 1000),
+    )
     return LeadAnalysisResponse(**out)
 
 
 @app.get("/api/funnel")
 def funnel() -> dict:
-    return funnel_summary()
+    return resumir_funil()
 
 
 # ─────────────────────────────────────────────────────────────────────────────

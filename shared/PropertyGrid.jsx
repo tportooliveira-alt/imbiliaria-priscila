@@ -36,6 +36,16 @@ function useTilt() {
 
 function PropertyCard({ imovel, variant }) {
   const ref = useTilt();
+  const compartilhar = (e) => {
+    e.preventDefault();
+    const linha1 = `Oi, vi este imóvel no site da Priscila Vasconcelos:`;
+    const linha2 = `${imovel.titulo} — ${imovel.precoLabel}`;
+    const linha3 = `${imovel.bairro} · ${imovel.quartos} quartos · ${imovel.area} m²`;
+    const linha4 = `Código: ${imovel.codigo || imovel.id}`;
+    const txt = `${linha1}\n\n${linha2}\n${linha3}\n${linha4}\n\nQueria saber mais.`;
+    const url = `https://wa.me/5577988193344?text=${encodeURIComponent(txt)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
   return (
     <article className={`pcard pcard-${variant}`} ref={ref}>
       <div className="pcard-inner">
@@ -53,6 +63,7 @@ function PropertyCard({ imovel, variant }) {
             </span>
           </div>
           <div className="pcard-bairro">{imovel.bairro}</div>
+          {imovel.codigo && <div className="pcard-codigo">{imovel.codigo}</div>}
         </div>
         <div className="pcard-body">
           <div className="pcard-head">
@@ -69,7 +80,10 @@ function PropertyCard({ imovel, variant }) {
           </div>
           <div className="pcard-actions">
             <a className="pcard-cta" href="#contato">Tenho interesse →</a>
-            <button className="pcard-fav" aria-label="Favoritar">
+            <button className="pcard-share" type="button" onClick={compartilhar} aria-label="Compartilhar no WhatsApp" title="Enviar pra alguém pelo WhatsApp">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M13.6 2.4A7.5 7.5 0 001.5 12.3L.5 15.5l3.3-1A7.5 7.5 0 1013.6 2.4zM8 13.6a5.6 5.6 0 01-2.8-.8l-.2-.1-2 .6.6-1.9-.1-.2A5.6 5.6 0 118 13.6zm3.1-4.2c-.2-.1-1-.5-1.2-.5-.2-.1-.3-.1-.4.1l-.5.6c-.1.1-.2.1-.4 0a4.5 4.5 0 01-2.2-2c-.2-.3.2-.3.5-.9 0-.1 0-.2 0-.3l-.5-1.2c-.1-.3-.3-.3-.4-.3h-.4a.7.7 0 00-.5.2 2 2 0 00-.6 1.5c0 .9.6 1.7.7 1.9a6.7 6.7 0 002.6 2.3c1.7.7 1.7.5 2 .4a1.7 1.7 0 001.2-.8c.1-.3.1-.6 0-.6 0-.1-.2-.1-.4-.2z"/></svg>
+            </button>
+            <button className="pcard-fav" type="button" aria-label="Favoritar" title="Salvar para depois">
               <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><path d="M8 14s-5-3-5-7.5A3 3 0 018 4a3 3 0 015 2.5C13 11 8 14 8 14z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>
             </button>
           </div>
@@ -90,6 +104,7 @@ function PropertyGrid({ filter, variant = "cerulean", title = "Imóveis em desta
       if (filter.faixa === "500 a 1mi") return i.preco > 500000 && i.preco <= 1000000;
       if (filter.faixa === "1mi a 2mi") return i.preco > 1000000 && i.preco <= 2000000;
       if (filter.faixa === "acima 2mi") return i.preco > 2000000;
+      if (filter.tema && !(i.temas || []).includes(filter.tema)) return false;
       return true;
     });
   }, [filter]);

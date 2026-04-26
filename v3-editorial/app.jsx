@@ -3,8 +3,16 @@
 // numbered sections, big quote, layouts assimétricos.
 
 function App() {
-  const [filter, setFilter] = React.useState({ bairro: "", tipo: "", faixa: "" });
-  const [introOpen, setIntroOpen] = React.useState(true);
+  const [filter, setFilter] = React.useState({ bairro: "", tipo: "", faixa: "", tema: "" });
+  const [transacao, setTransacao] = React.useState("comprar");
+  const [anuncieOpen, setAnuncieOpen] = React.useState(false);
+  const [introOpen, setIntroOpen] = React.useState(() => {
+    // Intro de videos desativada por padrao; usar ?intro=1 para reativar quando quiser.
+    const params = new URLSearchParams(window.location.search);
+    return params.get("intro") === "1";
+  });
+
+  const setTema = (tema) => setFilter(f => ({ ...f, tema: f.tema === tema ? "" : tema }));
 
   return (
     <>
@@ -28,6 +36,7 @@ function App() {
             <a href="#bairros">Bairros</a>
             <a href="#priscila">A corretora</a>
             <a href="#metodo">O método</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setAnuncieOpen(true); }}>Anuncie seu imóvel</a>
           </div>
           <a href="#contato" className="btnH btnH-solid">Falar comigo</a>
         </div>
@@ -81,7 +90,36 @@ function App() {
             <p className="buscaH-deck">A pergunta certa não é “quanto custa” — é <em>“em qual rua”</em>.
               Escolha um bairro, deixe a IA filtrar.</p>
           </div>
-          <BuscaBairros variant="editorial" onFilterChange={setFilter}/>
+
+          <div className="transacao-toggle" role="tablist" aria-label="Tipo de transação">
+            <button role="tab" aria-selected={transacao === "comprar"} className={`transacao-tab ${transacao === "comprar" ? "is-active" : ""}`} onClick={() => setTransacao("comprar")}>
+              Comprar
+            </button>
+            <button role="tab" aria-selected={transacao === "alugar"} className={`transacao-tab ${transacao === "alugar" ? "is-active" : ""}`} onClick={() => setTransacao("alugar")} disabled title="Em breve — Priscila trabalha hoje só com venda">
+              Alugar <span className="transacao-em-breve">em breve</span>
+            </button>
+            <button role="tab" aria-selected={transacao === "lancamento"} className={`transacao-tab ${transacao === "lancamento" ? "is-active" : ""}`} onClick={() => setTransacao("lancamento")} disabled title="Em breve — lançamentos chegam quando a Priscila assinar parceria com a construtora">
+              Lançamento <span className="transacao-em-breve">em breve</span>
+            </button>
+          </div>
+
+          <BuscaBairros variant="editorial" onFilterChange={(f) => setFilter(prev => ({ ...prev, ...f }))}/>
+
+          <div className="temas-grid">
+            {window.TEMAS.map(t => (
+              <button
+                key={t.id}
+                type="button"
+                className={`tema-card ${filter.tema === t.id ? "is-active" : ""}`}
+                onClick={() => setTema(t.id)}
+                aria-pressed={filter.tema === t.id}
+              >
+                <span className="tema-emoji" aria-hidden="true">{t.emoji}</span>
+                <span className="tema-nome">{t.nome}</span>
+                <span className="tema-desc">{t.desc}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -212,10 +250,17 @@ function App() {
             <span className="footH-mark-sub">Imóveis com IA · Vitória da Conquista · CRECI/BA 29.231</span>
           </div>
           <span className="footH-copy">© {new Date().getFullYear()} · Edição Permanente · Vol. 01</span>
+          <div className="footH-links">
+            <a href="./privacidade.html">Política de privacidade</a>
+            <span aria-hidden="true">·</span>
+            <a href="#" onClick={(e) => { e.preventDefault(); setAnuncieOpen(true); }}>Anuncie seu imóvel</a>
+          </div>
         </div>
       </footer>
 
       <AIChat variant="editorial"/>
+      {anuncieOpen && <AnuncieImovel onClose={() => setAnuncieOpen(false)}/>}
+      <CookieBanner/>
     </>
   );
 }

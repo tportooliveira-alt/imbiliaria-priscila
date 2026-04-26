@@ -314,3 +314,68 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
         "confianca": r.confianca,
         "texto": texto,
     }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Captacao: lead vendedor (anuncie seu imovel)
+# ─────────────────────────────────────────────────────────────────────────────
+class LeadVendedorRequest(BaseModel):
+    nome: str = Field(..., min_length=2, max_length=120)
+    telefone: str = Field(..., min_length=8, max_length=30)
+    bairro: str | None = Field(None, max_length=80)
+    tipo: Literal["Casa", "Apartamento", "Cobertura", "Terreno", "Comercial"] = "Casa"
+    area: float | None = Field(None, gt=0, le=100_000)
+    quartos: int | None = Field(None, ge=0, le=20)
+    valor_pretendido: float | None = Field(None, ge=0, le=1_000_000_000)
+    observacoes: str | None = Field(None, max_length=1000)
+
+
+@router.post("/api/lead-vendedor")
+def lead_vendedor(payload: LeadVendedorRequest) -> dict:
+    """Recebe quem quer anunciar imovel — vira lead com origem='vendedor'."""
+    lead_id = leads_repo.upsert_lead(
+        nome=payload.nome,
+        telefone=payload.telefone,
+        origem="vendedor",
+    )
+    descricao = f"Quer anunciar {payload.tipo}"
+    if payload.bairro:
+        descricao += f" em {payload.bairro}"
+    if payload.area:
+        descricao += f" ({payload.area:.0f} m²)"
+    if payload.valor_pretendido:
+        descricao += f" — pretende R$ {payload.valor_pretendido:,.0f}".replace(",", ".")
+
+    leads_repo.registrar_interacao(
+        lead_id,
+        tipo="nota",
+        descricao=descricao,
+        metadata={
+            "tipo_imovel": payload.tipo,
+            "bairro": payload.bairro,
+            "area": payload.area,
+            "quartos": payload.quartos,
+            "valor_pretendido": payload.valor_pretendido,
+            "observacoes": payload.observacoes,
+        },
+    )
+    leads_repo.adicionar_tag(lead_id, "captacao")
+    if payload.bairro:
+        leads_repo.adicionar_tag(lead_id, f"bairro:{payload.bairro.lower()}")
+
+    registrar_evento_funil(
+        "lead.captacao",
+        origem="vendedor",
+        lead_id=lead_id,
+        payload={
+            "tipo": payload.tipo,
+            "bairro": payload.bairro,
+            "valor_pretendido": payload.valor_pretendido,
+        },
+        idempotency_key=f"lead.captacao:{lead_id}:{payload.telefone}",
+    )
+
+    return {
+        "ok": True,
+        "lead_id": lead_id,
+        "mensagem": "Recebido! A Priscila te chama em ate 24h.",
+    }

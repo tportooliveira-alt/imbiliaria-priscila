@@ -144,3 +144,65 @@ def test_avaliar_persiste_no_db(cliente):
     assert row is not None
     assert row["nome"] == "Maria"
     assert row["bairro"] == "boa_vista"
+
+
+def test_lead_vendedor_cria_lead(cliente):
+    r = cliente.post("/api/lead-vendedor", json={
+        "nome": "Carlos Silva",
+        "telefone": "77988887777",
+        "bairro": "Candeias",
+        "tipo": "Apartamento",
+        "area": 95,
+        "quartos": 3,
+        "valor_pretendido": 450000,
+        "observacoes": "Reformado, vista pra serra.",
+    })
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["ok"] is True
+    assert body["lead_id"] > 0
+
+    from app.db import db_session
+    with db_session() as conn:
+        row = conn.execute(
+            "SELECT nome, telefone, origem FROM leads WHERE id = ?",
+            (body["lead_id"],),
+        ).fetchone()
+    assert row is not None
+    assert row["nome"] == "Carlos Silva"
+    assert row["origem"] == "vendedor"
+
+
+def test_lead_vendedor_validacao_nome(cliente):
+    r = cliente.post("/api/lead-vendedor", json={
+        "nome": "X",
+        "telefone": "77988887777",
+    })
+    assert r.status_code == 422  # nome com min_length=2
+
+
+def test_lead_vendedor_registra_interacao_e_tag(cliente):
+    r = cliente.post("/api/lead-vendedor", json={
+        "nome": "Ana Costa",
+        "telefone": "77999998888",
+        "bairro": "Boa Vista",
+        "tipo": "Casa",
+    })
+    assert r.status_code == 200
+    lead_id = r.json()["lead_id"]
+
+    from app.db import db_session
+    with db_session() as conn:
+        interacao = conn.execute(
+            "SELECT tipo, descricao FROM lead_interacoes WHERE lead_id = ?",
+            (lead_id,),
+        ).fetchone()
+        tags = [t["tag"] for t in conn.execute(
+            "SELECT tag FROM lead_tags WHERE lead_id = ?",
+            (lead_id,),
+        ).fetchall()]
+    assert interacao is not None
+    assert interacao["tipo"] == "nota"
+    assert "Casa" in interacao["descricao"]
+    assert "captacao" in tags
+    assert any(t.startswith("bairro:") for t in tags)
