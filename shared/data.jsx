@@ -135,7 +135,9 @@ const IA_CAPACIDADES = [
   { icone: "📊", titulo: "Dashboard de decisão",    detalhe: "Mostra CPL, visitas, propostas e taxa de conversão em tempo real para decisões certeiras." },
 ];
 
-// Fake AI chat — canned responses matched by keyword, otherwise fallback
+// Fake AI chat — canned responses matched by keyword + memória do histórico.
+// Se em alguma mensagem anterior o visitante disse que está VENDENDO, mantemos
+// o tom de captação mesmo quando ele só joga "boa vista" / "5 quartos" depois.
 const IA_CHAT_INTRO = "Oi, aqui e da equipe da Priscila Vasconcelos. Me conta o que voce esta procurando hoje em Vitoria da Conquista — bairro, faixa de valor ou se voce esta vendendo. Com isso ja consigo te dar um caminho.";
 const IA_CHAT_SUGESTOES = [
   "Apartamento em Candeias, ate 800 mil",
@@ -143,21 +145,62 @@ const IA_CHAT_SUGESTOES = [
   "Quero investir pra alugar",
   "Vou vender meu imovel, vale quanto?",
 ];
+
+const _RX_VENDEDOR = /(vou vender|estou vendendo|vendo meu|vender meu|vender o|minha casa|meu imovel|meu apartamento|avalia[cç][aã]o|quanto vale)/i;
+const _RX_COMPRADOR = /(quero comprar|procuro|to procurando|estou procurando|ate \d|primeira casa|primeira compra|investi[mr]|aluga|inquilino)/i;
+
+function _modoVendedor(history) {
+  if (!Array.isArray(history)) return false;
+  // varre as mensagens do usuario; ultimo sinal vence
+  let modo = null;
+  for (const m of history) {
+    if (m.role !== "user" && m.role !== "assistant") continue;
+    if (m.role !== "user") continue;
+    const t = (m.content || m.text || "").toLowerCase();
+    if (_RX_VENDEDOR.test(t)) modo = "vendedor";
+    else if (_RX_COMPRADOR.test(t)) modo = "comprador";
+  }
+  return modo === "vendedor";
+}
+
 const IA_CHAT_RESPONSES = [
+  { match: /vender|vendo|minha casa|meu imovel|meu apartamento|avalia|quanto vale/i,resposta: "A Priscila avalia pessoalmente em ate 24h, gratis. Pra ja adiantar a faixa, me diz: bairro, area aproximada e quantos quartos. Costumamos fechar precos 8-12% acima da media de portal porque trabalhamos a venda em rede privada." },
   { match: /candeias|nobre|alto padr/i,      resposta: "Candeias hoje e o bairro mais consolidado de alto padrao em Conquista — ticket medio rodando R$ 1,1 milhao, 42 imoveis ativos na nossa carteira. Pra te indicar 3 que batem com seu perfil, qual o tamanho ideal: 3, 4 ou 5 quartos?" },
   { match: /boa vista|primeira|jovem/i,      resposta: "Boa Vista e a melhor relacao para quem esta comprando o primeiro imovel. Apartamentos novos saindo de R$ 320 a 780 mil, com financiamento facilitado. Voce ja tem alguma entrada guardada ou ainda esta planejando?" },
   { match: /recreio|investimento|investir|aluga|renda/i, resposta: "Recreio esta com o melhor retorno de aluguel agora — yield medio de 0,68% ao mes, ocupacao alta por causa da Uesb. Posso te mostrar 5 opcoes com potencial de valorizacao. Qual sua faixa de investimento?" },
-  { match: /vender|vendo|minha casa|avalia/i,resposta: "A Priscila avalia pessoalmente em ate 24h, gratis. Pra ja adiantar a faixa, me diz: bairro, area aproximada e quantos quartos. Costumamos fechar precos 8-12% acima da media de portal porque trabalhamos a venda em rede privada." },
   { match: /500|400|300|orçamento|orcamento/i, resposta: "Nessa faixa de R$ 300-500 mil temos 27 opcoes em Boa Vista e 12 em Recreio. Pra filtrar, o que pesa mais pra voce: bairro, metragem ou ter elevador/garagem coberta?" },
   { match: /suite|quarto/i,                  resposta: "Anotado. Quantas suites e vagas voce precisa? Cruzo com seu orcamento e ja te mando aqui as opcoes com match acima de 85%." },
   { match: /priscila|humana|corretora|falar/i, resposta: "A Priscila atende pessoalmente toda negociacao — eu cuido da triagem pra ela chegar com tudo na mao. Me passa seu WhatsApp e o melhor horario, que ela te liga ainda hoje." },
   { match: /financiamento|caixa|parcela|sbpe/i, resposta: "Caixa SBPE hoje em 11,49% a.a., Pro-Cotista FGTS em 9,49% (essa e a taxa mais barata, mas exige 3+ anos de FGTS e nao ter outro imovel financiado). Importante: a parcela do banco SEMPRE inclui MIP (seguro morte/invalidez, varia com idade), DFI (seguro do imovel) e tarifa adm — soma R$ 200-500 alem do que muito simulador mostra. No nosso simulador a gente mostra a parcela cheia, com tudo. Qual valor voce esta considerando?" },
   { match: /seguro|mip|dfi|por que.*var|varia.*pessoa/i, resposta: "Otima pergunta — financiamento varia mesmo. Tres motivos: (1) MIP (seguro do banco) e cobrado sobre saldo devedor e MUDA com sua idade — quem tem 30 anos paga ~0,025% a.m., quem tem 55 paga ~0,08%; (2) sua taxa final depende do seu relacionamento com o banco, score e modalidade (FGTS, SBPE, MCMV); (3) tem custos fixos (DFI ~0,014% sobre imovel, tarifa adm ~R$ 25). A Priscila ja conseguiu reduzir 1 a 1,5 ponto da tabela em casos com bom perfil. Quer que ela analise o seu?" },
 ];
-const IA_CHAT_FALLBACK = "Entendi. Pra eu te indicar com precisao: qual bairro voce tem em mente, quantos quartos, e ate quanto voce pretende investir? Com esses tres pontos eu ja filtro as melhores opcoes da carteira ativa.";
 
-function aiChatResponse(text) {
-  for (const r of IA_CHAT_RESPONSES) if (r.match.test(text)) return r.resposta;
+// Respostas do MODO VENDEDOR (substituem as de comprador quando o contexto pede)
+const IA_CHAT_RESPONSES_VENDEDOR = [
+  { match: /candeias/i,      resposta: "Candeias e o bairro com a maior valorizacao da cidade — quem vende ali em rede privada costuma fechar 8 a 12% acima da media de portal. Me passa: area construida, area de terreno, quantos quartos/suites, e se tem piscina. A Priscila prepara a avaliacao completa em ate 24h." },
+  { match: /boa vista/i,     resposta: "Boa Vista vende rapido (giro medio 38 dias na nossa rede) porque tem demanda forte de jovem casal. Pra eu adiantar a faixa: area util, quantos quartos, andar e se tem garagem coberta? A Priscila avalia pessoalmente em ate 24h, sem custo." },
+  { match: /recreio/i,       resposta: "Recreio tem demanda de investidor — quem vende com a Priscila costuma sair acima da tabela porque ela ja tem comprador em mao. Me diz: area, quartos, e se o imovel ja esta alugado (isso ajuda muito na proposta). Faz a avaliacao gratis em 24h." },
+  { match: /patag[oô]nia/i,  resposta: "Patagonia tem ticket alto e comprador exigente. A Priscila trabalha esses imoveis em rede privada, sem expor no portal — preserva o preco e filtra interessado serio. Me adianta: quantos quartos, area, terreno, e se tem piscina/quadra." },
+  { match: /\d+\s*(quarto|suite|q\b|q\s)/i, resposta: "Anotado. So pra completar a avaliacao: area construida (m²), area de terreno se for casa, e se o imovel esta novo / reformado / precisando de reforma. A Priscila avalia em ate 24h e ja te diz a faixa de mercado e a faixa que ela consegue na rede privada." },
+  { match: /^\s*\d+\s*$/,    resposta: "Otimo. Esse numero seria area, quantos quartos ou valor que voce ja viu? Se puder me passar bairro + area + quartos, ja monto a base da avaliacao." },
+  { match: /financiamento|comprador|parcel/i, resposta: "A maior parte dos compradores hoje financia (Caixa SBPE 11,49% a.a., FGTS 9,49%). Como vendedor, voce nao paga seguro nem tarifa — mas seu imovel precisa estar regularizado (matricula atualizada, IPTU em dia, sem onus). A Priscila revisa tudo isso antes de listar." },
+];
+const IA_CHAT_FALLBACK = "Entendi. Pra eu te indicar com precisao: qual bairro voce tem em mente, quantos quartos, e ate quanto voce pretende investir? Com esses tres pontos eu ja filtro as melhores opcoes da carteira ativa.";
+const IA_CHAT_FALLBACK_VENDEDOR = "Entendi. Pra agilizar a avaliacao: bairro, area construida (m²) e quantos quartos. Com esses tres pontos a Priscila ja te manda uma faixa preliminar em ate 24h, gratis.";
+
+function aiChatResponse(text, history) {
+  const isVendedor = _modoVendedor(history);
+  const tabela = isVendedor ? IA_CHAT_RESPONSES_VENDEDOR : IA_CHAT_RESPONSES;
+  for (const r of tabela) if (r.match.test(text)) return r.resposta;
+  // No modo vendedor, ainda tenta um match na tabela geral (ex: pergunta sobre Priscila),
+  // mas pula a regra "vender" (que ja foi respondida) pra nao repetir.
+  if (isVendedor) {
+    for (const r of IA_CHAT_RESPONSES) {
+      if (r.match.test("vender")) continue;
+      if (r.match.test(text)) return r.resposta;
+    }
+    return IA_CHAT_FALLBACK_VENDEDOR;
+  }
   return IA_CHAT_FALLBACK;
 }
 

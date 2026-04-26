@@ -95,7 +95,12 @@ function AIChat({ variant = "cerulean" }) {
     } catch (err) {
       setTyping(false);
       setNetError("Conexao instavel. Vou te responder em modo local.");
-      setMsgs(m => [...m, { role: "ai", text: window.aiChatResponse(userText), t: Date.now() }]);
+      // Inclui o histórico (com a msg do user que acabou de entrar) pra preservar contexto
+      const histLocal = [...msgs, { role: "user", text: userText }].map(mm => ({
+        role: mm.role === "ai" ? "assistant" : mm.role,
+        content: mm.text,
+      }));
+      setMsgs(m => [...m, { role: "ai", text: window.aiChatResponse(userText, histLocal), t: Date.now() }]);
     }
   };
 

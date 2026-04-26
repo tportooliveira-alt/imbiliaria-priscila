@@ -37,7 +37,7 @@ def test_chat_envia_message_e_history(shared_dir: Path) -> None:
 def test_chat_tem_fallback_local_em_erro(shared_dir: Path) -> None:
     src = _src(shared_dir)
     assert "catch (err)" in src
-    assert "window.aiChatResponse(userText)" in src
+    assert "window.aiChatResponse(userText" in src
 
 
 def test_chat_mostra_estado_de_erro(shared_dir: Path) -> None:
