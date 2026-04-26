@@ -37,6 +37,10 @@ function useTilt() {
 function PropertyCard({ imovel, variant }) {
   const ref = useTilt();
   const linkDetalhe = imovel.codigo ? `#/imovel/${imovel.codigo.toLowerCase()}` : "#contato";
+  const matchValor = typeof imovel.matchCalculado === "number" ? imovel.matchCalculado : imovel.iaMatch;
+  const matchLabel = imovel.matchCalculado != null
+    ? `${matchValor}% match com sua busca`
+    : `${matchValor}% match IA`;
   const compartilhar = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -56,12 +60,12 @@ function PropertyCard({ imovel, variant }) {
           <div className="pcard-photo-grade"/>
           <div className="pcard-tags">
             <span className="pcard-status">{imovel.status}</span>
-            <span className="pcard-match">
+            <span className="pcard-match" title={matchLabel}>
               <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
                 <circle cx="6" cy="6" r="2" fill="currentColor"/>
                 <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth=".8" opacity=".4"/>
               </svg>
-              {imovel.iaMatch}% match IA
+              {matchValor}% match{imovel.matchCalculado != null ? "" : " IA"}
             </span>
           </div>
           <div className="pcard-bairro">{imovel.bairro}</div>
@@ -96,9 +100,79 @@ function PropertyCard({ imovel, variant }) {
   );
 }
 
+function AlertaBuscaBtn({ filter }) {
+  const [open, setOpen] = React.useState(false);
+  const [nome, setNome] = React.useState("");
+  const [contato, setContato] = React.useState("");
+  const [status, setStatus] = React.useState("idle"); // idle|loading|ok|err
+  const [erro, setErro] = React.useState("");
+  const enviar = async (e) => {
+    e.preventDefault();
+    if (!nome.trim() || !contato.trim()) {
+      setErro("Preencha nome e contato.");
+      return;
+    }
+    setStatus("loading");
+    setErro("");
+    try {
+      const r = await fetch("/api/alerta-busca", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome: nome.trim(), contato: contato.trim(), filtros: filter || {} }),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.detail || "Falha ao salvar alerta");
+      }
+      setStatus("ok");
+    } catch (ex) {
+      setStatus("err");
+      setErro(ex.message || "Erro ao salvar.");
+    }
+  };
+  if (status === "ok") {
+    return (
+      <div className="pgrid-alerta pgrid-alerta-ok">
+        ✓ Alerta criado. A Priscila avisa no seu WhatsApp quando aparecer um match.
+      </div>
+    );
+  }
+  if (!open) {
+    return (
+      <button type="button" className="pgrid-alerta-btn" onClick={() => setOpen(true)}>
+        🔔 Me avisar quando tiver novos
+      </button>
+    );
+  }
+  return (
+    <form className="pgrid-alerta-form" onSubmit={enviar}>
+      <input
+        type="text"
+        placeholder="Seu nome"
+        value={nome}
+        onChange={e => setNome(e.target.value)}
+        disabled={status === "loading"}
+      />
+      <input
+        type="text"
+        placeholder="WhatsApp ou e-mail"
+        value={contato}
+        onChange={e => setContato(e.target.value)}
+        disabled={status === "loading"}
+      />
+      <button type="submit" disabled={status === "loading"}>
+        {status === "loading" ? "Salvando…" : "Salvar"}
+      </button>
+      {erro && <span className="pgrid-alerta-err">{erro}</span>}
+    </form>
+  );
+}
+
 function PropertyGrid({ filter, variant = "cerulean", title = "Imóveis em destaque", subtitle, emptyMessage }) {
+  const filtroAtivo = !!(filter && (filter.bairro || filter.tipo || filter.faixa || filter.tema));
   const imoveis = React.useMemo(() => {
-    return window.IMOVEIS.filter(i => {
+    const _filtroAtivo = !!(filter && (filter.bairro || filter.tipo || filter.faixa || filter.tema));
+    const lista = window.IMOVEIS.filter(i => {
       if (!filter) return true;
       if (filter.bairro && i.bairro !== filter.bairro) return false;
       if (filter.tipo && i.tipo !== filter.tipo) return false;
@@ -109,6 +183,21 @@ function PropertyGrid({ filter, variant = "cerulean", title = "Imóveis em desta
       if (filter.tema && !(i.temas || []).includes(filter.tema)) return false;
       return true;
     });
+    if (!_filtroAtivo) return lista;
+    // Calcula match dinâmico (40 bairro + 25 tipo + 25 faixa + 10 tema)
+    const comMatch = lista.map(i => {
+      let score = 60; // base
+      if (filter.bairro && i.bairro === filter.bairro) score += 15;
+      if (filter.tipo && i.tipo === filter.tipo) score += 10;
+      if (filter.faixa) score += 8;
+      if (filter.tema && (i.temas || []).includes(filter.tema)) score += 7;
+      // Ajuste fino: imovel com mais tags relacionadas ganha pontinho
+      const baseIa = typeof i.iaMatch === "number" ? i.iaMatch : 80;
+      const matchCalculado = Math.min(99, Math.round(score * 0.5 + baseIa * 0.5));
+      return { ...i, matchCalculado };
+    });
+    comMatch.sort((a, b) => b.matchCalculado - a.matchCalculado);
+    return comMatch;
   }, [filter]);
 
   return (
@@ -125,6 +214,7 @@ function PropertyGrid({ filter, variant = "cerulean", title = "Imóveis em desta
           </span>
         </div>
       </header>
+      {filtroAtivo && <AlertaBuscaBtn filter={filter} />}
       {imoveis.length === 0 ? (
         <div className="pgrid-empty">
           <span>💭</span>
@@ -139,4 +229,4 @@ function PropertyGrid({ filter, variant = "cerulean", title = "Imóveis em desta
   );
 }
 
-Object.assign(window, { PropertyCard, PropertyGrid, useTilt });
+Object.assign(window, { PropertyCard, PropertyGrid, useTilt, AlertaBuscaBtn });

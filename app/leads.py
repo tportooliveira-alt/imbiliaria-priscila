@@ -347,3 +347,44 @@ def dashboard() -> dict:
         "imoveis_ativos": imoveis_ativos,
         "ultimos_leads": ultimos,
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Alertas de busca (C.4)
+# ─────────────────────────────────────────────────────────────────────────────
+def criar_alerta(*, nome: str, contato: str, filtros: dict, lead_id: int | None = None) -> int:
+    import json as _json
+    with db_session() as conn:
+        cur = conn.execute(
+            "INSERT INTO alertas_busca (lead_id, nome, contato, filtros) VALUES (?,?,?,?)",
+            (lead_id, nome, contato, _json.dumps(filtros, ensure_ascii=False)),
+        )
+        conn.commit()
+        return cur.lastrowid
+
+
+def listar_alertas(ativa: bool | None = True) -> list[dict]:
+    import json as _json
+    sql = (
+        "SELECT id, lead_id, nome, contato, filtros, ativa, "
+        "notificacoes_enviadas, ultima_notificacao, criado_em FROM alertas_busca"
+    )
+    params: tuple = ()
+    if ativa is not None:
+        sql += " WHERE ativa = ?"
+        params = (1 if ativa else 0,)
+    sql += " ORDER BY criado_em DESC"
+    with db_session() as conn:
+        rows = [dict(r) for r in conn.execute(sql, params).fetchall()]
+        for r in rows:
+            try:
+                r["filtros"] = _json.loads(r["filtros"] or "{}")
+            except Exception:
+                r["filtros"] = {}
+        return rows
+
+
+def desativar_alerta(alerta_id: int) -> None:
+    with db_session() as conn:
+        conn.execute("UPDATE alertas_busca SET ativa=0 WHERE id=?", (alerta_id,))
+        conn.commit()

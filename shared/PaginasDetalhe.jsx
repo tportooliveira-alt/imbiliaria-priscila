@@ -72,6 +72,9 @@ function ImovelDetalhe({ codigo, onVoltar }) {
   const txtWhats = `Oi Priscila, vi o imóvel ${imovel.codigo} (${imovel.titulo}) no site. Quero saber mais.`;
   const linkWhats = `https://wa.me/5577988193344?text=${encodeURIComponent(txtWhats)}`;
 
+  const Tour360Comp = window.Tour360;
+  const MiniMapaComp = window.MiniMapaImovel;
+
   const similares = window.IMOVEIS
     .filter(i => i.bairro === imovel.bairro && i.codigo !== imovel.codigo)
     .slice(0, 3);
@@ -97,6 +100,14 @@ function ImovelDetalhe({ codigo, onVoltar }) {
         <img src={imovel.img} alt={imovel.titulo}/>
         <figcaption>Foto ilustrativa · solicite o dossiê completo com todas as imagens.</figcaption>
       </figure>
+
+      {imovel.panorama_url && Tour360Comp && (
+        <Tour360Comp panoramaUrl={imovel.panorama_url} titulo={imovel.titulo}/>
+      )}
+
+      {MiniMapaComp && (
+        <MiniMapaComp bairro={imovel.bairro} titulo={imovel.titulo}/>
+      )}
 
       <div className="detalhe-cols">
         <section className="detalhe-corpo">

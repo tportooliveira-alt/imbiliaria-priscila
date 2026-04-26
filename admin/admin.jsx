@@ -429,12 +429,26 @@ function DetalheLead({ id, aoFechar }) {
   const [lead, setLead] = React.useState(null);
   const [nota, setNota] = React.useState("");
   const [erro, setErro] = React.useState("");
+  const [copilot, setCopilot] = React.useState(null);
+  const [copilotBusy, setCopilotBusy] = React.useState(false);
 
   React.useEffect(() => { carregar(); }, [id]);
 
   async function carregar() {
     try { setLead(await api(`/api/admin/leads/${id}`)); }
     catch (e) { setErro(e.message); }
+  }
+
+  async function pedirCopilot() {
+    setCopilotBusy(true);
+    try {
+      const dados = await api(`/api/admin/leads/${id}/copilot`);
+      setCopilot(dados);
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setCopilotBusy(false);
+    }
   }
 
   async function mudar(campo, valor) {
@@ -488,6 +502,33 @@ function DetalheLead({ id, aoFechar }) {
             <button className="btn-primary" style={{width: "auto"}} onClick={addNota}>Salvar nota</button>
           </div>
 
+          <h3 style={{marginTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between"}}>
+            <span>Co-pilot da Priscila</span>
+            <button className="btn-secondary" style={{width: "auto"}} onClick={pedirCopilot} disabled={copilotBusy}>
+              {copilotBusy ? "Analisando..." : (copilot ? "Atualizar" : "Gerar análise")}
+            </button>
+          </h3>
+          {copilot && (
+            <div className="copilot-card" style={{background: "#fafaf6", border: "1px solid #d8d2c1", borderRadius: 4, padding: 16, marginTop: 12}}>
+              <p style={{margin: 0, fontSize: 14, lineHeight: 1.5}}><b>Resumo:</b> {copilot.resumo}</p>
+              <p style={{marginTop: 12, fontSize: 14}}><b>Próxima ação:</b> {copilot.proxima_acao}</p>
+              {copilot.melhor_horario && <p style={{fontSize: 13, color: "#555"}}><b>Melhor horário:</b> {copilot.melhor_horario}</p>}
+              {copilot.objecoes_detectadas?.length > 0 && (
+                <p style={{fontSize: 13, color: "#a83333"}}>
+                  <b>Objeções detectadas:</b> {copilot.objecoes_detectadas.join(", ")}
+                </p>
+              )}
+              {copilot.perguntas_sugeridas?.length > 0 && (
+                <div style={{marginTop: 8}}>
+                  <b style={{fontSize: 13}}>Perguntas sugeridas:</b>
+                  <ul style={{margin: "6px 0 0 20px", fontSize: 13, color: "#333"}}>
+                    {copilot.perguntas_sugeridas.map((p, i) => <li key={i}>{p}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
           <h3 style={{marginTop: 24}}>Historico ({lead.interacoes?.length || 0})</h3>
           <div className="historico">
             {(lead.interacoes || []).map(i => (
@@ -498,6 +539,195 @@ function DetalheLead({ id, aoFechar }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OperacaoIA() {
+  const [metricas, setMetricas] = React.useState(null);
+  const [conversas, setConversas] = React.useState([]);
+  const [total, setTotal] = React.useState(0);
+  const [erro, setErro] = React.useState("");
+  const [detalheId, setDetalheId] = React.useState(null);
+  const [filtros, setFiltros] = React.useState({ busca: "", stage: "" });
+
+  React.useEffect(() => { carregar(); }, []);
+
+  async function carregar() {
+    setErro("");
+    try {
+      const [m, c] = await Promise.all([
+        api("/api/admin/operacao-ia/metricas?horas=24"),
+        api(
+          "/api/admin/operacao-ia/conversas?" +
+          new URLSearchParams({
+            busca: filtros.busca || "",
+            stage: filtros.stage || "",
+            limit: "50",
+          }).toString()
+        ),
+      ]);
+      setMetricas(m);
+      setConversas(c.items || []);
+      setTotal(c.total || 0);
+    } catch (e) {
+      setErro(e.message);
+    }
+  }
+
+  return (
+    <div>
+      {erro && <div className="alerta">{erro}</div>}
+
+      {!metricas ? (
+        <p>Carregando operacao IA...</p>
+      ) : (
+        <div className="kpi-grid">
+          <div className="kpi-card">
+            <span className="kpi-label">Execucoes (24h)</span>
+            <span className="kpi-value">{metricas.total_execucoes}</span>
+            <span className="kpi-sub">chamadas de IA</span>
+          </div>
+          <div className="kpi-card">
+            <span className="kpi-label">Sucesso</span>
+            <span className="kpi-value">{metricas.sucesso_percentual}%</span>
+            <span className="kpi-sub">execucoes sem erro</span>
+          </div>
+          <div className="kpi-card">
+            <span className="kpi-label">Fallback</span>
+            <span className="kpi-value">{metricas.fallback_percentual}%</span>
+            <span className="kpi-sub">respostas em contingencia</span>
+          </div>
+          <div className="kpi-card">
+            <span className="kpi-label">Latencia media</span>
+            <span className="kpi-value">{metricas.latencia_media_ms} ms</span>
+            <span className="kpi-sub">tempo medio por execucao</span>
+          </div>
+        </div>
+      )}
+
+      <h3 style={{marginTop: 28}}>Conversas recentes ({total})</h3>
+      <div className="filtros">
+        <input
+          placeholder="buscar por sessao, nome, telefone ou email..."
+          value={filtros.busca}
+          onChange={e => setFiltros(f => ({ ...f, busca: e.target.value }))}
+          onKeyDown={e => e.key === "Enter" && carregar()}
+        />
+        <select value={filtros.stage} onChange={e => setFiltros(f => ({ ...f, stage: e.target.value }))}>
+          <option value="">Todos stages</option>
+          <option value="frio">Frio</option>
+          <option value="morno">Morno</option>
+          <option value="quente">Quente</option>
+          <option value="pronto_visita">Pronto visita</option>
+          <option value="pronto_proposta">Pronto proposta</option>
+        </select>
+        <button className="btn-secondary" onClick={carregar}>Filtrar</button>
+      </div>
+
+      <table className="tab">
+        <thead>
+          <tr>
+            <th>Atualizado</th>
+            <th>Lead</th>
+            <th>Rota</th>
+            <th>Stage</th>
+            <th>Score</th>
+            <th>Msgs</th>
+            <th>Exec IA</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {conversas.map(c => (
+            <tr key={c.id}>
+              <td>{fmtData(c.atualizado_em)}</td>
+              <td>{c.lead_nome || c.lead_telefone || c.lead_email || "—"}</td>
+              <td>{c.rota_atual || "—"}</td>
+              <td>{c.ultimo_stage || "—"}</td>
+              <td>{c.ultimo_score ?? "—"}</td>
+              <td>{c.total_mensagens}</td>
+              <td>{c.total_execucoes}</td>
+              <td><button onClick={() => setDetalheId(c.id)}>Abrir</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {conversas.length === 0 && <p style={{textAlign: "center", color: "#555"}}>Nenhuma conversa encontrada.</p>}
+
+      {detalheId && <DetalheConversa id={detalheId} aoFechar={() => setDetalheId(null)} />}
+    </div>
+  );
+}
+
+function DetalheConversa({ id, aoFechar }) {
+  const [detalhe, setDetalhe] = React.useState(null);
+  const [erro, setErro] = React.useState("");
+
+  React.useEffect(() => {
+    api(`/api/admin/operacao-ia/conversas/${id}`).then(setDetalhe).catch(e => setErro(e.message));
+  }, [id]);
+
+  return (
+    <div className="modal-bg" onClick={e => e.target === e.currentTarget && aoFechar()}>
+      <div className="modal" style={{maxWidth: 920}}>
+        <div className="modal-head">
+          <h2>Conversa #{id}</h2>
+          <button onClick={aoFechar}>×</button>
+        </div>
+        <div className="modal-body">
+          {erro && <div className="alerta">{erro}</div>}
+          {!detalhe ? (
+            <p>Carregando...</p>
+          ) : (
+            <>
+              <div className="grid-3">
+                <div><label>Sessao</label><p>{detalhe.conversa.sessao_id}</p></div>
+                <div><label>Rota atual</label><p>{detalhe.conversa.rota_atual || "—"}</p></div>
+                <div><label>Stage</label><p>{detalhe.conversa.ultimo_stage || "—"}</p></div>
+              </div>
+
+              <h3 style={{marginTop: 16}}>Mensagens ({detalhe.mensagens.length})</h3>
+              <div className="historico" style={{maxHeight: 220}}>
+                {detalhe.mensagens.map(m => (
+                  <div key={m.id} className="hist-item">
+                    <span className="hist-tipo">{m.papel}</span>
+                    <span className="hist-quando">{fmtData(m.criado_em)}</span>
+                    <p>{m.conteudo}</p>
+                  </div>
+                ))}
+              </div>
+
+              <h3 style={{marginTop: 16}}>Execucoes IA ({detalhe.execucoes.length})</h3>
+              <table className="tab">
+                <thead><tr><th>Quando</th><th>Agente</th><th>Modelo</th><th>Fallback</th><th>Sucesso</th><th>Duracao</th></tr></thead>
+                <tbody>
+                  {detalhe.execucoes.map(e => (
+                    <tr key={e.id}>
+                      <td>{fmtData(e.criado_em)}</td>
+                      <td>{e.agente}</td>
+                      <td>{e.modelo}</td>
+                      <td>{e.fallback ? "sim" : "nao"}</td>
+                      <td>{e.sucesso ? "sim" : "nao"}</td>
+                      <td>{e.duracao_ms || 0} ms</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <h3 style={{marginTop: 16}}>Eventos ({detalhe.eventos.length})</h3>
+              <div className="historico" style={{maxHeight: 180}}>
+                {detalhe.eventos.map(ev => (
+                  <div key={ev.id} className="hist-item">
+                    <span className="hist-tipo">{ev.nome}</span>
+                    <span className="hist-quando">{fmtData(ev.criado_em)}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -550,6 +780,7 @@ function App() {
         <nav className="tabs">
           <button className={aba === "dashboard" ? "tab on" : "tab"} onClick={() => setAba("dashboard")}>Dashboard</button>
           <button className={aba === "leads" ? "tab on" : "tab"} onClick={() => setAba("leads")}>Leads</button>
+          <button className={aba === "operacao-ia" ? "tab on" : "tab"} onClick={() => setAba("operacao-ia")}>Operacao IA</button>
           <button className={aba === "imoveis" ? "tab on" : "tab"} onClick={() => setAba("imoveis")}>Imoveis</button>
         </nav>
         <div>
@@ -562,6 +793,7 @@ function App() {
       <main className="main">
         {aba === "dashboard" && <Dashboard />}
         {aba === "leads" && <Leads />}
+        {aba === "operacao-ia" && <OperacaoIA />}
         {aba === "imoveis" && (<>
         <div className="toolbar">
           <h2>Imoveis ({imoveis.length})</h2>

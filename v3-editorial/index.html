@@ -14,7 +14,10 @@
 <link rel="stylesheet" href="../shared/paginas-detalhe.css"/>
 <link rel="stylesheet" href="../shared/calculadora-poder-compra.css"/>
 <link rel="stylesheet" href="../shared/agendar-visita.css"/>
+<link rel="stylesheet" href="../shared/tour-mapa.css"/>
 <link rel="stylesheet" href="v3.css"/>
+<link rel="manifest" href="./manifest.webmanifest"/>
+<meta name="theme-color" content="#1a2030"/>
 </head>
 <body>
 <div id="app"></div>
@@ -33,8 +36,16 @@
 <script type="text/babel" src="../shared/AnuncieImovel.jsx"></script>
 <script type="text/babel" src="../shared/CookieBanner.jsx"></script>
 <script type="text/babel" src="../shared/AgendarVisita.jsx"></script>
+<script type="text/babel" src="../shared/TourMapa.jsx"></script>
 <script type="text/babel" src="../shared/PaginasDetalhe.jsx"></script>
 <script type="text/babel" src="../shared/CalculadoraPoderCompra.jsx"></script>
 <script type="text/babel" src="app.jsx"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () { /* offline opcional */ });
+    });
+  }
+</script>
 </body>
 </html>

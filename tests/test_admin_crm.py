@@ -152,3 +152,121 @@ def test_adicionar_nota(cliente):
     assert r.status_code == 201
     detalhe = cliente.get(f"/api/admin/leads/{lid}", headers=h).json()
     assert any(i["tipo"] == "nota" for i in detalhe["interacoes"])
+
+
+def test_operacao_ia_metricas_exige_token(cliente):
+    r = cliente.get("/api/admin/operacao-ia/metricas")
+    assert r.status_code == 401
+
+
+def test_operacao_ia_metricas_e_conversas_retorna_estrutura(cliente):
+    h = _login(cliente)
+
+    # Gera uma conversa para popular o painel
+    r = cliente.post("/api/chat", json={"message": "oi"})
+    assert r.status_code == 200
+    conversa_id = r.json()["conversation_id"]
+
+    r = cliente.get("/api/admin/operacao-ia/metricas", headers=h)
+    assert r.status_code == 200
+    body = r.json()
+    for k in ("total_execucoes", "sucesso_percentual", "fallback_percentual", "latencia_media_ms", "por_modelo", "por_agente"):
+        assert k in body
+
+    r = cliente.get("/api/admin/operacao-ia/conversas", headers=h)
+    assert r.status_code == 200
+    lista = r.json()
+    assert "items" in lista
+    assert "total" in lista
+    assert lista["total"] >= 1
+
+    r = cliente.get(f"/api/admin/operacao-ia/conversas/{conversa_id}", headers=h)
+    assert r.status_code == 200
+    detalhe = r.json()
+    assert "conversa" in detalhe
+    assert "mensagens" in detalhe
+    assert "execucoes" in detalhe
+    assert "eventos" in detalhe
+
+
+def test_copilot_lead_retorna_resumo_e_proxima_acao(cliente):
+    """C.3: heuristica local de co-pilot do lead."""
+    h = _login(cliente)
+    # cria lead via avaliacao publica
+    r = cliente.post(
+        "/api/avaliar-imovel",
+        json={
+            "bairro": "Candeias",
+            "area_util": 120,
+            "quartos": 3,
+            "nome": "Maria",
+            "contato": "77988887777",
+        },
+    )
+    assert r.status_code == 200
+    # encontra o lead criado
+    leads = cliente.get("/api/admin/leads", headers=h).json()["leads"]
+    assert leads
+    lead_id = leads[0]["id"]
+
+    r = cliente.get(f"/api/admin/leads/{lead_id}/copilot", headers=h)
+    assert r.status_code == 200
+    body = r.json()
+    for k in ("resumo", "proxima_acao", "perguntas_sugeridas", "objecoes_detectadas", "perfil"):
+        assert k in body
+    assert isinstance(body["perguntas_sugeridas"], list)
+    assert isinstance(body["objecoes_detectadas"], list)
+
+
+def test_copilot_lead_404_quando_nao_existe(cliente):
+    h = _login(cliente)
+    r = cliente.get("/api/admin/leads/99999/copilot", headers=h)
+    assert r.status_code == 404
+
+
+def test_alerta_busca_cria_e_lista(cliente):
+    """C.4: visitante salva filtro, admin lista."""
+    h = _login(cliente)
+    r = cliente.post(
+        "/api/alerta-busca",
+        json={
+            "nome": "Ana",
+            "contato": "ana@example.com",
+            "filtros": {"bairro": "Boa Vista", "tipo": "apartamento", "faixa": "500 a 1mi"},
+        },
+    )
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["ok"] is True
+    assert body["alerta_id"] > 0
+    assert body["lead_id"] > 0
+
+    r = cliente.get("/api/admin/alertas", headers=h)
+    assert r.status_code == 200
+    alertas = r.json()["alertas"]
+    assert len(alertas) >= 1
+    assert alertas[0]["nome"] == "Ana"
+    assert alertas[0]["filtros"]["bairro"] == "Boa Vista"
+
+
+def test_alerta_busca_rejeita_filtros_vazios(cliente):
+    r = cliente.post(
+        "/api/alerta-busca",
+        json={"nome": "Joao", "contato": "77999999999", "filtros": {}},
+    )
+    assert r.status_code == 400
+
+
+def test_alerta_desativar(cliente):
+    h = _login(cliente)
+    r = cliente.post(
+        "/api/alerta-busca",
+        json={"nome": "Bia", "contato": "bia@x.com", "filtros": {"bairro": "Recreio"}},
+    )
+    alerta_id = r.json()["alerta_id"]
+    r = cliente.delete(f"/api/admin/alertas/{alerta_id}", headers=h)
+    assert r.status_code == 200
+    # nao aparece mais na listagem (so as ativas)
+    alertas = cliente.get("/api/admin/alertas", headers=h).json()["alertas"]
+    assert all(a["id"] != alerta_id for a in alertas)
+

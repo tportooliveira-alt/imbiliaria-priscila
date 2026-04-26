@@ -450,3 +450,52 @@ def agendar_visita(payload: AgendarVisitaRequest) -> dict:
         "lead_id": lead_id,
         "mensagem": "Visita registrada! A Priscila confirma no seu WhatsApp em ate 2 horas.",
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Alerta de busca (C.4) — visitante salva filtro e recebe novidades.
+# ─────────────────────────────────────────────────────────────────────────────
+class AlertaBuscaRequest(BaseModel):
+    nome: str = Field(..., min_length=2, max_length=120)
+    contato: str = Field(..., min_length=5, max_length=120)
+    filtros: dict = Field(default_factory=dict)
+
+
+@router.post("/api/alerta-busca", status_code=201)
+def alerta_busca(payload: AlertaBuscaRequest) -> dict:
+    """Cria alerta para o visitante ser avisado quando um imovel novo bater no filtro dele."""
+    if not (payload.filtros or {}):
+        raise HTTPException(status_code=400, detail="filtros vazios")
+
+    # Cria/atualiza lead leve
+    contato_email = payload.contato if "@" in payload.contato else None
+    contato_tel = payload.contato if not contato_email else None
+    lead_id = leads_repo.upsert_lead(
+        nome=payload.nome,
+        telefone=contato_tel,
+        email=contato_email,
+        origem="site",
+    )
+    alerta_id = leads_repo.criar_alerta(
+        nome=payload.nome,
+        contato=payload.contato,
+        filtros=payload.filtros,
+        lead_id=lead_id,
+    )
+    leads_repo.registrar_interacao(
+        lead_id,
+        tipo="nota",
+        descricao=f"Criou alerta de busca: {payload.filtros}",
+        metadata={"alerta_id": alerta_id, "filtros": payload.filtros},
+    )
+    leads_repo.adicionar_tag(lead_id, "alerta_busca")
+    for chave, valor in (payload.filtros or {}).items():
+        if isinstance(valor, str) and valor:
+            leads_repo.adicionar_tag(lead_id, f"{chave}:{valor.lower()}")
+
+    return {
+        "ok": True,
+        "alerta_id": alerta_id,
+        "lead_id": lead_id,
+        "mensagem": "Pronto! Te aviso assim que aparecer um imovel novo nesse perfil.",
+    }

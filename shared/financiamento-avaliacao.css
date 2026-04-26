@@ -130,6 +130,16 @@
 .aval-confianca { text-align: center; font-size: 13px; color: #555; margin-bottom: 24px; }
 .aval-acoes { display: flex; gap: 12px; justify-content: center; }
 
+/* Régua min-média-máx (C.2) */
+.aval-regua { max-width: 720px; margin: 8px auto 24px; }
+.aval-regua-trilho { position: relative; height: 14px; background: #efe9d9; border-radius: 7px; overflow: visible; border: 1px solid #d8d2c1; }
+.aval-regua-faixa { position: absolute; inset: 0; background: linear-gradient(90deg, #c5b88f 0%, #2d4a3e 50%, #c5b88f 100%); border-radius: 7px; opacity: .85; }
+.aval-regua-marcador { position: absolute; top: -6px; width: 4px; height: 26px; background: #1a1a1a; border-radius: 2px; transform: translateX(-50%); box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.aval-regua-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #6c6657; }
+.aval-fatores { max-width: 720px; margin: 0 auto 16px; background: #fff; border: 1px solid #d8d2c1; border-radius: 4px; padding: 12px 16px; font-size: 14px; }
+.aval-fatores summary { cursor: pointer; font-weight: 500; color: #2d4a3e; }
+.aval-fatores ul { margin: 12px 0 4px 20px; color: #444; line-height: 1.7; }
+
 @media (max-width: 720px) {
   .sim-fin, .aval-stepper, .aval-result { padding: 32px 20px; margin: 32px 16px; }
   .sim-grid, .aval-grid2, .aval-grid3 { grid-template-columns: 1fr; gap: 24px; }

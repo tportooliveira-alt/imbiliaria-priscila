@@ -7,6 +7,67 @@
   background: var(--cinza-1);
 }
 
+/* C.4 — Alerta de busca */
+.pgrid-alerta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid var(--ouro, #c9a961);
+  background: transparent;
+  color: var(--ouro, #c9a961);
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+.pgrid-alerta-btn:hover {
+  background: var(--ouro, #c9a961);
+  color: #0e1320;
+}
+.pgrid-alerta-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+.pgrid-alerta-form input {
+  flex: 1 1 180px;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  color: inherit;
+  font-size: 0.9rem;
+}
+.pgrid-alerta-form button {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--ouro, #c9a961);
+  color: #0e1320;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pgrid-alerta-form button:disabled { opacity: 0.6; cursor: wait; }
+.pgrid-alerta-err {
+  flex: 1 1 100%;
+  color: #f87171;
+  font-size: 0.85rem;
+}
+.pgrid-alerta-ok {
+  margin-bottom: 1.5rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .pgrid-head {
   max-width: 1280px; margin: 0 auto clamp(2rem, 4vw, 3.5rem);
   display: flex; align-items: flex-end; justify-content: space-between;
@@ -283,3 +344,5 @@
 .pgrid-editorial { background: #f6f1e7; }
 .pgrid-editorial .pcard-editorial { border-radius: 4px; background: #fff; }
 .pgrid-editorial .pcard-shine { border-radius: 4px; }
+
+

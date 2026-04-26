@@ -132,6 +132,24 @@ function AvaliacaoImovel() {
           <div className="aval-central"><small>Valor central</small><strong>{formatarValor(resultado.valor_central)}</strong></div>
           <div className="aval-max"><small>Maximo</small><strong>{formatarValor(resultado.valor_maximo)}</strong></div>
         </div>
+        <div className="aval-regua" aria-hidden="true">
+          <div className="aval-regua-trilho">
+            <div className="aval-regua-faixa"/>
+            <div className="aval-regua-marcador" style={{ left: "50%" }} title="Valor central"/>
+          </div>
+          <div className="aval-regua-labels">
+            <span>{formatarValor(resultado.valor_minimo)}</span>
+            <span>{formatarValor(resultado.valor_maximo)}</span>
+          </div>
+        </div>
+        {Array.isArray(resultado.fatores) && resultado.fatores.length > 0 && (
+          <details className="aval-fatores">
+            <summary>O que pesou nesta avaliacao ({resultado.fatores.length} fatores)</summary>
+            <ul>
+              {resultado.fatores.map((f, i) => <li key={i}>{f}</li>)}
+            </ul>
+          </details>
+        )}
         <p className="aval-texto">{resultado.texto}</p>
         <p className="aval-confianca">Confianca da estimativa: <strong>{resultado.confianca}</strong></p>
         <div className="aval-acoes">

@@ -205,6 +205,20 @@ CREATE TABLE IF NOT EXISTS eventos_funil (
 );
 CREATE INDEX IF NOT EXISTS idx_eventos_funil_nome ON eventos_funil(nome, criado_em);
 CREATE INDEX IF NOT EXISTS idx_eventos_funil_lead ON eventos_funil(lead_id, criado_em);
+
+CREATE TABLE IF NOT EXISTS alertas_busca (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_id INTEGER,
+    nome TEXT,
+    contato TEXT NOT NULL,
+    filtros TEXT NOT NULL DEFAULT '{}',
+    ativa INTEGER NOT NULL DEFAULT 1,
+    notificacoes_enviadas INTEGER NOT NULL DEFAULT 0,
+    ultima_notificacao TEXT,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_alertas_busca_ativa ON alertas_busca(ativa, criado_em);
 """
 
 
