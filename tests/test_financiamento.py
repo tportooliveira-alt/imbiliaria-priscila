@@ -56,6 +56,74 @@ def test_validacao_entrada_maior_que_valor():
         simular(300_000, 400_000, 360, 11.5, "SAC")
 
 
+# ─── Seguros (MIP+DFI+tarifa) e idade do tomador ───
+def test_parcela_com_seguros_maior_que_base():
+    """Parcela COM seguros sempre > parcela tecnica (juros+amort)."""
+    r = simular(500_000, 100_000, 360, 11.5, "SAC")
+    assert r.parcela_inicial_com_seguros > r.parcela_inicial
+    # Seguros + tarifa devem somar pelo menos R$ 100 pra esse imovel
+    delta = r.parcela_inicial_com_seguros - r.parcela_inicial
+    assert delta >= 100
+
+
+def test_mip_aumenta_com_idade():
+    """Tomador mais velho paga MIP maior."""
+    jovem = simular(500_000, 100_000, 240, 11.5, "SAC", idade_tomador=25)
+    velho = simular(500_000, 100_000, 240, 11.5, "SAC", idade_tomador=60)
+    assert velho.seguro_mip_inicial > jovem.seguro_mip_inicial
+    assert velho.parcela_inicial_com_seguros > jovem.parcela_inicial_com_seguros
+    # Parcela base (juros+amort) tem que ser identica
+    assert jovem.parcela_inicial == pytest.approx(velho.parcela_inicial, abs=0.5)
+
+
+def test_dfi_e_tarifa_independem_de_idade():
+    a = simular(500_000, 100_000, 240, 11.5, "SAC", idade_tomador=25)
+    b = simular(500_000, 100_000, 240, 11.5, "SAC", idade_tomador=60)
+    assert a.seguro_dfi_mensal == b.seguro_dfi_mensal
+    assert a.tarifa_adm_mensal == b.tarifa_adm_mensal
+
+
+def test_idade_mais_prazo_excede_limite_sfh():
+    """Idade 70 + 30 anos = 100 anos no fim. Deve barrar."""
+    with pytest.raises(ValueError, match="limite SFH"):
+        simular(300_000, 60_000, 360, 11.5, "SAC", idade_tomador=70)
+
+
+def test_idade_no_limite_aceita():
+    """Idade 50 + 30 anos = 80 anos. Deve aceitar."""
+    r = simular(300_000, 60_000, 360, 11.5, "SAC", idade_tomador=50)
+    assert r.idade_tomador == 50
+
+
+def test_custos_aquisicao_proporcional_ao_valor():
+    r = simular(500_000, 100_000, 360, 11.5, "SAC")
+    custos = r.custos_aquisicao
+    # ITBI 3%
+    assert custos["itbi"] == pytest.approx(15_000, abs=1)
+    # Cartorio 3%
+    assert custos["cartorio"] == pytest.approx(15_000, abs=1)
+    # Total inclui avaliacao
+    assert custos["total"] > custos["itbi"] + custos["cartorio"]
+
+
+def test_total_pago_com_seguros_maior_que_total_pago():
+    r = simular(500_000, 100_000, 360, 11.5, "SAC")
+    assert r.total_pago_com_seguros > r.total_pago
+    assert r.total_seguros_estimado > 0
+
+
+def test_renda_minima_usa_parcela_com_seguros():
+    """Renda minima deve refletir o que o banco analisa (parcela cheia)."""
+    r = simular(500_000, 100_000, 360, 11.5, "SAC")
+    # Renda minima = parcela_com_seguros / 0.30 (banco usa 30%)
+    assert r.renda_minima == pytest.approx(r.parcela_inicial_com_seguros / 0.30, rel=0.01)
+
+
+def test_idade_default_quando_nao_informada():
+    r = simular(500_000, 100_000, 360, 11.5, "SAC")
+    assert r.idade_tomador == 35  # IDADE_DEFAULT
+
+
 def test_validacao_prazo_invalido():
     with pytest.raises(ValueError):
         simular(300_000, 60_000, 5, 11.5, "SAC")

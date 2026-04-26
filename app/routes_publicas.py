@@ -24,6 +24,7 @@ class SimulacaoRequest(BaseModel):
     taxa_anual: float = Field(11.5, ge=0, le=30)
     sistema: Literal["SAC", "PRICE"] = "SAC"
     renda_mensal: float | None = Field(None, ge=0)
+    idade_tomador: int | None = Field(None, ge=18, le=80)
     nome: str | None = Field(None, max_length=120)
     contato: str | None = Field(None, max_length=120)
     bairro: str | None = Field(None, max_length=80)
@@ -49,6 +50,7 @@ def simular(payload: SimulacaoRequest) -> dict:
             taxa_anual=payload.taxa_anual,
             sistema=payload.sistema,
             renda_mensal=payload.renda_mensal,
+            idade_tomador=payload.idade_tomador,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -63,7 +65,7 @@ def simular(payload: SimulacaoRequest) -> dict:
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 r.valor_imovel, r.entrada, r.prazo_meses, r.taxa_anual, r.sistema,
-                r.parcela_inicial, r.total_pago, r.renda_minima,
+                r.parcela_inicial_com_seguros, r.total_pago_com_seguros, r.renda_minima,
                 payload.nome, payload.contato,
                 payload.bairro, payload.tipo_imovel,
             ),
@@ -97,6 +99,7 @@ def simular(payload: SimulacaoRequest) -> dict:
                 taxa_anual=info["taxa_anual"],
                 sistema=payload.sistema,
                 renda_mensal=payload.renda_mensal,
+                idade_tomador=payload.idade_tomador,
             )
             comparativo.append({
                 "chave": chave,
@@ -105,12 +108,14 @@ def simular(payload: SimulacaoRequest) -> dict:
                 "lt_max": info["lt_max"],
                 "parcela_inicial": sim_banco.parcela_inicial,
                 "parcela_final": sim_banco.parcela_final,
+                "parcela_inicial_com_seguros": sim_banco.parcela_inicial_com_seguros,
                 "total_pago": sim_banco.total_pago,
+                "total_pago_com_seguros": sim_banco.total_pago_com_seguros,
                 "total_juros": sim_banco.total_juros,
             })
         except ValueError:
             continue
-    comparativo.sort(key=lambda b: b["parcela_inicial"])
+    comparativo.sort(key=lambda b: b["parcela_inicial_com_seguros"])
 
     # Vira lead automaticamente se houver contato
     if payload.nome or payload.contato:
@@ -122,7 +127,7 @@ def simular(payload: SimulacaoRequest) -> dict:
         )
         descricao_partes = [
             f"Simulou {r.sistema}: {r.valor_imovel:.0f}",
-            f"parcela {r.parcela_inicial:.0f}",
+            f"parcela {r.parcela_inicial_com_seguros:.0f} (com seguros)",
         ]
         if payload.bairro:
             descricao_partes.append(f"bairro {payload.bairro}")
@@ -135,6 +140,7 @@ def simular(payload: SimulacaoRequest) -> dict:
             metadata={
                 "valor_imovel": r.valor_imovel,
                 "parcela_inicial": r.parcela_inicial,
+                "parcela_inicial_com_seguros": r.parcela_inicial_com_seguros,
                 "comprometimento_renda": r.comprometimento_renda,
                 "comprometimento_ok": comprometimento_ok,
                 "bairro": payload.bairro,
@@ -168,14 +174,30 @@ def simular(payload: SimulacaoRequest) -> dict:
         "taxa_mensal": round(r.taxa_mensal, 4),
         "parcela_inicial": r.parcela_inicial,
         "parcela_final": r.parcela_final,
+        "parcela_inicial_com_seguros": r.parcela_inicial_com_seguros,
+        "parcela_final_com_seguros": r.parcela_final_com_seguros,
         "total_pago": r.total_pago,
+        "total_pago_com_seguros": r.total_pago_com_seguros,
         "total_juros": r.total_juros,
+        "total_seguros_estimado": r.total_seguros_estimado,
+        "idade_tomador": r.idade_tomador,
+        "seguro_mip_inicial": r.seguro_mip_inicial,
+        "seguro_dfi_mensal": r.seguro_dfi_mensal,
+        "tarifa_adm_mensal": r.tarifa_adm_mensal,
         "renda_minima": r.renda_minima,
         "comprometimento_renda": r.comprometimento_renda,
         "comprometimento_ok": comprometimento_ok,
         "primeiras_parcelas": r.primeiras_parcelas,
+        "custos_aquisicao": r.custos_aquisicao,
         "comparativo_bancos": comparativo,
         "fonte_taxas": "Sites oficiais dos bancos (SBPE) - abril/2026",
+        "observacoes": [
+            "Parcela inclui MIP (seguro morte/invalidez), DFI (seguro do imovel) e tarifa adm.",
+            "MIP varia com a idade do tomador — quanto mais velho, mais caro.",
+            "Taxa real depende do seu relacionamento com o banco, score de credito e modalidade (FGTS, SBPE, MCMV).",
+            "Caixa Pro-Cotista exige 3+ anos de FGTS e nao ter outro imovel; imovel ate R$ 1,5 milhao.",
+            "Custos de aquisicao (ITBI 3%, cartorio ~3%) sao pagos UMA vez, fora do financiamento.",
+        ],
     }
 
 

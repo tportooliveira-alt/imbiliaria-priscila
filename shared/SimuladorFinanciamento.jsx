@@ -42,6 +42,7 @@ function SimuladorFinanciamento() {
   const [tipoImovel, setTipoImovel] = React.useState(cache.tipoImovel || "apartamento");
   const [bairro, setBairro] = React.useState(cache.bairro || "Candeias");
   const [valor, setValor] = React.useState(cache.valor || 450000);
+  const [idade, setIdade] = React.useState(cache.idade || 35);
   const [identificado, setIdentificado] = React.useState(!!cache.telefone);
 
   // ── Parametros da simulacao ──
@@ -65,7 +66,7 @@ function SimuladorFinanciamento() {
       return;
     }
     sessionStorage.setItem("sim_lead", JSON.stringify({
-      nome, telefone, tipoImovel, bairro, valor,
+      nome, telefone, tipoImovel, bairro, valor, idade,
     }));
     setIdentificado(true);
     setErro("");
@@ -85,6 +86,7 @@ function SimuladorFinanciamento() {
           taxa_anual: taxa,
           sistema,
           renda_mensal: renda ? Number(renda) : null,
+          idade_tomador: idade ? Number(idade) : null,
           nome: nome || null,
           contato: telefone || null,
           bairro: bairro || null,
@@ -102,7 +104,7 @@ function SimuladorFinanciamento() {
   React.useEffect(() => {
     if (identificado) simular();
     // eslint-disable-next-line
-  }, [entradaPct, prazo, taxa, sistema, valor]);
+  }, [entradaPct, prazo, taxa, sistema, valor, idade]);
 
   // ─────────── PASSO 1: gate de captura ───────────
   if (!identificado) {
@@ -153,6 +155,13 @@ function SimuladorFinanciamento() {
                 onChange={e => setTelefone(formatarTelefone(e.target.value))}
                 required />
             </div>
+          </div>
+
+          <div className="sim-field">
+            <label>Sua idade <small>(impacta o seguro do banco)</small></label>
+            <input type="number" min={18} max={75} step={1}
+              value={idade}
+              onChange={e => setIdade(Math.max(18, Math.min(75, +e.target.value || 35)))} />
           </div>
 
           <button className="sim-cta sim-cta-grande" type="submit"
@@ -238,26 +247,68 @@ function SimuladorFinanciamento() {
           {resultado ? (
             <>
               <div className="sim-parcela">
-                <span>Parcela inicial · {sistema}</span>
-                <strong>{formatarBRL(resultado.parcela_inicial)}</strong>
-                {sistema === "SAC" && resultado.parcela_final !== resultado.parcela_inicial && (
-                  <small>final: {formatarBRL(resultado.parcela_final)}</small>
-                )}
+                <span>Parcela inicial · {sistema} · com seguros</span>
+                <strong>{formatarBRL(resultado.parcela_inicial_com_seguros)}</strong>
+                <small>
+                  base (juros+amort): {formatarBRL(resultado.parcela_inicial)}
+                  {sistema === "SAC" && ` · final: ${formatarBRL(resultado.parcela_final_com_seguros)}`}
+                </small>
+              </div>
+
+              <div className="sim-breakdown">
+                <div className="sim-breakdown-titulo">O que compoe a parcela do banco</div>
+                <ul>
+                  <li>
+                    <span>Juros + amortizacao</span>
+                    <b>{formatarBRL(resultado.parcela_inicial)}</b>
+                  </li>
+                  <li>
+                    <span>Seguro MIP <small>(idade {resultado.idade_tomador}a)</small></span>
+                    <b>{formatarBRL(resultado.seguro_mip_inicial)}</b>
+                  </li>
+                  <li>
+                    <span>Seguro DFI <small>(imovel)</small></span>
+                    <b>{formatarBRL(resultado.seguro_dfi_mensal)}</b>
+                  </li>
+                  <li>
+                    <span>Tarifa administrativa</span>
+                    <b>{formatarBRL(resultado.tarifa_adm_mensal)}</b>
+                  </li>
+                </ul>
+                <p className="sim-breakdown-nota">
+                  MIP cai junto com a divida (incide sobre saldo devedor) e
+                  varia conforme idade. DFI e tarifa sao constantes.
+                </p>
               </div>
 
               <ul className="sim-stats">
                 <li><span>Financiado</span><b>{formatarBRL(resultado.valor_financiado)}</b></li>
-                <li><span>Total a pagar</span><b>{formatarBRL(resultado.total_pago)}</b></li>
+                <li><span>Total a pagar</span><b>{formatarBRL(resultado.total_pago_com_seguros)}</b></li>
                 <li><span>Total de juros</span><b>{formatarBRL(resultado.total_juros)}</b></li>
+                <li><span>Total de seguros (estimado)</span><b>{formatarBRL(resultado.total_seguros_estimado)}</b></li>
                 <li><span>Renda minima sugerida</span><b>{formatarBRL(resultado.renda_minima)}</b></li>
               </ul>
+
+              {resultado.custos_aquisicao && (
+                <div className="sim-custos">
+                  <div className="sim-custos-titulo">
+                    Custos de aquisicao <small>(pagos UMA vez, fora do financiamento)</small>
+                  </div>
+                  <ul>
+                    <li><span>ITBI (3%)</span><b>{formatarBRL(resultado.custos_aquisicao.itbi)}</b></li>
+                    <li><span>Cartorio (registro+escritura)</span><b>{formatarBRL(resultado.custos_aquisicao.cartorio)}</b></li>
+                    <li><span>Avaliacao do banco</span><b>{formatarBRL(resultado.custos_aquisicao.avaliacao_banco)}</b></li>
+                    <li className="sim-custos-total"><span>Total a desembolsar na compra</span><b>{formatarBRL(resultado.custos_aquisicao.total + entrada)}</b></li>
+                  </ul>
+                </div>
+              )}
 
               {resultado.comprometimento_renda != null && (
                 <div className={`sim-flag ${resultado.comprometimento_ok ? "ok" : "alta"}`}>
                   Comprometimento da renda: <strong>
                     {(resultado.comprometimento_renda * 100).toFixed(1)}%
                   </strong>
-                  {resultado.comprometimento_ok ? " — dentro do limite" : " — acima de 30%"}
+                  {resultado.comprometimento_ok ? " — dentro do limite (banco aceita)" : " — acima de 30% (provavel recusa)"}
                 </div>
               )}
 
@@ -265,11 +316,28 @@ function SimuladorFinanciamento() {
 
               <SimGrafico parcelas={resultado.primeiras_parcelas} />
 
+              {resultado.observacoes && (
+                <div className="sim-disclaimer">
+                  <div className="sim-disclaimer-titulo">Por que sua parcela real pode variar</div>
+                  <ul>
+                    {resultado.observacoes.map((o, i) => <li key={i}>{o}</li>)}
+                  </ul>
+                  <p>
+                    A simulacao acima usa a <strong>taxa de tabela</strong> (a que
+                    o banco anuncia no site). Sua taxa final depende do seu perfil:
+                    correntista do banco, score de credito, uso do FGTS, modalidade
+                    (SBPE / Pro-Cotista / MCMV / portabilidade) e ate do imovel
+                    (novo, usado, na planta). A Priscila ja negociou taxas ate
+                    1,5 ponto percentual abaixo da tabela em casos com bom perfil.
+                  </p>
+                </div>
+              )}
+
               <a href="#chat" className="sim-fechar"
                 onClick={() => window.dispatchEvent(new CustomEvent("abrir-chat", { detail: {
-                  mensagem: `Simulei ${tipoImovel} em ${bairro}, ${formatarBRL(valor)}, entrada ${entradaPct}%, parcela ${formatarBRL(resultado.parcela_inicial)}. Pode me orientar?`
+                  mensagem: `Simulei ${tipoImovel} em ${bairro}, ${formatarBRL(valor)}, entrada ${entradaPct}%, parcela ${formatarBRL(resultado.parcela_inicial_com_seguros)} (com seguros). Pode me orientar?`
                 }}))}>
-                Quero falar com a Priscila
+                Quero falar com a Priscila sobre essas parcelas
               </a>
             </>
           ) : (
@@ -298,7 +366,10 @@ function ComparativoBancos({ bancos, prazo }) {
               {b === melhor && <span className="sim-banco-flag">Menor parcela</span>}
             </div>
             <div className="sim-banco-tax">{b.taxa_anual.toFixed(2)}% a.a.</div>
-            <div className="sim-banco-parc">{(b.parcela_inicial).toLocaleString("pt-BR", {style:"currency", currency:"BRL", maximumFractionDigits:0})}</div>
+            <div className="sim-banco-parc">
+              {(b.parcela_inicial_com_seguros ?? b.parcela_inicial).toLocaleString("pt-BR", {style:"currency", currency:"BRL", maximumFractionDigits:0})}
+              <small>com seguros</small>
+            </div>
           </li>
         ))}
       </ul>
@@ -313,17 +384,20 @@ function ComparativoBancos({ bancos, prazo }) {
 
 function SimGrafico({ parcelas }) {
   if (!parcelas?.length) return null;
-  const max = Math.max(...parcelas.map(p => p.parcela));
+  const max = Math.max(...parcelas.map(p => p.parcela_total ?? p.parcela));
   return (
     <div className="sim-grafico">
-      <span className="sim-grafico-titulo">Primeiras 12 parcelas</span>
+      <span className="sim-grafico-titulo">Primeiras 12 parcelas (com seguros)</span>
       <div className="sim-bars">
-        {parcelas.map(p => (
-          <div key={p.n} className="sim-bar" title={`Mes ${p.n}: ${formatarBRL(p.parcela)}`}>
-            <div className="sim-bar-fill" style={{height: `${(p.parcela / max) * 100}%`}} />
-            <small>{p.n}</small>
-          </div>
-        ))}
+        {parcelas.map(p => {
+          const valor = p.parcela_total ?? p.parcela;
+          return (
+            <div key={p.n} className="sim-bar" title={`Mes ${p.n}: ${formatarBRL(valor)}`}>
+              <div className="sim-bar-fill" style={{height: `${(valor / max) * 100}%`}} />
+              <small>{p.n}</small>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
