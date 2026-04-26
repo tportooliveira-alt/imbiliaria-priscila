@@ -7,6 +7,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app import avaliacao, financiamento, leads as leads_repo
+from app.conversas import registrar_evento_funil
 from app.db import db_session
 from app.m2_vdc import BAIRROS_DISPONIVEIS
 
@@ -68,6 +69,18 @@ def simular(payload: SimulacaoRequest) -> dict:
             ),
         )
         sim_id = int(cur.lastrowid)
+
+    registrar_evento_funil(
+        "simulacao.criada",
+        origem="simulador",
+        payload={
+            "simulacao_id": sim_id,
+            "sistema": r.sistema,
+            "bairro": payload.bairro,
+            "tipo_imovel": payload.tipo_imovel,
+        },
+        idempotency_key=f"simulacao:{sim_id}",
+    )
 
     comprometimento_ok = (
         r.comprometimento_renda is not None and r.comprometimento_renda <= 0.30
@@ -133,6 +146,17 @@ def simular(payload: SimulacaoRequest) -> dict:
             leads_repo.adicionar_tag(lead_id, f"bairro:{payload.bairro.lower()}")
         if payload.tipo_imovel:
             leads_repo.adicionar_tag(lead_id, f"tipo:{payload.tipo_imovel.lower()}")
+        registrar_evento_funil(
+            "lead.qualificado",
+            origem="simulador",
+            lead_id=lead_id,
+            payload={
+                "simulacao_id": sim_id,
+                "score_estimado": 70 if comprometimento_ok else 45,
+                "comprometimento_ok": comprometimento_ok,
+            },
+            idempotency_key=f"lead.qualificado:simulacao:{sim_id}:{lead_id}",
+        )
 
     return {
         "sistema": r.sistema,
@@ -211,6 +235,17 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
         )
         av_id = int(cur.lastrowid)
 
+    registrar_evento_funil(
+        "avaliacao.solicitada",
+        origem="avaliacao",
+        payload={
+            "avaliacao_id": av_id,
+            "bairro": payload.bairro,
+            "valor_central": r.valor_central,
+        },
+        idempotency_key=f"avaliacao:{av_id}",
+    )
+
     # Vira lead automaticamente (vendedor) se houver contato
     if payload.nome or payload.contato:
         lead_id = leads_repo.upsert_lead(
@@ -232,6 +267,17 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
                 "valor_maximo": r.valor_maximo,
             },
             referencia_id=av_id,
+        )
+        registrar_evento_funil(
+            "lead.qualificado",
+            origem="avaliacao",
+            lead_id=lead_id,
+            payload={
+                "avaliacao_id": av_id,
+                "bairro": payload.bairro,
+                "score_estimado": 60,
+            },
+            idempotency_key=f"lead.qualificado:avaliacao:{av_id}:{lead_id}",
         )
 
     return {

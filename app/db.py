@@ -140,6 +140,71 @@ CREATE TABLE IF NOT EXISTS lead_tags (
     PRIMARY KEY (lead_id, tag),
     FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS conversas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sessao_id TEXT NOT NULL UNIQUE,
+    canal TEXT NOT NULL DEFAULT 'site',
+    lead_id INTEGER,
+    status TEXT NOT NULL DEFAULT 'aberta',
+    rota_atual TEXT,
+    ultimo_score INTEGER,
+    ultimo_stage TEXT,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_conversas_sessao ON conversas(sessao_id);
+CREATE INDEX IF NOT EXISTS idx_conversas_lead ON conversas(lead_id);
+CREATE INDEX IF NOT EXISTS idx_conversas_stage ON conversas(ultimo_stage);
+
+CREATE TABLE IF NOT EXISTS mensagens_conversa (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversa_id INTEGER NOT NULL,
+    papel TEXT NOT NULL,
+    conteudo TEXT NOT NULL,
+    metadata TEXT DEFAULT '{}',
+    chave_mensagem TEXT UNIQUE,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversa_id) REFERENCES conversas(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_mensagens_conversa ON mensagens_conversa(conversa_id, criado_em);
+
+CREATE TABLE IF NOT EXISTS execucoes_ia (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversa_id INTEGER,
+    lead_id INTEGER,
+    agente TEXT NOT NULL,
+    evento TEXT,
+    provedor TEXT NOT NULL,
+    modelo TEXT NOT NULL,
+    fallback INTEGER NOT NULL DEFAULT 0,
+    sucesso INTEGER NOT NULL DEFAULT 1,
+    duracao_ms INTEGER,
+    metadata TEXT DEFAULT '{}',
+    erro TEXT,
+    chave_idempotencia TEXT UNIQUE,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversa_id) REFERENCES conversas(id) ON DELETE SET NULL,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_execucoes_ia_conversa ON execucoes_ia(conversa_id, criado_em);
+CREATE INDEX IF NOT EXISTS idx_execucoes_ia_agente ON execucoes_ia(agente, criado_em);
+
+CREATE TABLE IF NOT EXISTS eventos_funil (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    origem TEXT NOT NULL DEFAULT 'site',
+    lead_id INTEGER,
+    conversa_id INTEGER,
+    payload TEXT DEFAULT '{}',
+    idempotency_key TEXT UNIQUE,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL,
+    FOREIGN KEY (conversa_id) REFERENCES conversas(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_eventos_funil_nome ON eventos_funil(nome, criado_em);
+CREATE INDEX IF NOT EXISTS idx_eventos_funil_lead ON eventos_funil(lead_id, criado_em);
 """
 
 

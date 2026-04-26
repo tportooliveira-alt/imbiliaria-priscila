@@ -136,3 +136,52 @@
   .sim-head h2, .aval-head h2 { font-size: 24px; }
   .aval-result .aval-faixa { grid-template-columns: 1fr; }
 }
+
+/* === Simulador como funil de captacao === */
+.sim-gate { max-width: 640px; margin: 0 auto; }
+.sim-gate .sim-head { text-align: center; margin-bottom: 28px; }
+.sim-gate .sim-head h2 { font-family: Georgia, serif; font-weight: 400; font-size: 32px; margin: 8px 0 12px; }
+.sim-gate .sim-head p { color: #555; font-size: 15px; line-height: 1.6; max-width: 520px; margin: 0 auto; }
+.sim-eyebrow { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #c9a96e; font-weight: 600; }
+.sim-form-gate { background: #fff; padding: 32px; border-radius: 6px; border: 1px solid #e8e2d2; box-shadow: 0 8px 32px rgba(15,35,64,.06); }
+.sim-form-gate .sim-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+.sim-form-gate .sim-field { margin-bottom: 18px; }
+.sim-form-gate .sim-field label { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #555; margin-bottom: 6px; }
+.sim-form-gate input, .sim-form-gate select {
+  width: 100%; padding: 12px 14px; border: 1px solid #d8d2c1; background: #fff;
+  border-radius: 4px; font-size: 15px; font-family: inherit; box-sizing: border-box;
+}
+.sim-form-gate input[type="range"] { padding: 0; }
+.sim-cta-grande {
+  width: 100%; padding: 16px; font-size: 14px; letter-spacing: .14em;
+  text-transform: uppercase; background: #2d4a3e; color: #fff; border: none;
+  border-radius: 4px; cursor: pointer; font-weight: 600; transition: background .15s;
+}
+.sim-cta-grande:hover:not(:disabled) { background: #1f342b; }
+.sim-cta-grande:disabled { opacity: .5; cursor: not-allowed; }
+.sim-privacidade { font-size: 12px; color: #888; text-align: center; margin: 16px 0 0; line-height: 1.5; }
+.sim-erro { color: #a23a2c; font-size: 13px; margin: 12px 0 0; text-align: center; }
+
+/* === Comparativo entre bancos === */
+.sim-fonte { font-size: 12px; color: #888; font-style: italic; margin-top: 4px; }
+.sim-bancos { margin-top: 24px; padding: 20px; background: #f9f7f1; border-radius: 6px; border: 1px solid #e8e2d2; }
+.sim-bancos-titulo { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: #2d4a3e; font-weight: 600; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.sim-bancos-titulo small { font-size: 10px; color: #888; font-weight: 400; letter-spacing: .12em; }
+.sim-bancos-lista { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.sim-bancos-lista li {
+  display: grid; grid-template-columns: 1.6fr 1fr 1.2fr; gap: 12px;
+  padding: 10px 14px; background: #fff; border: 1px solid #ece6d6; border-radius: 4px;
+  align-items: center; font-size: 14px;
+}
+.sim-bancos-lista li.is-melhor { border-color: #c9a96e; background: #fdfaf2; box-shadow: 0 0 0 1px rgba(201,169,110,.3); }
+.sim-banco-nome { font-weight: 500; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sim-banco-flag { background: #c9a96e; color: #fff; font-size: 9px; padding: 3px 7px; border-radius: 3px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+.sim-banco-tax { color: #555; font-size: 13px; }
+.sim-banco-parc { font-weight: 600; color: #2d4a3e; text-align: right; font-family: Georgia, serif; }
+.sim-bancos-nota { font-size: 12px; color: #777; margin: 14px 0 0; line-height: 1.55; font-style: italic; }
+
+@media (max-width: 600px) {
+  .sim-form-gate .sim-row { grid-template-columns: 1fr; }
+  .sim-bancos-lista li { grid-template-columns: 1fr; gap: 4px; text-align: left; }
+  .sim-banco-parc { text-align: left; }
+}
