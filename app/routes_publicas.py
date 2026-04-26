@@ -379,3 +379,74 @@ def lead_vendedor(payload: LeadVendedorRequest) -> dict:
         "lead_id": lead_id,
         "mensagem": "Recebido! A Priscila te chama em ate 24h.",
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Agendamento de visita
+# ─────────────────────────────────────────────────────────────────────────────
+class AgendarVisitaRequest(BaseModel):
+    nome: str = Field(..., min_length=2, max_length=120)
+    telefone: str = Field(..., min_length=8, max_length=30)
+    data_preferida: str = Field(..., min_length=8, max_length=10)  # YYYY-MM-DD
+    turno: Literal["manha", "tarde", "noite"] = "manha"
+    codigo_imovel: str | None = Field(None, max_length=20)
+    titulo_imovel: str | None = Field(None, max_length=200)
+    bairro: str | None = Field(None, max_length=80)
+    observacoes: str | None = Field(None, max_length=1000)
+
+
+@router.post("/api/agendar-visita")
+def agendar_visita(payload: AgendarVisitaRequest) -> dict:
+    """Recebe pedido de visita ao imovel e cria/atualiza lead com interacao tipo 'visita'."""
+    lead_id = leads_repo.upsert_lead(
+        nome=payload.nome,
+        telefone=payload.telefone,
+        origem="site",
+    )
+
+    turno_label = {"manha": "manha", "tarde": "tarde", "noite": "noite"}.get(payload.turno, payload.turno)
+    descricao_partes = ["Pediu visita"]
+    if payload.codigo_imovel:
+        descricao_partes.append(f"imovel {payload.codigo_imovel}")
+    if payload.bairro:
+        descricao_partes.append(f"bairro {payload.bairro}")
+    descricao_partes.append(f"data {payload.data_preferida} ({turno_label})")
+    descricao = " - ".join(descricao_partes)
+
+    leads_repo.registrar_interacao(
+        lead_id,
+        tipo="visita",
+        descricao=descricao,
+        metadata={
+            "data_preferida": payload.data_preferida,
+            "turno": payload.turno,
+            "codigo_imovel": payload.codigo_imovel,
+            "titulo_imovel": payload.titulo_imovel,
+            "bairro": payload.bairro,
+            "observacoes": payload.observacoes,
+        },
+    )
+    leads_repo.adicionar_tag(lead_id, "agendou_visita")
+    if payload.codigo_imovel:
+        leads_repo.adicionar_tag(lead_id, f"imovel:{payload.codigo_imovel.lower()}")
+    if payload.bairro:
+        leads_repo.adicionar_tag(lead_id, f"bairro:{payload.bairro.lower()}")
+
+    registrar_evento_funil(
+        "visita.agendada",
+        origem="site",
+        lead_id=lead_id,
+        payload={
+            "codigo_imovel": payload.codigo_imovel,
+            "data_preferida": payload.data_preferida,
+            "turno": payload.turno,
+            "bairro": payload.bairro,
+        },
+        idempotency_key=f"visita.agendada:{lead_id}:{payload.data_preferida}:{payload.codigo_imovel or 'sem'}",
+    )
+
+    return {
+        "ok": True,
+        "lead_id": lead_id,
+        "mensagem": "Visita registrada! A Priscila confirma no seu WhatsApp em ate 2 horas.",
+    }

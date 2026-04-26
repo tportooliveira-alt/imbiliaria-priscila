@@ -42,6 +42,7 @@ function _fmtMi(v) {
 
 // ─────────── IMÓVEL ───────────
 function ImovelDetalhe({ codigo, onVoltar }) {
+  const [agendarOpen, setAgendarOpen] = React.useState(false);
   const imovel = React.useMemo(() => {
     return window.IMOVEIS.find(i => i.codigo === codigo) || null;
   }, [codigo]);
@@ -124,6 +125,10 @@ function ImovelDetalhe({ codigo, onVoltar }) {
         </section>
 
         <aside className="detalhe-lateral">
+          <button type="button" className="detalhe-cta-agendar" onClick={() => setAgendarOpen(true)}>
+            📅 Agendar visita
+          </button>
+
           <div className="detalhe-cta-card">
             <span className="detalhe-cta-label">Quanto fica financiando?</span>
             <p>Use o simulador com o valor já pré-carregado.</p>
@@ -170,6 +175,16 @@ function ImovelDetalhe({ codigo, onVoltar }) {
             ))}
           </div>
         </section>
+      )}
+
+      {agendarOpen && (
+        <AgendarVisita
+          codigo={imovel.codigo}
+          titulo={imovel.titulo}
+          bairro={imovel.bairro}
+          precoLabel={imovel.precoLabel}
+          onClose={() => setAgendarOpen(false)}
+        />
       )}
     </div>
   );

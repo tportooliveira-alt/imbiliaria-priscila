@@ -206,3 +206,58 @@ def test_lead_vendedor_registra_interacao_e_tag(cliente):
     assert "Casa" in interacao["descricao"]
     assert "captacao" in tags
     assert any(t.startswith("bairro:") for t in tags)
+
+
+def test_agendar_visita_cria_lead_e_interacao(cliente):
+    r = cliente.post("/api/agendar-visita", json={
+        "nome": "Beatriz Souza",
+        "telefone": "77988883333",
+        "data_preferida": "2026-05-01",
+        "turno": "tarde",
+        "codigo_imovel": "PV-001",
+        "titulo_imovel": "Casa Contemporanea",
+        "bairro": "Candeias",
+        "observacoes": "Levo minha esposa.",
+    })
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["ok"] is True
+    lead_id = body["lead_id"]
+    assert lead_id > 0
+
+    from app.db import db_session
+    with db_session() as conn:
+        interacao = conn.execute(
+            "SELECT tipo, descricao FROM lead_interacoes WHERE lead_id = ?",
+            (lead_id,),
+        ).fetchone()
+        tags = [t["tag"] for t in conn.execute(
+            "SELECT tag FROM lead_tags WHERE lead_id = ?",
+            (lead_id,),
+        ).fetchall()]
+    assert interacao is not None
+    assert interacao["tipo"] == "visita"
+    assert "PV-001" in interacao["descricao"]
+    assert "agendou_visita" in tags
+    assert "imovel:pv-001" in tags
+    assert "bairro:candeias" in tags
+
+
+def test_agendar_visita_validacao(cliente):
+    r = cliente.post("/api/agendar-visita", json={
+        "nome": "X",
+        "telefone": "77988883333",
+        "data_preferida": "2026-05-01",
+        "turno": "manha",
+    })
+    assert r.status_code == 422
+
+
+def test_agendar_visita_turno_invalido(cliente):
+    r = cliente.post("/api/agendar-visita", json={
+        "nome": "Joao",
+        "telefone": "77988883333",
+        "data_preferida": "2026-05-01",
+        "turno": "madrugada",
+    })
+    assert r.status_code == 422
