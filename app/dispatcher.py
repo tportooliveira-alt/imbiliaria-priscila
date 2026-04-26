@@ -13,6 +13,52 @@ from __future__ import annotations
 from app.clients import ClienteClaude, ClienteFallback, ClienteGemini, LLMClient, RespostaLLM
 from app.lead import qualify_lead, track_stage
 from app.prompts import analysis_prompt, system_prompt
+
+
+def _montar_contexto_carteira() -> str:
+    """Monta um snapshot rapido da carteira ativa para injetar no system prompt.
+    Retorna string vazia se BD nao estiver acessivel (fallback silencioso).
+    """
+    try:
+        from app.db import db_session
+
+        with db_session() as conn:
+            total = conn.execute(
+                "SELECT COUNT(*) AS n FROM imoveis WHERE ativo=1"
+            ).fetchone()["n"]
+            por_bairro = conn.execute(
+                """SELECT bairro, COUNT(*) AS n,
+                          ROUND(AVG(preco)) AS preco_medio
+                   FROM imoveis WHERE ativo=1
+                   GROUP BY bairro ORDER BY n DESC LIMIT 6"""
+            ).fetchall()
+            destaques = conn.execute(
+                """SELECT titulo, bairro, preco, quartos, area_util
+                   FROM imoveis WHERE ativo=1 AND destaque=1
+                   ORDER BY preco DESC LIMIT 5"""
+            ).fetchall()
+
+        if not total:
+            return ""
+
+        linhas = [f"Carteira ativa: {total} imoveis cadastrados."]
+        if por_bairro:
+            linhas.append("Distribuicao por bairro:")
+            for r in por_bairro:
+                preco = r["preco_medio"] or 0
+                preco_fmt = f"~R$ {preco/1000:.0f} mil" if preco < 1_000_000 else f"~R$ {preco/1_000_000:.2f} mi"
+                linhas.append(f"  - {r['bairro']}: {r['n']} imoveis (ticket {preco_fmt})")
+        if destaques:
+            linhas.append("Destaques no momento:")
+            for r in destaques:
+                p = r["preco"] or 0
+                p_fmt = f"R$ {p/1_000_000:.2f} mi" if p >= 1_000_000 else f"R$ {p/1000:.0f} mil"
+                linhas.append(
+                    f"  - {r['titulo']} ({r['bairro']}, {r['quartos']}q, {r['area_util']}m2) - {p_fmt}"
+                )
+        return "\n".join(linhas)
+    except Exception:
+        return ""
 from app.router import Rota, classificar
 
 
@@ -82,7 +128,8 @@ def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem:
     """Pipeline completo: classifica → cascata Gemini → Claude → fallback."""
     cls = classificar(mensagem, tem_imagem=tem_imagem)
     lead = qualify_lead(mensagem, history=historico)
-    system = system_prompt(cls.rota)
+    contexto = _montar_contexto_carteira()
+    system = system_prompt(cls.rota, contexto=contexto or None)
 
     resp = _cascata(cls.rota, system, mensagem, historico)
 

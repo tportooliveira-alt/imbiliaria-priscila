@@ -136,23 +136,24 @@ const IA_CAPACIDADES = [
 ];
 
 // Fake AI chat — canned responses matched by keyword, otherwise fallback
-const IA_CHAT_INTRO = "Olá! Sou a IA da Priscila. Em < 2 min eu entendo o que você busca e agendo com a Priscila. O que você procura hoje?";
+const IA_CHAT_INTRO = "Oi, aqui e da equipe da Priscila Vasconcelos. Me conta o que voce esta procurando hoje em Vitoria da Conquista — bairro, faixa de valor ou se voce esta vendendo. Com isso ja consigo te dar um caminho.";
 const IA_CHAT_SUGESTOES = [
-  "Quero comprar em Candeias",
-  "Busco investimento",
-  "Vou vender meu imóvel",
-  "Até R$ 500 mil",
+  "Apartamento em Candeias, ate 800 mil",
+  "Casa com 3 quartos pra primeira compra",
+  "Quero investir pra alugar",
+  "Vou vender meu imovel, vale quanto?",
 ];
 const IA_CHAT_RESPONSES = [
-  { match: /candeias|nobre|alto padr/i,      resposta: "Perfeito. Candeias é nosso bairro nº 1 — temos 42 imóveis ativos, ticket médio R$ 1,12 mi. Qual seu orçamento aproximado?" },
-  { match: /boa vista|primeira|jovem/i,      resposta: "Boa Vista é excelente para primeira compra — apartamentos novos de R$ 320 a R$ 780 mil. Quantos quartos você precisa?" },
-  { match: /recreio|investimento|investir|aluga/i, resposta: "Recreio é o melhor bairro para investir agora — yield médio de 0,68 %/mês. Posso te mostrar 5 imóveis com potencial de valorização?" },
-  { match: /vender|vendo|minha casa/i,       resposta: "Ótimo! A Priscila avalia seu imóvel em 24 h. Me diz o bairro e a metragem aproximada pra eu já adiantar a precificação." },
-  { match: /500|400|300|orçamento/i,         resposta: "Com esse orçamento temos 27 opções em Boa Vista e 12 em Recreio. Qual é mais importante: bairro, metragem ou localização?" },
-  { match: /suite|quarto/i,                  resposta: "Entendi. Quantas suítes e vagas de garagem? Também já cruzo com seu orçamento pra te mostrar matches acima de 85 %." },
-  { match: /priscila|humana|corretora/i,     resposta: "A Priscila responde pessoalmente em todas as negociações. A IA cuida da triagem — ela cuida da venda. Quer que eu já agende uma conversa no WhatsApp?" },
+  { match: /candeias|nobre|alto padr/i,      resposta: "Candeias hoje e o bairro mais consolidado de alto padrao em Conquista — ticket medio rodando R$ 1,1 milhao, 42 imoveis ativos na nossa carteira. Pra te indicar 3 que batem com seu perfil, qual o tamanho ideal: 3, 4 ou 5 quartos?" },
+  { match: /boa vista|primeira|jovem/i,      resposta: "Boa Vista e a melhor relacao para quem esta comprando o primeiro imovel. Apartamentos novos saindo de R$ 320 a 780 mil, com financiamento facilitado. Voce ja tem alguma entrada guardada ou ainda esta planejando?" },
+  { match: /recreio|investimento|investir|aluga|renda/i, resposta: "Recreio esta com o melhor retorno de aluguel agora — yield medio de 0,68% ao mes, ocupacao alta por causa da Uesb. Posso te mostrar 5 opcoes com potencial de valorizacao. Qual sua faixa de investimento?" },
+  { match: /vender|vendo|minha casa|avalia/i,resposta: "A Priscila avalia pessoalmente em ate 24h, gratis. Pra ja adiantar a faixa, me diz: bairro, area aproximada e quantos quartos. Costumamos fechar precos 8-12% acima da media de portal porque trabalhamos a venda em rede privada." },
+  { match: /500|400|300|orçamento|orcamento/i, resposta: "Nessa faixa de R$ 300-500 mil temos 27 opcoes em Boa Vista e 12 em Recreio. Pra filtrar, o que pesa mais pra voce: bairro, metragem ou ter elevador/garagem coberta?" },
+  { match: /suite|quarto/i,                  resposta: "Anotado. Quantas suites e vagas voce precisa? Cruzo com seu orcamento e ja te mando aqui as opcoes com match acima de 85%." },
+  { match: /priscila|humana|corretora|falar/i, resposta: "A Priscila atende pessoalmente toda negociacao — eu cuido da triagem pra ela chegar com tudo na mao. Me passa seu WhatsApp e o melhor horario, que ela te liga ainda hoje." },
+  { match: /financiamento|caixa|parcela|sbpe/i, resposta: "Hoje a Caixa SBPE esta em 11,49% a.a. e a Pro-Cotista (FGTS) em 9,49%. Se quiser ver a parcela exata pro seu caso, o simulador real esta na pagina de Financiamento — em 30s voce ve o comparativo entre Caixa, BB, Itau, Bradesco e Santander." },
 ];
-const IA_CHAT_FALLBACK = "Entendi. Me conta um pouco mais — qual bairro, quantos quartos, e até quanto você quer investir? Com essas três informações eu já consigo te mostrar as melhores opções.";
+const IA_CHAT_FALLBACK = "Entendi. Pra eu te indicar com precisao: qual bairro voce tem em mente, quantos quartos, e ate quanto voce pretende investir? Com esses tres pontos eu ja filtro as melhores opcoes da carteira ativa.";
 
 function aiChatResponse(text) {
   for (const r of IA_CHAT_RESPONSES) if (r.match.test(text)) return r.resposta;

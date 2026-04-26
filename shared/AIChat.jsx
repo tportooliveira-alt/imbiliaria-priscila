@@ -15,7 +15,13 @@ function AIChat({ variant = "cerulean" }) {
   const [analysis, setAnalysis] = React.useState(null);
   const [funnel, setFunnel] = React.useState(null);
   const [analysisBusy, setAnalysisBusy] = React.useState(false);
+  const [sessionId, setSessionId] = React.useState(() => window.sessionStorage.getItem("pv-chat-session") || "");
   const bodyRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!sessionId) return;
+    window.sessionStorage.setItem("pv-chat-session", sessionId);
+  }, [sessionId]);
 
   // Scroll to bottom on new message
   React.useEffect(() => {
@@ -65,6 +71,7 @@ function AIChat({ variant = "cerulean" }) {
         body: JSON.stringify({
           message: userText,
           history: historyPayload,
+          session_id: sessionId || undefined,
         }),
       });
 
@@ -74,6 +81,7 @@ function AIChat({ variant = "cerulean" }) {
 
       const data = await r.json();
       setTyping(false);
+      if (data.session_id) setSessionId(data.session_id);
       setLeadMeta({
         score: data.lead_score,
         stage: data.lead_stage,
@@ -100,7 +108,7 @@ function AIChat({ variant = "cerulean" }) {
       const r = await fetch("/api/analisar-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ history: historyPayload }),
+        body: JSON.stringify({ history: historyPayload, session_id: sessionId || undefined }),
       });
 
       if (!r.ok) {
@@ -149,10 +157,10 @@ function AIChat({ variant = "cerulean" }) {
         <div className="aic-panel">
           <header className="aic-header">
             <div className="aic-ident">
-              <div className="aic-avatar"><span>IA</span></div>
+              <div className="aic-avatar"><span>PV</span></div>
               <div>
-                <div className="aic-title">Assistente Priscila · IA</div>
-                <div className="aic-status"><span className="aic-status-dot"/> Online · responde em &lt; 2 min</div>
+                <div className="aic-title">Atendimento Priscila Vasconcelos</div>
+                <div className="aic-status"><span className="aic-status-dot"/> Online agora · CRECI/BA 29.231</div>
               </div>
             </div>
             <button className="aic-close" onClick={() => setOpen(false)} aria-label="Fechar">
