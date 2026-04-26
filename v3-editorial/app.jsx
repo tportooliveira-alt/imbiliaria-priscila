@@ -3,6 +3,7 @@
 // numbered sections, big quote, layouts assimétricos.
 
 function App() {
+  const route = window.useHashRoute();
   const [filter, setFilter] = React.useState({ bairro: "", tipo: "", faixa: "", tema: "" });
   const [transacao, setTransacao] = React.useState("comprar");
   const [anuncieOpen, setAnuncieOpen] = React.useState(false);
@@ -13,6 +14,33 @@ function App() {
   });
 
   const setTema = (tema) => setFilter(f => ({ ...f, tema: f.tema === tema ? "" : tema }));
+  const voltarHome = () => { window.location.hash = ""; };
+
+  // Páginas de detalhe — só nav + footer; resto da home vira oculto
+  if (route.tipo === "imovel") {
+    return (
+      <>
+        <NavSimples onAnuncieOpen={() => setAnuncieOpen(true)}/>
+        <ImovelDetalhe codigo={route.id} onVoltar={voltarHome}/>
+        <FooterSimples onAnuncieOpen={() => setAnuncieOpen(true)}/>
+        <AIChat variant="editorial"/>
+        {anuncieOpen && <AnuncieImovel onClose={() => setAnuncieOpen(false)}/>}
+        <CookieBanner/>
+      </>
+    );
+  }
+  if (route.tipo === "bairro") {
+    return (
+      <>
+        <NavSimples onAnuncieOpen={() => setAnuncieOpen(true)}/>
+        <BairroDetalhe slug={route.id} onVoltar={voltarHome}/>
+        <FooterSimples onAnuncieOpen={() => setAnuncieOpen(true)}/>
+        <AIChat variant="editorial"/>
+        {anuncieOpen && <AnuncieImovel onClose={() => setAnuncieOpen(false)}/>}
+        <CookieBanner/>
+      </>
+    );
+  }
 
   return (
     <>
@@ -127,7 +155,9 @@ function App() {
       <PropertyGrid filter={filter} variant="editorial" subtitle="A IA já cruzou perfil, orçamento e bairro. Estes são os matches."/>
 
       {/* ═══════ SIMULADOR DE FINANCIAMENTO ═══════ */}
-      <SimuladorFinanciamento/>
+      <div id="simulador">
+        <SimuladorFinanciamento/>
+      </div>
 
       {/* ═══════ MANIFESTO / QUOTE ═══════ */}
       <section className="manifestoH">
@@ -225,7 +255,9 @@ function App() {
       </section>
 
       {/* ═══════ AVALIACAO DE IMOVEL ═══════ */}
-      <AvaliacaoImovel/>
+      <div id="avaliacao">
+        <AvaliacaoImovel/>
+      </div>
 
       {/* ═══════ CTA ═══════ */}
       <section className="ctaH" id="contato">
@@ -265,5 +297,40 @@ function App() {
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById("app"));
-root.render(<App/>);
+function NavSimples({ onAnuncieOpen }) {
+  return (
+    <nav className="navH">
+      <div className="navH-inner">
+        <a href="#" className="navH-mark" onClick={(e) => { e.preventDefault(); window.location.hash = ""; }}>
+          <span className="navH-mark-name">Priscila Vasconcelos</span>
+          <span className="navH-mark-sub">Imóveis · IA · Vitória da Conquista</span>
+        </a>
+        <div className="navH-links">
+          <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ""; }}>Início</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); onAnuncieOpen(); }}>Anuncie seu imóvel</a>
+        </div>
+        <a href="https://wa.me/5577988193344" target="_blank" rel="noopener" className="btnH btnH-solid">Falar comigo</a>
+      </div>
+    </nav>
+  );
+}
+
+function FooterSimples({ onAnuncieOpen }) {
+  return (
+    <footer className="footH">
+      <div className="footH-inner">
+        <div className="footH-mark">
+          <span className="footH-mark-name">Priscila Vasconcelos</span>
+          <span className="footH-mark-sub">Imóveis com IA · Vitória da Conquista · CRECI/BA 29.231</span>
+        </div>
+        <span className="footH-copy">© {new Date().getFullYear()} · Edição Permanente · Vol. 01</span>
+        <div className="footH-links">
+          <a href="./privacidade.html">Política de privacidade</a>
+          <span aria-hidden="true">·</span>
+          <a href="#" onClick={(e) => { e.preventDefault(); onAnuncieOpen(); }}>Anuncie seu imóvel</a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+

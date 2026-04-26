@@ -36,8 +36,10 @@ function useTilt() {
 
 function PropertyCard({ imovel, variant }) {
   const ref = useTilt();
+  const linkDetalhe = imovel.codigo ? `#/imovel/${imovel.codigo.toLowerCase()}` : "#contato";
   const compartilhar = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const linha1 = `Oi, vi este imóvel no site da Priscila Vasconcelos:`;
     const linha2 = `${imovel.titulo} — ${imovel.precoLabel}`;
     const linha3 = `${imovel.bairro} · ${imovel.quartos} quartos · ${imovel.area} m²`;
@@ -70,7 +72,7 @@ function PropertyCard({ imovel, variant }) {
             <div className="pcard-tipo">{imovel.tipo}</div>
             <div className="pcard-preco">{imovel.precoLabel}</div>
           </div>
-          <h3 className="pcard-titulo">{imovel.titulo}</h3>
+          <h3 className="pcard-titulo"><a href={linkDetalhe} className="pcard-titulo-link">{imovel.titulo}</a></h3>
           <p className="pcard-desc">{imovel.descricao}</p>
           <div className="pcard-stats">
             <span><strong>{imovel.quartos}</strong> quartos</span>
@@ -79,7 +81,7 @@ function PropertyCard({ imovel, variant }) {
             <span><strong>{imovel.area}</strong> m²</span>
           </div>
           <div className="pcard-actions">
-            <a className="pcard-cta" href="#contato">Tenho interesse →</a>
+            <a className="pcard-cta" href={linkDetalhe}>Ver detalhes →</a>
             <button className="pcard-share" type="button" onClick={compartilhar} aria-label="Compartilhar no WhatsApp" title="Enviar pra alguém pelo WhatsApp">
               <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M13.6 2.4A7.5 7.5 0 001.5 12.3L.5 15.5l3.3-1A7.5 7.5 0 1013.6 2.4zM8 13.6a5.6 5.6 0 01-2.8-.8l-.2-.1-2 .6.6-1.9-.1-.2A5.6 5.6 0 118 13.6zm3.1-4.2c-.2-.1-1-.5-1.2-.5-.2-.1-.3-.1-.4.1l-.5.6c-.1.1-.2.1-.4 0a4.5 4.5 0 01-2.2-2c-.2-.3.2-.3.5-.9 0-.1 0-.2 0-.3l-.5-1.2c-.1-.3-.3-.3-.4-.3h-.4a.7.7 0 00-.5.2 2 2 0 00-.6 1.5c0 .9.6 1.7.7 1.9a6.7 6.7 0 002.6 2.3c1.7.7 1.7.5 2 .4a1.7 1.7 0 001.2-.8c.1-.3.1-.6 0-.6 0-.1-.2-.1-.4-.2z"/></svg>
             </button>

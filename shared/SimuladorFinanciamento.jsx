@@ -106,6 +106,18 @@ function SimuladorFinanciamento() {
     // eslint-disable-next-line
   }, [entradaPct, prazo, taxa, sistema, valor, idade]);
 
+  // Pre-preenche valor/bairro/tipo a partir de outras paginas (detalhe de imovel)
+  React.useEffect(() => {
+    const onPrefill = (e) => {
+      const d = e.detail || {};
+      if (d.valor) setValor(d.valor);
+      if (d.bairro) setBairro(d.bairro);
+      if (d.tipo) setTipoImovel(d.tipo);
+    };
+    window.addEventListener("simulador:prefill", onPrefill);
+    return () => window.removeEventListener("simulador:prefill", onPrefill);
+  }, []);
+
   // ─────────── PASSO 1: gate de captura ───────────
   if (!identificado) {
     return (
