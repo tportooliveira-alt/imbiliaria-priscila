@@ -44,6 +44,8 @@ def test_chat_aceita_mensagem_simples(client: TestClient) -> None:
     body = r.json()
     assert body["rota"] == "triagem"
     assert body["resposta"]
+    assert body["session_id"]
+    assert body["conversation_id"]
     assert "lead_score" in body
     assert "lead_stage" in body
     assert "provider_metadata" in body

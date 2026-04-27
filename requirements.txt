@@ -14,6 +14,11 @@ python-multipart>=0.0.12
 Pillow>=11.0
 pillow-heif>=0.18
 
+# Cálculo financeiro / dataset / relatórios PDF
+numpy>=2.0
+pandas>=2.2
+reportlab>=4.2
+
 # Dev / testes
 pytest>=8.3
 httpx>=0.27

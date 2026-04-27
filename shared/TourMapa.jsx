@@ -25,16 +25,16 @@ function _carregarLib(key, css, js) {
 function carregarPannellum() {
   return _carregarLib(
     "pannellum",
-    "https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css",
-    "https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"
+    "https://unpkg.com/pannellum@2.5.6/build/pannellum.css",
+    "https://unpkg.com/pannellum@2.5.6/build/pannellum.js"
   );
 }
 
 function carregarLeaflet() {
   return _carregarLib(
     "leaflet",
-    "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css",
-    "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+    "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
+    "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   );
 }
 

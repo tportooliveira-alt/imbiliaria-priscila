@@ -1,0 +1,56 @@
+Com base em todo o ecossistema de proptechs (tecnologia imobiliária) que mapeamos através das fontes, criei um **Prompt Mestre de Desenvolvimento e Produto**. 
+
+Você pode copiar o texto abaixo e colá-lo no ChatGPT, Claude, Cursor ou entregar diretamente para sua equipe de desenvolvimento de software e UX/UI. Ele consolida todas as ferramentas de ponta discutidas e instrui a criação de uma arquitetura escalável.
+
+***
+
+### 📋 Copie e cole o prompt abaixo:
+
+> **"Atue como um Arquiteto de Soluções Sênior, Product Manager e Tech Lead especializado na criação de Proptechs e Sistemas SaaS (Software as a Service) B2B/B2C.**
+> 
+> Preciso desenvolver um SaaS imobiliário completo (plataforma web e mobile) que centralize a jornada de compra, venda, aluguel e gestão de imóveis. O objetivo é eliminar o trabalho manual, escalar vendas e conectar sistemas através de Integrações de API REST e Webhooks, garantindo alta performance e resiliência contra falhas.
+> 
+> Desenhe a arquitetura do sistema, o fluxo de dados e o roadmap de desenvolvimento (MVP e Fases seguintes), obrigando a integração das seguintes ferramentas e motores de Inteligência Artificial:
+> 
+> **1. Captura e Automação de Leads (Back-office)**
+> *   **Ferramentas:** Parseur, Zapier e RD Station Marketing.
+> *   **Requisito:** O SaaS deve usar OCR dinâmico e IA do Parseur para extrair automaticamente dados de leads vindos de portais imobiliários (por e-mail) e informações de contratos PDF, jogando tudo diretamente no CRM sem digitação manual. O Zapier deve rotear esses leads e o RD Station deve assumir a nutrição de marketing.
+> 
+> **2. Atendimento 24/7 e Qualificação (Agentes de IA)**
+> *   **Ferramentas:** Lais.ai, Maya (Plaza), Mia (Morada.ai) ou Leadster.
+> *   **Requisito:** Implementar um chatbot e assistente de WhatsApp com IA Generativa que responda em até 15 segundos, converse em múltiplos idiomas (como a Mia), entenda o perfil do cliente, recomende imóveis e faça pré-agendamento de visitas otimizando a agenda geográfica dos corretores. 
+> 
+> **3. Catálogo de Imóveis, Lançamentos e Sincronização**
+> *   **Ferramenta:** Órulo API.
+> *   **Requisito:** Integração via OAuth 2.0 com a API da Órulo para manter o catálogo de imóveis primários (lançamentos) sempre atualizado. O sistema deve listar empreendimentos, puxar tipologias, plantas, status de disponibilidade e espelho de vendas em tempo real.
+> 
+> **4. Precificação e Avaliação Inteligente (AVM)**
+> *   **Ferramentas:** HouseCanary API e modelos baseados em Machine Learning (estilo Loft).
+> *   **Requisito:** Criar uma calculadora de preços (Automated Valuation Model) que não dependa de achismos. O sistema deve cruzar o histórico de transações de até 40 anos, dados de terrenos (incluindo índices de privacidade e topografia) e imóveis comparáveis (Comps) do HouseCanary para gerar uma faixa de preço com score de confiança e prever tendências de demanda local.
+> 
+> **5. Análise de Crédito, Risco e Registro Automatizado**
+> *   **Ferramentas:** Liquid e Zest AI.
+> *   **Requisito:** Integrar um motor de crédito preditivo. A Liquid atuará como infraestrutura invisível, conectando o SaaS a bancos e cartórios para qualificar compradores na hora e acelerar a emissão e registro de contratos habitacionais. O Zest AI será usado para subscrição de risco usando *machine learning*.
+> 
+> **6. Experiência Visual e Virtual Staging (IA)**
+> *   **Ferramentas:** RUUM ou Virtual Staging AI.
+> *   **Requisito:** Um módulo onde corretores fazem upload de fotos de imóveis vazios e, em menos de 30 segundos, a IA decora e mobilia digitalmente o ambiente para aumentar o engajamento e as taxas de conversão dos anúncios.
+> 
+> **7. Gestão Financeira, CRM e Locação (Gestão Interna)**
+> *   **Ferramentas:** Praedium CRM, Pleno Sistemas (para aluguéis) e Conta Azul (Financeiro).
+> *   **Requisito:** Conectar os contratos fechados ao sistema de administração de locações (emitindo notas, boletos e repasses automaticamente via Pleno e Conta Azul), enquanto o Praedium organiza o pipeline de ponta a ponta.
+> 
+> **Entregáveis esperados de você (IA):**
+> 1. **Arquitetura de Software:** Como essas APIs se comunicarão? Detalhe o uso de Webhooks, mensageria (filas) para não perder dados se uma API cair, logs estruturados e banco de dados (ex: modelagem inspirada em boas práticas de engenharia como as da Lughy).
+> 2. **Roadmap de Implementação:** Divida este ecossistema em 3 fases (Fase 1: MVP de Captura e Atendimento; Fase 2: Catálogo e Precificação; Fase 3: Crédito e Back-office Financeiro).
+> 3. **Sugestão de Stack Tecnológico:** Quais linguagens e frameworks (ex: Node.js, React, Python) são mais indicados para suportar esse nível de integração via API?"
+
+***
+
+### Por que esse prompt é poderoso?
+
+* **Ele pensa na resiliência:** Inspirado nas diretrizes da desenvolvedora brasileira *Lughy*, ele exige que a IA projete o software preparado para falhas de rede e limites de requisição (Webhooks, retentativas e filas).
+* **Cobre o ciclo de vida completo:** O prompt conecta o primeiro atendimento da IA Generativa (como Lais ou Maya, que respondem em 15s), a busca do imóvel via API da Órulo, a precificação de mercado via HouseCanary e Loft, a melhoria visual do imóvel pela RUUM/Virtual Staging AI, até a aprovação financeira e registro via Liquid ou Zest AI.
+* **Força a automação invisível:** Delega todo o trabalho braçal e financeiro para integrações de retaguarda (Parseur, Zapier, Praedium, Conta Azul e Pleno Sistemas). 
+
+Ao aplicar esse prompt com sua equipe ou assistente de programação, você obterá não apenas ideias soltas, mas um **documento técnico de arquitetura** detalhando como criar o seu SaaS.

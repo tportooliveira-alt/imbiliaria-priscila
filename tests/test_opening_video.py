@@ -17,9 +17,9 @@ def opening_src(shared_dir: Path) -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Fases declaradas
+# Fases declaradas (3 reais: kenburns → video-ia → video-priscila → done)
 # ─────────────────────────────────────────────────────────────────────────────
-FASES = ("kenburns", "video-ia", "video-casa", "video-priscila", "done")
+FASES = ("kenburns", "video-ia", "video-priscila", "done")
 
 
 @pytest.mark.parametrize("fase", FASES)
@@ -28,11 +28,11 @@ def test_fase_declarada(opening_src: str, fase: str) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Vídeos referenciados
+# Vídeos referenciados (sem ia-casa.mp4 — fase descontinuada)
 # ─────────────────────────────────────────────────────────────────────────────
 @pytest.mark.parametrize(
     "video",
-    ["ia-falando.mp4", "ia-casa.mp4", "priscila-fala.mp4"],
+    ["ia-falando.mp4", "priscila-fala.mp4"],
 )
 def test_video_referenciado(opening_src: str, video: str) -> None:
     assert video in opening_src, f"Vídeo '{video}' não referenciado"
@@ -46,13 +46,8 @@ def test_kenburns_avanca_para_video_ia(opening_src: str) -> None:
     assert 'setPhase("video-ia")' in opening_src
 
 
-def test_video_ia_avanca_para_video_casa(opening_src: str) -> None:
+def test_video_ia_avanca_para_priscila_ou_done(opening_src: str) -> None:
     assert 'handleVideoIaEnded' in opening_src
-    assert 'setPhase("video-casa")' in opening_src
-
-
-def test_video_casa_avanca_para_priscila_ou_done(opening_src: str) -> None:
-    assert 'handleVideoCasaEnded' in opening_src
     assert 'hasPriscilaVideo ? "video-priscila" : "done"' in opening_src
 
 
@@ -62,8 +57,8 @@ def test_video_priscila_avanca_para_done(opening_src: str) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Botão Pular existe em todas as fases de vídeo
+# Botão Pular (3: kenburns skip + video-ia skip + video-priscila skip)
 # ─────────────────────────────────────────────────────────────────────────────
 def test_botao_skip_em_todas_fases(opening_src: str) -> None:
-    # 1 botão por fase de vídeo + 1 da fase Ken Burns = pelo menos 4
-    assert opening_src.count('className="ov-skip"') >= 4
+    # 3 botões skip: ken burns + video-ia + video-priscila
+    assert opening_src.count('className="ov-skip"') >= 3

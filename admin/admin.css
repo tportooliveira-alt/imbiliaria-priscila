@@ -199,3 +199,201 @@ table.tab tr:hover { background: #fafafa; }
 .btn-publicar:hover { background: #1f342b !important; }
 .btn-despublicar { background: #fff !important; color: #888 !important; border: 1px solid #ccc !important; }
 .btn-despublicar:hover { background: #fafafa !important; }
+
+/* === REFORMA VISUAL 2026 — SALA DE COMANDO === */
+
+:root {
+  --adm-bg: #0f1318;
+  --adm-bg-soft: #171d24;
+  --adm-panel: #1d252e;
+  --adm-panel-2: #222d38;
+  --adm-ink: #e9e5dc;
+  --adm-ink-soft: #b8b1a5;
+  --adm-accent: #d2872b;
+  --adm-accent-2: #6bc0c8;
+  --adm-line: rgba(233, 229, 220, .16);
+}
+
+body {
+  background:
+    radial-gradient(circle at 10% 6%, rgba(107, 192, 200, .16), transparent 35%),
+    radial-gradient(circle at 92% 14%, rgba(210, 135, 43, .14), transparent 36%),
+    linear-gradient(180deg, var(--adm-bg) 0%, #0a0d12 100%);
+  color: var(--adm-ink);
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.login-card,
+.modal,
+.card-imovel,
+.kpi-card,
+table.tab,
+.hist-item,
+.dropzone {
+  background: linear-gradient(180deg, var(--adm-panel) 0%, var(--adm-panel-2) 100%);
+  border-color: var(--adm-line);
+  color: var(--adm-ink);
+}
+
+.login-card h1,
+.toolbar h2,
+.card-imovel h3,
+.modal-head h2,
+.kpi-value { color: var(--adm-ink); }
+
+.login-card p,
+.topbar .user,
+.card-imovel .meta,
+.kpi-label,
+.kpi-sub,
+table.tab td,
+.hist-quando,
+label { color: var(--adm-ink-soft); }
+
+.topbar {
+  background: rgba(29, 37, 46, .82);
+  backdrop-filter: blur(6px);
+  border-bottom-color: var(--adm-line);
+}
+
+.topbar h1 {
+  color: var(--adm-accent);
+  font-weight: 700;
+}
+
+.topbar button,
+.btn-secondary,
+.card-imovel .acoes button,
+.btn-mini,
+.btn-despublicar {
+  background: rgba(233, 229, 220, .05) !important;
+  border-color: var(--adm-line) !important;
+  color: var(--adm-ink) !important;
+}
+
+.btn-primary,
+.btn-add,
+.btn-publicar,
+.dropzone label,
+.hist-tipo,
+.tabs .tab.on {
+  background: linear-gradient(90deg, #d2872b 0%, #b96d15 100%) !important;
+  color: #1f1710 !important;
+  border-color: transparent !important;
+}
+
+.btn-primary:hover,
+.btn-add:hover,
+.btn-publicar:hover,
+.dropzone label:hover {
+  filter: brightness(1.08);
+}
+
+.toolbar h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.75rem;
+}
+
+input, select, textarea,
+.foto-acoes select,
+.filtros input,
+.filtros select {
+  background: rgba(0, 0, 0, .22);
+  border-color: var(--adm-line);
+  color: var(--adm-ink);
+}
+
+input::placeholder,
+textarea::placeholder { color: rgba(233, 229, 220, .45); }
+
+.dropzone {
+  border: 2px dashed rgba(233, 229, 220, .26);
+  background: rgba(0, 0, 0, .14);
+}
+
+.dropzone.is-over {
+  border-color: var(--adm-accent-2);
+  background: rgba(107, 192, 200, .12);
+}
+
+.card-imovel .preco,
+.kpi-value,
+.funil-n { color: var(--adm-accent); }
+
+.status-pill.publicado {
+  background: var(--adm-accent-2);
+  color: #0f1318;
+}
+
+.status-pill.rascunho {
+  background: rgba(233, 229, 220, .08);
+  border-color: var(--adm-line);
+  color: var(--adm-ink-soft);
+}
+
+.tabs .tab {
+  color: rgba(233, 229, 220, .62);
+  border-bottom-color: transparent;
+}
+
+.tabs .tab:hover {
+  color: var(--adm-ink);
+}
+
+table.tab th {
+  background: rgba(0, 0, 0, .22);
+  color: var(--adm-accent);
+  border-bottom-color: var(--adm-line);
+}
+
+table.tab tr:hover { background: rgba(107, 192, 200, .08); }
+
+.modal-bg { background: rgba(5, 8, 12, .72); }
+
+.modal-head,
+.modal-foot,
+.card-imovel,
+.funil-bar,
+.foto-card,
+.foto-acoes,
+.kpi-card,
+table.tab,
+.hist-item {
+  border-color: var(--adm-line);
+}
+
+.funil-bar {
+  background: rgba(233, 229, 220, .12);
+}
+
+.funil-bar > span {
+  background: linear-gradient(90deg, #d2872b, #6bc0c8);
+}
+
+.hist-item {
+  border-left-color: var(--adm-accent);
+  background: rgba(0, 0, 0, .2);
+}
+
+.foto-card {
+  background: rgba(0, 0, 0, .16);
+}
+
+.foto-card.is-capa {
+  border-color: var(--adm-accent);
+  box-shadow: 0 0 0 2px rgba(210, 135, 43, .26);
+}
+
+.foto-card:hover {
+  border-color: var(--adm-accent-2);
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 14px 16px;
+  }
+
+  .topbar h1 {
+    font-size: 12px;
+  }
+}

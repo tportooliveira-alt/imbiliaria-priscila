@@ -608,3 +608,229 @@ img { max-width: 100%; display: block; }
   padding: .55rem .75rem; border-radius: 2px;
   font-size: .85rem; margin-bottom: .5rem;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   REFORMA VISUAL 2026 — BRASIL MODERNO
+   Intencao: menos "template", mais direcao de arte autoral.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --paper: #f4efe6;
+  --paper-2: #efe6d7;
+  --ink: #161515;
+  --ink-soft: #4b4640;
+  --brick: #b64a29;
+  --brick-soft: #cf7f63;
+  --night: #102536;
+  --sage: #27453f;
+  --gold: #b48a3b;
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 12%, rgba(182, 74, 41, .08), transparent 40%),
+    radial-gradient(circle at 80% 10%, rgba(16, 37, 54, .10), transparent 38%),
+    linear-gradient(180deg, var(--paper) 0%, #f8f4ec 40%, var(--paper-2) 100%);
+  color: var(--ink);
+}
+
+.navH {
+  background: rgba(248, 244, 236, .86);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(22, 21, 21, .2);
+}
+
+.navH-mark-name,
+.navH-mark-sub,
+.navH-links a { color: var(--ink); }
+
+.navH-links a:hover { border-bottom-color: var(--brick); color: var(--brick); }
+
+.btnH {
+  border-radius: 0;
+  border-width: 2px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.btnH-solid {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fefaf2;
+}
+
+.btnH-solid:hover {
+  background: var(--brick);
+  border-color: var(--brick);
+}
+
+.btnH-ghost {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.btnH-ghost:hover {
+  background: var(--ink);
+  color: #fefaf2;
+}
+
+.heroH {
+  background:
+    linear-gradient(90deg, transparent 0 62%, rgba(22, 21, 21, .06) 62% 63%, transparent 63%),
+    linear-gradient(180deg, #f8f4ec 0%, var(--paper) 100%);
+  border-bottom: 2px solid rgba(22, 21, 21, .35);
+}
+
+.heroH-meta,
+.heroH-stats,
+.heroH-byline {
+  border-color: rgba(22, 21, 21, .35);
+  color: var(--ink-soft);
+}
+
+.heroH-title,
+.heroH-title em,
+.heroH-amp,
+.heroH-deck,
+.heroH-byline strong { color: var(--ink); }
+
+.heroH-title em {
+  color: var(--brick);
+  font-style: normal;
+  position: relative;
+}
+
+.heroH-title em::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: .12em;
+  height: .2em;
+  background: rgba(182, 74, 41, .22);
+  z-index: -1;
+}
+
+.heroH-figure {
+  border: 2px solid rgba(22, 21, 21, .35);
+  box-shadow: 14px 14px 0 rgba(22, 21, 21, .18);
+}
+
+.heroH-cap {
+  background: rgba(16, 37, 54, .84);
+  color: #efe6d7;
+}
+
+.heroH-stats b { color: var(--brick); }
+
+.buscaH,
+.atlasH,
+.ctaH { background: transparent; }
+
+.buscaH-title,
+.metodoH header h2,
+.atlasH header h2,
+.entrevistaH-copy h2,
+.ctaH h2 { color: var(--ink); }
+
+.buscaH-deck,
+.metodoH-deck,
+.atlasH header p,
+.entrevistaH-qa p:not(.entrevistaH-q),
+.ctaH p { color: var(--ink-soft); }
+
+.buscaH-num,
+.metodoH-num,
+.heroH-num,
+.atlasH-num-card,
+.metodoH-step,
+.entrevistaH-q {
+  color: var(--brick);
+}
+
+.manifestoH {
+  background:
+    linear-gradient(140deg, var(--night) 0%, #173248 60%, #1e405b 100%);
+  border-top: 2px solid rgba(16, 37, 54, .7);
+}
+
+.manifestoH blockquote p em,
+.manifestoH blockquote footer,
+.manifestoH-mark { color: #ffcf78; }
+
+.metodoH {
+  background: linear-gradient(180deg, #f8f4ec 0%, #f3ebdd 100%);
+  border-bottom: 2px solid rgba(22, 21, 21, .32);
+}
+
+.metodoH-list,
+.metodoH-list li { border-color: rgba(22, 21, 21, .25); }
+
+.metodoH-list li:hover { background: rgba(16, 37, 54, .06); }
+
+.metodoH-body h3 { color: var(--ink); }
+
+.atlasH-grid {
+  border: 2px solid rgba(22, 21, 21, .35);
+  background: #f8f4ec;
+}
+
+.atlasH-card {
+  background: transparent;
+  border-color: rgba(22, 21, 21, .22);
+}
+
+.atlasH-card:hover,
+.atlasH-card.active {
+  background: var(--night);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1);
+}
+
+.atlasH-card:hover .atlasH-num-card,
+.atlasH-card.active .atlasH-num-card {
+  color: #ffcf78 !important;
+}
+
+.entrevistaH {
+  background:
+    linear-gradient(90deg, rgba(39, 69, 63, .06) 0 26%, transparent 26%),
+    #f8f4ec;
+  border-top: 2px solid rgba(22, 21, 21, .28);
+}
+
+.entrevistaH-photo {
+  border: 2px solid rgba(22, 21, 21, .35);
+  box-shadow: -12px 12px 0 rgba(39, 69, 63, .25);
+}
+
+.ctaH {
+  border-top: 2px solid rgba(22, 21, 21, .28);
+  background:
+    linear-gradient(180deg, #f7f2e9 0%, #efe5d6 100%);
+}
+
+.footH {
+  background: #151718;
+  border-top: 2px solid rgba(255, 255, 255, .14);
+}
+
+.footH-mark-sub,
+.footH-copy { color: #bfa980; }
+
+.footH-admin { opacity: .72; }
+
+@media (max-width: 900px) {
+  .heroH {
+    background:
+      linear-gradient(180deg, #f8f4ec 0%, var(--paper) 100%);
+  }
+
+  .heroH-figure {
+    box-shadow: 8px 8px 0 rgba(22, 21, 21, .16);
+  }
+
+  .entrevistaH {
+    background: #f8f4ec;
+  }
+}
