@@ -2,11 +2,84 @@
 // Revista de arquitetura/imobiliário, tipografia grande, crema+azul, vídeo em frame retangular,
 // numbered sections, big quote, layouts assimétricos.
 
+const METODO_SLIDES = [
+  {
+    titulo: "Atendimento IA 24 / 7",
+    slides: [
+      {
+        titulo: "Resposta imediata, em qualquer horário",
+        texto: "A IA responde em segundos no site e no WhatsApp, inclusive fora do expediente. Isso evita abandono de lead no primeiro contato e mantém o interesse vivo enquanto a decisão ainda está quente.",
+      },
+      {
+        titulo: "Triagem inteligente já na primeira conversa",
+        texto: "Nas primeiras mensagens, o sistema identifica intenção de compra ou venda, faixa de valor, bairro de preferência e urgência. Com isso, a Priscila recebe o cliente já contextualizado e com histórico organizado.",
+      },
+      {
+        titulo: "Atendimento humano na hora certa",
+        texto: "A IA não substitui a corretora: ela prepara o terreno. Quando o lead demonstra potencial real, a Priscila entra com abordagem consultiva, economizando tempo e elevando taxa de conversão.",
+      },
+    ],
+  },
+  {
+    titulo: "Match inteligente de imóvel",
+    slides: [
+      {
+        titulo: "Recomendação além do preço",
+        texto: "O motor de match cruza orçamento, tipo de imóvel, bairro, tema de interesse, estágio da jornada e sinais de comportamento. O resultado prioriza imóveis com aderência real, não apenas anúncios populares.",
+      },
+      {
+        titulo: "Ranking dinâmico e transparente",
+        texto: "Cada card pode mostrar percentual de compatibilidade com a busca ativa. Ao alterar filtros, o ranking se reorganiza em tempo real para destacar opções mais coerentes com o perfil do momento.",
+      },
+      {
+        titulo: "Menos ruído, mais decisão",
+        texto: "Em vez de enviar dezenas de links genéricos, a seleção reduz ruído e acelera a escolha. O cliente entende mais rápido por que aquele imóvel apareceu e avança com mais segurança para visita e proposta.",
+      },
+    ],
+  },
+  {
+    titulo: "Follow-up automático",
+    slides: [
+      {
+        titulo: "Régua de contato com cadência real",
+        texto: "A régua organiza retornos em 1h, 24h, 72h e 7 dias, com mensagens ajustadas ao estágio do lead. Isso garante consistência comercial sem parecer spam ou insistência vazia.",
+      },
+      {
+        titulo: "Contexto preservado em cada retorno",
+        texto: "As próximas interações usam o histórico do lead: bairro visto, faixa de preço, simulação feita, dúvidas anteriores e objeções. Cada contato continua a conversa, em vez de recomeçar do zero.",
+      },
+      {
+        titulo: "Recuperação de oportunidades esquecidas",
+        texto: "Leads que esfriaram voltam para a fila com gatilhos específicos (novo imóvel aderente, ajuste de preço, condição de financiamento). O resultado é maior aproveitamento da base e menor perda por falta de timing.",
+      },
+    ],
+  },
+  {
+    titulo: "Dashboard de decisão",
+    slides: [
+      {
+        titulo: "Visão executiva em tempo real",
+        texto: "O painel consolida volume de leads, estágio de funil, origem, temperatura e performance de atendimento. Em poucos segundos, fica claro onde concentrar esforço comercial no dia.",
+      },
+      {
+        titulo: "Métricas que orientam ação",
+        texto: "CPL, taxa de resposta, visitas agendadas, propostas enviadas e conversão por etapa mostram o que está funcionando. A gestão sai do achismo e passa a operar com prioridade baseada em dado.",
+      },
+      {
+        titulo: "Correção rápida de rota",
+        texto: "Quando um indicador cai, a equipe ajusta copy, campanha, filtro ou abordagem imediatamente. Isso reduz desperdício de mídia, melhora previsibilidade de vendas e protege margem da operação.",
+      },
+    ],
+  },
+];
+
 function App() {
   const route = window.useHashRoute();
   const [filter, setFilter] = React.useState({ bairro: "", tipo: "", faixa: "", tema: "" });
   const [transacao, setTransacao] = React.useState("comprar");
   const [anuncieOpen, setAnuncieOpen] = React.useState(false);
+  const [metodoAtivo, setMetodoAtivo] = React.useState(0);
+  const [metodoSlide, setMetodoSlide] = React.useState(0);
   const [introOpen, setIntroOpen] = React.useState(() => {
     // Intro de videos desativada por padrao; usar ?intro=1 para reativar quando quiser.
     const params = new URLSearchParams(window.location.search);
@@ -187,16 +260,70 @@ function App() {
           </header>
           <ol className="metodoH-list">
             {window.IA_CAPACIDADES.map((c, i) => (
-              <li key={i}>
-                <span className="metodoH-step">0{i + 1}</span>
-                <div className="metodoH-body">
-                  <h3>{c.titulo}</h3>
-                  <p>{c.detalhe}</p>
-                </div>
-                <span className="metodoH-icon">{c.icone}</span>
+              <li
+                key={i}
+                className={metodoAtivo === i ? "is-active" : ""}
+                onClick={() => { setMetodoAtivo(i); setMetodoSlide(0); }}
+              >
+                <button
+                  type="button"
+                  className="metodoH-itemBtn"
+                  aria-expanded={metodoAtivo === i}
+                  aria-label={`Abrir detalhes de ${c.titulo}`}
+                >
+                  <span className="metodoH-step">0{i + 1}</span>
+                  <div className="metodoH-body">
+                    <h3>{c.titulo}</h3>
+                    <p>{c.detalhe}</p>
+                  </div>
+                  <span className="metodoH-icon">{c.icone}</span>
+                </button>
               </li>
             ))}
           </ol>
+
+          <section className="metodoH-slides" aria-live="polite">
+            <div className="metodoH-slides-head">
+              <p className="metodoH-slides-kicker">Explicação detalhada · clique nos blocos 01–04</p>
+              <h3>{METODO_SLIDES[metodoAtivo].titulo}</h3>
+            </div>
+
+            <article key={`${metodoAtivo}-${metodoSlide}`} className="metodoH-slideCard">
+              <span className="metodoH-slideStep">Slide {metodoSlide + 1} de {METODO_SLIDES[metodoAtivo].slides.length}</span>
+              <h4>{METODO_SLIDES[metodoAtivo].slides[metodoSlide].titulo}</h4>
+              <p>{METODO_SLIDES[metodoAtivo].slides[metodoSlide].texto}</p>
+            </article>
+
+            <div className="metodoH-slideNav">
+              <button
+                type="button"
+                onClick={() => setMetodoSlide((s) => Math.max(0, s - 1))}
+                disabled={metodoSlide === 0}
+              >
+                ← Anterior
+              </button>
+              <div className="metodoH-slideDots" role="tablist" aria-label="Navegação de slides do método">
+                {METODO_SLIDES[metodoAtivo].slides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    role="tab"
+                    aria-selected={idx === metodoSlide}
+                    className={idx === metodoSlide ? "is-active" : ""}
+                    onClick={() => setMetodoSlide(idx)}
+                    aria-label={`Ir para slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMetodoSlide((s) => Math.min(METODO_SLIDES[metodoAtivo].slides.length - 1, s + 1))}
+                disabled={metodoSlide === METODO_SLIDES[metodoAtivo].slides.length - 1}
+              >
+                Próximo →
+              </button>
+            </div>
+          </section>
         </div>
       </section>
 
