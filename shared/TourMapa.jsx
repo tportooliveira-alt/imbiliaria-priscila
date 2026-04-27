@@ -53,7 +53,32 @@ const COORDS_BAIRROS = {
 
 function Tour360({ panoramaUrl, titulo }) {
   const ref = React.useRef(null);
+  const viewerRef = React.useRef(null);
   const [erro, setErro] = React.useState("");
+
+  function girar(delta) {
+    const v = viewerRef.current;
+    if (!v || typeof v.getYaw !== "function" || typeof v.setYaw !== "function") return;
+    v.setYaw(v.getYaw() + delta, 350);
+  }
+
+  function zoom(delta) {
+    const v = viewerRef.current;
+    if (!v || typeof v.getHfov !== "function" || typeof v.setHfov !== "function") return;
+    const atual = v.getHfov();
+    const prox = Math.max(40, Math.min(120, atual + delta));
+    v.setHfov(prox, 250);
+  }
+
+  function telaCheia() {
+    const v = viewerRef.current;
+    if (v && typeof v.toggleFullscreen === "function") {
+      v.toggleFullscreen();
+      return;
+    }
+    const el = ref.current;
+    if (el && el.requestFullscreen) el.requestFullscreen().catch(() => {});
+  }
 
   React.useEffect(() => {
     let viewer = null;
@@ -66,11 +91,15 @@ function Tour360({ panoramaUrl, titulo }) {
             type: "equirectangular",
             panorama: panoramaUrl,
             autoLoad: true,
+            draggable: true,
+            mouseZoom: true,
             compass: false,
             showZoomCtrl: true,
             showFullscreenCtrl: true,
             hfov: 110,
           });
+          viewerRef.current = viewer;
+          window.__tourViewerDebug = viewer;
         } catch (e) {
           setErro("Não foi possível abrir o tour 360 desta foto.");
         }
@@ -78,6 +107,8 @@ function Tour360({ panoramaUrl, titulo }) {
       .catch(() => setErro("Tour 360 indisponível no momento."));
     return () => {
       cancelado = true;
+      viewerRef.current = null;
+      try { delete window.__tourViewerDebug; } catch (e) { /* noop */ }
       try { viewer && viewer.destroy && viewer.destroy(); } catch (e) { /* noop */ }
     };
   }, [panoramaUrl]);
@@ -86,6 +117,13 @@ function Tour360({ panoramaUrl, titulo }) {
   return (
     <figure className="tour360" aria-label={`Tour 360 · ${titulo || ""}`}>
       <div ref={ref} className="tour360-viewer"/>
+      <div className="tour360-controles" aria-label="Controles do tour 360">
+        <button type="button" onClick={() => girar(-20)} aria-label="Girar para a esquerda">↺</button>
+        <button type="button" onClick={() => girar(20)} aria-label="Girar para a direita">↻</button>
+        <button type="button" onClick={() => zoom(-10)} aria-label="Aproximar">＋</button>
+        <button type="button" onClick={() => zoom(10)} aria-label="Afastar">－</button>
+        <button type="button" onClick={telaCheia} aria-label="Abrir em tela cheia">⛶</button>
+      </div>
       <figcaption>Arraste para girar · scroll para zoom · clique no ícone de tela cheia</figcaption>
     </figure>
   );

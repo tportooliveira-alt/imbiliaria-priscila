@@ -7,6 +7,19 @@
   padding-bottom: 0 !important;
 }
 .tour360 figcaption { font-size: 12px; color: #6c6657; letter-spacing: .12em; text-transform: uppercase; text-align: center; margin-top: 10px; }
+.tour360-controles { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+.tour360-controles button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d8d2c1;
+  border-radius: 999px;
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.tour360-controles button:hover { background: #f4f1e8; }
 .tour360-erro { padding: 20px; background: #fff5f0; border: 1px solid #f5d7c0; border-radius: 4px; color: #6c3c1f; font-size: 14px; text-align: center; margin: 24px 0; }
 
 .minimapa { margin: 24px 0; padding: 0; }
