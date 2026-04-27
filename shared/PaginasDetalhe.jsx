@@ -40,6 +40,10 @@ function _fmtMi(v) {
   return `R$ ${(v / 1000).toFixed(0)} mil`;
 }
 
+const PANORAMA_FALLBACK_POR_CODIGO = {
+  "PV-001": "https://pannellum.org/images/alma.jpg",
+};
+
 // ─────────── IMÓVEL ───────────
 function ImovelDetalhe({ codigo, onVoltar }) {
   const [agendarOpen, setAgendarOpen] = React.useState(false);
@@ -71,6 +75,7 @@ function ImovelDetalhe({ codigo, onVoltar }) {
 
   const txtWhats = `Oi Priscila, vi o imóvel ${imovel.codigo} (${imovel.titulo}) no site. Quero saber mais.`;
   const linkWhats = `https://wa.me/5577988193344?text=${encodeURIComponent(txtWhats)}`;
+  const panoramaUrl = imovel.panorama_url || PANORAMA_FALLBACK_POR_CODIGO[imovel.codigo] || "";
 
   const Tour360Comp = window.Tour360;
   const MiniMapaComp = window.MiniMapaImovel;
@@ -101,8 +106,8 @@ function ImovelDetalhe({ codigo, onVoltar }) {
         <figcaption>Foto ilustrativa · solicite o dossiê completo com todas as imagens.</figcaption>
       </figure>
 
-      {imovel.panorama_url && Tour360Comp && (
-        <Tour360Comp panoramaUrl={imovel.panorama_url} titulo={imovel.titulo}/>
+      {panoramaUrl && Tour360Comp && (
+        <Tour360Comp panoramaUrl={panoramaUrl} titulo={imovel.titulo}/>
       )}
 
       {MiniMapaComp && (

@@ -74,7 +74,7 @@ class HeadersDeSeguranca(BaseHTTPMiddleware):
             "font-src 'self' https://fonts.gstatic.com data:; "
             "img-src 'self' data: blob: https:; "
             "media-src 'self' blob:; "
-            "connect-src 'self' https://wa.me; "
+            "connect-src 'self' https://wa.me https://pannellum.org; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'"

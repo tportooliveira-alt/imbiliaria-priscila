@@ -22,6 +22,7 @@ const IMOVEIS = [
     tipo: "Casa",
     titulo: "Casa Contemporânea · Alameda das Mangabeiras",
     descricao: "Projeto arquitetônico assinado · 4 suítes · piscina com raia · home theater",
+    panorama_url: "https://pannellum.org/images/alma.jpg",
     preco: 1_480_000, precoLabel: "R$ 1,48 mi",
     quartos: 4, suites: 4, vagas: 4, area: 420,
     img: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=80",
