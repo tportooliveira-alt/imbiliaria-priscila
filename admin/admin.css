@@ -397,3 +397,12 @@ table.tab,
     font-size: 12px;
   }
 }
+
+/* W7 Financeiro */
+.financeiro-shell .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0; }
+.financeiro-shell .card-stat { background: #fff; border: 1px solid #e5e5e5; padding: 14px 16px; border-radius: 4px; }
+.financeiro-shell .card-stat h3 { margin: 0 0 6px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #888; }
+.financeiro-shell .card-stat strong { font: 600 1.4rem/1.1 var(--ff-display, sans-serif); color: #1a1a1a; }
+.financeiro-shell .card-stat small { display: block; margin-top: 4px; font-size: 11px; color: #666; }
+.financeiro-shell .card-stat.alerta { background: #fff5f0; border-color: #d97a4a; }
+.financeiro-shell .tabela tr.vencida { background: #fff0e6; }

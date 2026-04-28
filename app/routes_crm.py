@@ -952,3 +952,170 @@ def gerar_proposta(payload: PropostaPayload, _user=Depends(requer_admin)) -> Res
             ),
         },
     )
+
+
+# ============================================================
+# W7 — Financeiro (comissoes, metas, contas)
+# ============================================================
+from app import financeiro as financeiro_repo  # noqa: E402
+
+
+class ComissaoPayload(BaseModel):
+    descricao: str = Field(..., min_length=2, max_length=200)
+    valor_venda: float = Field(..., gt=0)
+    percentual: float = Field(0, ge=0, le=100)
+    valor_comissao: float | None = None
+    lead_id: int | None = None
+    imovel_id: int | None = None
+    corretor_email: str | None = None
+    status: str = Field("previsto", pattern="^(previsto|recebido|cancelado)$")
+    data_venda: str | None = None
+    data_recebimento: str | None = None
+
+
+class ComissaoUpdate(BaseModel):
+    descricao: str | None = None
+    valor_venda: float | None = None
+    percentual: float | None = None
+    valor_comissao: float | None = None
+    lead_id: int | None = None
+    imovel_id: int | None = None
+    corretor_email: str | None = None
+    status: str | None = Field(None, pattern="^(previsto|recebido|cancelado)$")
+    data_venda: str | None = None
+    data_recebimento: str | None = None
+
+
+class MetaPayload(BaseModel):
+    ano: int = Field(..., ge=2020, le=2100)
+    mes: int = Field(..., ge=1, le=12)
+    meta_vendas: float = Field(0, ge=0)
+    meta_comissao: float = Field(0, ge=0)
+    corretor_email: str | None = None
+
+
+class ContaPayload(BaseModel):
+    tipo: str = Field(..., pattern="^(pagar|receber)$")
+    descricao: str = Field(..., min_length=2, max_length=200)
+    categoria: str = "geral"
+    valor: float = Field(..., gt=0)
+    vencimento: str
+    pago: bool = False
+    data_pagamento: str | None = None
+    observacoes: str | None = None
+
+
+class ContaUpdate(BaseModel):
+    tipo: str | None = Field(None, pattern="^(pagar|receber)$")
+    descricao: str | None = None
+    categoria: str | None = None
+    valor: float | None = None
+    vencimento: str | None = None
+    pago: bool | None = None
+    data_pagamento: str | None = None
+    observacoes: str | None = None
+
+
+# --- Comissoes ---
+@router.post("/financeiro/comissoes")
+def criar_comissao(payload: ComissaoPayload, _admin=Depends(requer_admin)):
+    return financeiro_repo.criar_comissao(payload.model_dump())
+
+
+@router.get("/financeiro/comissoes")
+def listar_comissoes(
+    status: str | None = None,
+    corretor: str | None = None,
+    inicio: str | None = None,
+    fim: str | None = None,
+    _admin=Depends(requer_admin),
+):
+    return financeiro_repo.listar_comissoes(
+        status=status, corretor=corretor, inicio=inicio, fim=fim
+    )
+
+
+@router.put("/financeiro/comissoes/{cid}")
+def atualizar_comissao(cid: int, payload: ComissaoUpdate, _admin=Depends(requer_admin)):
+    dados = {k: v for k, v in payload.model_dump().items() if v is not None}
+    res = financeiro_repo.atualizar_comissao(cid, dados)
+    if res is None:
+        raise HTTPException(404, "Comissao nao encontrada")
+    return res
+
+
+@router.delete("/financeiro/comissoes/{cid}")
+def excluir_comissao(cid: int, _admin=Depends(requer_admin)):
+    if not financeiro_repo.excluir_comissao(cid):
+        raise HTTPException(404, "Comissao nao encontrada")
+    return {"ok": True}
+
+
+# --- Metas ---
+@router.post("/financeiro/metas")
+def upsert_meta(payload: MetaPayload, _admin=Depends(requer_admin)):
+    return financeiro_repo.upsert_meta(payload.model_dump())
+
+
+@router.get("/financeiro/metas")
+def listar_metas(ano: int | None = None, _admin=Depends(requer_admin)):
+    return financeiro_repo.listar_metas(ano=ano)
+
+
+@router.delete("/financeiro/metas/{mid}")
+def excluir_meta(mid: int, _admin=Depends(requer_admin)):
+    if not financeiro_repo.excluir_meta(mid):
+        raise HTTPException(404, "Meta nao encontrada")
+    return {"ok": True}
+
+
+# --- Contas ---
+@router.post("/financeiro/contas")
+def criar_conta(payload: ContaPayload, _admin=Depends(requer_admin)):
+    return financeiro_repo.criar_conta(payload.model_dump())
+
+
+@router.get("/financeiro/contas")
+def listar_contas(
+    tipo: str | None = None,
+    pago: bool | None = None,
+    inicio: str | None = None,
+    fim: str | None = None,
+    _admin=Depends(requer_admin),
+):
+    return financeiro_repo.listar_contas(tipo=tipo, pago=pago, inicio=inicio, fim=fim)
+
+
+@router.put("/financeiro/contas/{cid}")
+def atualizar_conta(cid: int, payload: ContaUpdate, _admin=Depends(requer_admin)):
+    dados = {k: v for k, v in payload.model_dump().items() if v is not None}
+    res = financeiro_repo.atualizar_conta(cid, dados)
+    if res is None:
+        raise HTTPException(404, "Conta nao encontrada")
+    return res
+
+
+@router.post("/financeiro/contas/{cid}/pagar")
+def marcar_paga(cid: int, _admin=Depends(requer_admin)):
+    res = financeiro_repo.marcar_conta_paga(cid)
+    if res is None:
+        raise HTTPException(404, "Conta nao encontrada")
+    return res
+
+
+@router.delete("/financeiro/contas/{cid}")
+def excluir_conta(cid: int, _admin=Depends(requer_admin)):
+    if not financeiro_repo.excluir_conta(cid):
+        raise HTTPException(404, "Conta nao encontrada")
+    return {"ok": True}
+
+
+# --- Dashboard ---
+@router.get("/financeiro/dashboard")
+def dashboard_financeiro(
+    ano: int | None = None,
+    mes: int | None = None,
+    _admin=Depends(requer_admin),
+):
+    return financeiro_repo.dashboard(ano=ano, mes=mes)
+

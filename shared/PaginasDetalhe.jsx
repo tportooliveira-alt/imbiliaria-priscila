@@ -202,6 +202,22 @@ function ImovelDetalhe({ codigo, onVoltar }) {
         <Tour360Comp panoramaUrl={panoramaUrl} titulo={imovel.titulo}/>
       )}
 
+      {imovel.tour_360_url && (
+        <section className="detalhe-tour-externo" aria-label="Tour virtual 360 graus">
+          <h2>Tour virtual 360°</h2>
+          <div className="detalhe-tour-frame">
+            <iframe
+              src={imovel.tour_360_url}
+              title={`Tour 360 — ${imovel.titulo}`}
+              allow="xr-spatial-tracking; gyroscope; accelerometer; fullscreen"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        </section>
+      )}
+
       {MiniMapaComp && (
         <MiniMapaComp bairro={imovel.bairro} titulo={imovel.titulo}/>
       )}

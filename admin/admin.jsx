@@ -74,6 +74,7 @@ function FormImovel({ inicial, aoSalvar, aoCancelar }) {
   const [dados, setDados] = React.useState(inicial || {
     titulo: "", bairro: "", tipo: "Casa", quartos: 0, suites: 0, vagas: 0,
     area_util: 0, preco: 0, descricao: "", caracteristicas: [], destaque: false, ativo: true,
+    tour_360_url: "",
   });
   const [erro, setErro] = React.useState("");
   const [salvando, setSalvando] = React.useState(false);
@@ -162,6 +163,15 @@ function FormImovel({ inicial, aoSalvar, aoCancelar }) {
         </label>
         <textarea value={dados.descricao} onChange={e => up("descricao", e.target.value)} rows={6} />
         {avisoDesc && <small style={{color: avisoDesc.startsWith("✓") ? "#2a7a2a" : "#a83333"}}>{avisoDesc}</small>}
+      </div>
+      <div className="field">
+        <label>Tour 360° (URL Matterport / iframe / YouTube 360)</label>
+        <input
+          type="url"
+          placeholder="https://my.matterport.com/show/?m=..."
+          value={dados.tour_360_url || ""}
+          onChange={e => up("tour_360_url", e.target.value)}
+        />
       </div>
       <div className="field" style={{display: "flex", gap: 18}}>
         <label style={{display: "flex", alignItems: "center", gap: 8, textTransform: "none", letterSpacing: 0, fontSize: 14, color: "#1a1a1a", marginBottom: 0}}>
@@ -1318,6 +1328,285 @@ function Agenda() {
   );
 }
 
+// ─── Financeiro (W7) ────────────────────────────────────────────────────────
+function Financeiro() {
+  const hoje = new Date();
+  const [ano, setAno] = React.useState(hoje.getFullYear());
+  const [mes, setMes] = React.useState(hoje.getMonth() + 1);
+  const [dash, setDash] = React.useState(null);
+  const [comissoes, setComissoes] = React.useState([]);
+  const [contas, setContas] = React.useState([]);
+  const [metas, setMetas] = React.useState([]);
+  const [secao, setSecao] = React.useState("dashboard");
+  const [novaCom, setNovaCom] = React.useState(null);
+  const [novaConta, setNovaConta] = React.useState(null);
+  const [novaMeta, setNovaMeta] = React.useState(null);
+
+  async function recarregar() {
+    try {
+      const [d, cs, cn, mt] = await Promise.all([
+        api(`/api/admin/financeiro/dashboard?ano=${ano}&mes=${mes}`),
+        api("/api/admin/financeiro/comissoes"),
+        api("/api/admin/financeiro/contas"),
+        api(`/api/admin/financeiro/metas?ano=${ano}`),
+      ]);
+      setDash(d); setComissoes(cs); setContas(cn); setMetas(mt);
+    } catch (e) { console.error(e); }
+  }
+  React.useEffect(() => { recarregar(); }, [ano, mes]);
+
+  const fmt = (n) => Number(n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  return (
+    <div className="financeiro-shell">
+      <div className="toolbar">
+        <h2>Financeiro</h2>
+        <div style={{display: "flex", gap: 8}}>
+          <select value={mes} onChange={e => setMes(+e.target.value)}>
+            {Array.from({length: 12}, (_, i) => i + 1).map(m => (
+              <option key={m} value={m}>{String(m).padStart(2, "0")}</option>
+            ))}
+          </select>
+          <input type="number" value={ano} min={2020} max={2100} onChange={e => setAno(+e.target.value)} style={{width: 90}} />
+        </div>
+      </div>
+
+      <nav className="tabs" style={{margin: "12px 0"}}>
+        <button className={secao === "dashboard" ? "tab on" : "tab"} onClick={() => setSecao("dashboard")}>Resumo</button>
+        <button className={secao === "comissoes" ? "tab on" : "tab"} onClick={() => setSecao("comissoes")}>Comissoes</button>
+        <button className={secao === "metas" ? "tab on" : "tab"} onClick={() => setSecao("metas")}>Metas</button>
+        <button className={secao === "contas" ? "tab on" : "tab"} onClick={() => setSecao("contas")}>Contas</button>
+      </nav>
+
+      {secao === "dashboard" && dash && (
+        <div className="cards">
+          <div className="card-stat">
+            <h3>Vendas no mes</h3>
+            <strong>{fmt(dash.comissoes.valor_vendas)}</strong>
+            <small>{dash.comissoes.qtd} negocios</small>
+          </div>
+          <div className="card-stat">
+            <h3>Comissoes previstas</h3>
+            <strong>{fmt(dash.comissoes.valor_comissoes)}</strong>
+            <small>{fmt(dash.comissoes.valor_recebido)} ja recebido</small>
+          </div>
+          <div className="card-stat">
+            <h3>Meta vendas</h3>
+            <strong>{dash.metas.atingido_vendas_pct.toFixed(1)}%</strong>
+            <small>{fmt(dash.metas.meta_vendas)} meta</small>
+          </div>
+          <div className="card-stat">
+            <h3>Meta comissao</h3>
+            <strong>{dash.metas.atingido_comissao_pct.toFixed(1)}%</strong>
+            <small>{fmt(dash.metas.meta_comissao)} meta</small>
+          </div>
+          <div className="card-stat">
+            <h3>A pagar</h3>
+            <strong>{fmt(dash.contas.a_pagar_total)}</strong>
+            <small>{dash.contas.a_pagar_qtd} contas</small>
+          </div>
+          <div className="card-stat">
+            <h3>A receber</h3>
+            <strong>{fmt(dash.contas.a_receber_total)}</strong>
+            <small>{dash.contas.a_receber_qtd} contas</small>
+          </div>
+          {dash.contas.vencidas_qtd > 0 && (
+            <div className="card-stat alerta">
+              <h3>⚠ Vencidas</h3>
+              <strong>{dash.contas.vencidas_qtd}</strong>
+              <small>requerem acao</small>
+            </div>
+          )}
+        </div>
+      )}
+
+      {secao === "comissoes" && (
+        <div>
+          <button className="btn-add" onClick={() => setNovaCom({
+            descricao: "", valor_venda: 0, percentual: 5, data_venda: new Date().toISOString().slice(0,10),
+            status: "previsto",
+          })}>+ Nova comissao</button>
+          <table className="tabela">
+            <thead><tr><th>Data</th><th>Descricao</th><th>Venda</th><th>%</th><th>Comissao</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {comissoes.map(c => (
+                <tr key={c.id}>
+                  <td>{c.data_venda}</td>
+                  <td>{c.descricao}</td>
+                  <td>{fmt(c.valor_venda)}</td>
+                  <td>{c.percentual}%</td>
+                  <td>{fmt(c.valor_comissao)}</td>
+                  <td>
+                    <select value={c.status} onChange={async e => {
+                      await api(`/api/admin/financeiro/comissoes/${c.id}`, { method: "PUT", body: { status: e.target.value }});
+                      recarregar();
+                    }}>
+                      <option value="previsto">previsto</option>
+                      <option value="recebido">recebido</option>
+                      <option value="cancelado">cancelado</option>
+                    </select>
+                  </td>
+                  <td>
+                    <button onClick={async () => {
+                      if (!confirm("Excluir?")) return;
+                      await api(`/api/admin/financeiro/comissoes/${c.id}`, { method: "DELETE" });
+                      recarregar();
+                    }}>×</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {novaCom && (
+            <FormFinanceiro titulo="Nova comissao" dados={novaCom} setDados={setNovaCom}
+              campos={[
+                ["descricao", "Descricao", "text"],
+                ["valor_venda", "Valor venda (R$)", "number"],
+                ["percentual", "Percentual (%)", "number"],
+                ["data_venda", "Data venda", "date"],
+                ["corretor_email", "Corretor (email)", "email"],
+              ]}
+              onSalvar={async () => {
+                await api("/api/admin/financeiro/comissoes", { method: "POST", body: novaCom });
+                setNovaCom(null); recarregar();
+              }}
+              onCancelar={() => setNovaCom(null)}
+            />
+          )}
+        </div>
+      )}
+
+      {secao === "metas" && (
+        <div>
+          <button className="btn-add" onClick={() => setNovaMeta({
+            ano, mes, meta_vendas: 0, meta_comissao: 0,
+          })}>+ Nova meta</button>
+          <table className="tabela">
+            <thead><tr><th>Ano</th><th>Mes</th><th>Corretor</th><th>Meta vendas</th><th>Meta comissao</th><th></th></tr></thead>
+            <tbody>
+              {metas.map(m => (
+                <tr key={m.id}>
+                  <td>{m.ano}</td><td>{m.mes}</td>
+                  <td>{m.corretor_email || "(geral)"}</td>
+                  <td>{fmt(m.meta_vendas)}</td>
+                  <td>{fmt(m.meta_comissao)}</td>
+                  <td><button onClick={async () => {
+                    if (!confirm("Excluir?")) return;
+                    await api(`/api/admin/financeiro/metas/${m.id}`, { method: "DELETE" });
+                    recarregar();
+                  }}>×</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {novaMeta && (
+            <FormFinanceiro titulo="Nova meta" dados={novaMeta} setDados={setNovaMeta}
+              campos={[
+                ["ano", "Ano", "number"],
+                ["mes", "Mes", "number"],
+                ["meta_vendas", "Meta vendas (R$)", "number"],
+                ["meta_comissao", "Meta comissao (R$)", "number"],
+                ["corretor_email", "Corretor (opcional)", "email"],
+              ]}
+              onSalvar={async () => {
+                await api("/api/admin/financeiro/metas", { method: "POST", body: novaMeta });
+                setNovaMeta(null); recarregar();
+              }}
+              onCancelar={() => setNovaMeta(null)}
+            />
+          )}
+        </div>
+      )}
+
+      {secao === "contas" && (
+        <div>
+          <button className="btn-add" onClick={() => setNovaConta({
+            tipo: "pagar", descricao: "", valor: 0, vencimento: new Date().toISOString().slice(0,10),
+            categoria: "geral",
+          })}>+ Nova conta</button>
+          <table className="tabela">
+            <thead><tr><th>Vencimento</th><th>Tipo</th><th>Descricao</th><th>Categoria</th><th>Valor</th><th>Pago?</th><th></th></tr></thead>
+            <tbody>
+              {contas.map(c => (
+                <tr key={c.id} className={c.pago ? "" : (new Date(c.vencimento) < new Date() ? "vencida" : "")}>
+                  <td>{c.vencimento}</td>
+                  <td>{c.tipo}</td>
+                  <td>{c.descricao}</td>
+                  <td>{c.categoria}</td>
+                  <td>{fmt(c.valor)}</td>
+                  <td>
+                    {c.pago ? "✓" : (
+                      <button onClick={async () => {
+                        await api(`/api/admin/financeiro/contas/${c.id}/pagar`, { method: "POST" });
+                        recarregar();
+                      }}>marcar paga</button>
+                    )}
+                  </td>
+                  <td><button onClick={async () => {
+                    if (!confirm("Excluir?")) return;
+                    await api(`/api/admin/financeiro/contas/${c.id}`, { method: "DELETE" });
+                    recarregar();
+                  }}>×</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {novaConta && (
+            <FormFinanceiro titulo="Nova conta" dados={novaConta} setDados={setNovaConta}
+              campos={[
+                ["tipo", "Tipo", "select", ["pagar", "receber"]],
+                ["descricao", "Descricao", "text"],
+                ["categoria", "Categoria", "text"],
+                ["valor", "Valor (R$)", "number"],
+                ["vencimento", "Vencimento", "date"],
+              ]}
+              onSalvar={async () => {
+                await api("/api/admin/financeiro/contas", { method: "POST", body: novaConta });
+                setNovaConta(null); recarregar();
+              }}
+              onCancelar={() => setNovaConta(null)}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FormFinanceiro({ titulo, dados, setDados, campos, onSalvar, onCancelar }) {
+  const [erro, setErro] = React.useState("");
+  function up(k, v) { setDados(d => ({ ...d, [k]: v })); }
+  async function submit(e) {
+    e.preventDefault();
+    setErro("");
+    try { await onSalvar(); } catch (err) { setErro(err.message); }
+  }
+  return (
+    <div className="modal-bg" onClick={onCancelar}>
+      <form className="modal" onSubmit={submit} onClick={e => e.stopPropagation()}>
+        <h3>{titulo}</h3>
+        {erro && <div className="alerta">{erro}</div>}
+        {campos.map(([k, label, tipo, opcoes]) => (
+          <div key={k} className="field">
+            <label>{label}</label>
+            {tipo === "select" ? (
+              <select value={dados[k]} onChange={e => up(k, e.target.value)}>
+                {opcoes.map(op => <option key={op} value={op}>{op}</option>)}
+              </select>
+            ) : (
+              <input type={tipo} value={dados[k] ?? ""} onChange={e => up(k, tipo === "number" ? +e.target.value : e.target.value)} />
+            )}
+          </div>
+        ))}
+        <div className="modal-foot">
+          <button type="button" className="btn-secondary" onClick={onCancelar}>Cancelar</button>
+          <button type="submit">Salvar</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function App() {
   const [user, setUser] = React.useState(null);
   const [carregando, setCarregando] = React.useState(true);
@@ -1368,6 +1657,7 @@ function App() {
           <button className={aba === "alertas" ? "tab on" : "tab"} onClick={() => setAba("alertas")}>Alertas</button>
           <button className={aba === "agenda" ? "tab on" : "tab"} onClick={() => setAba("agenda")}>Agenda</button>
           <button className={aba === "documentos" ? "tab on" : "tab"} onClick={() => setAba("documentos")}>Documentos</button>
+          <button className={aba === "financeiro" ? "tab on" : "tab"} onClick={() => setAba("financeiro")}>Financeiro</button>
           <button className={aba === "imoveis" ? "tab on" : "tab"} onClick={() => setAba("imoveis")}>Imoveis</button>
         </nav>
         <div>
@@ -1384,6 +1674,7 @@ function App() {
         {aba === "alertas" && <Alertas />}
         {aba === "agenda" && <Agenda />}
         {aba === "documentos" && <Documentos />}
+        {aba === "financeiro" && <Financeiro />}
         {aba === "imoveis" && (<>
         <div className="toolbar">
           <h2>Imoveis ({imoveis.length})</h2>

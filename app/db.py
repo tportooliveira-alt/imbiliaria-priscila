@@ -278,6 +278,55 @@ CREATE TABLE IF NOT EXISTS consentimentos (
 );
 CREATE INDEX IF NOT EXISTS idx_consentimentos_lead ON consentimentos(lead_id, criado_em);
 CREATE INDEX IF NOT EXISTS idx_consentimentos_email ON consentimentos(email);
+
+-- ============================================================
+-- W7 — Financeiro (comissoes, metas, contas)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS comissoes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_id INTEGER,
+    imovel_id INTEGER,
+    corretor_email TEXT,
+    descricao TEXT NOT NULL,
+    valor_venda REAL NOT NULL,
+    percentual REAL NOT NULL DEFAULT 0,
+    valor_comissao REAL NOT NULL,
+    status TEXT NOT NULL DEFAULT 'previsto',  -- previsto | recebido | cancelado
+    data_venda TEXT NOT NULL,
+    data_recebimento TEXT,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL,
+    FOREIGN KEY (imovel_id) REFERENCES imoveis(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_comissoes_status ON comissoes(status, data_venda);
+CREATE INDEX IF NOT EXISTS idx_comissoes_corretor ON comissoes(corretor_email);
+
+CREATE TABLE IF NOT EXISTS metas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    corretor_email TEXT,
+    ano INTEGER NOT NULL,
+    mes INTEGER NOT NULL,
+    meta_vendas REAL NOT NULL DEFAULT 0,
+    meta_comissao REAL NOT NULL DEFAULT 0,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(corretor_email, ano, mes)
+);
+CREATE INDEX IF NOT EXISTS idx_metas_periodo ON metas(ano, mes);
+
+CREATE TABLE IF NOT EXISTS contas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tipo TEXT NOT NULL,                        -- pagar | receber
+    descricao TEXT NOT NULL,
+    categoria TEXT DEFAULT 'geral',
+    valor REAL NOT NULL,
+    vencimento TEXT NOT NULL,
+    pago INTEGER NOT NULL DEFAULT 0,
+    data_pagamento TEXT,
+    observacoes TEXT,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_contas_vencimento ON contas(vencimento, pago);
+CREATE INDEX IF NOT EXISTS idx_contas_tipo ON contas(tipo, pago);
 """
 
 
@@ -296,6 +345,8 @@ def init_db() -> None:
         # Migracoes idempotentes (ALTER TABLE so se coluna nao existir)
         _migrar_coluna(conn, "simulacoes", "bairro", "TEXT")
         _migrar_coluna(conn, "simulacoes", "tipo_imovel", "TEXT")
+        # W6: tour 360 por imovel
+        _migrar_coluna(conn, "imoveis", "tour_360_url", "TEXT")
         conn.commit()
 
 

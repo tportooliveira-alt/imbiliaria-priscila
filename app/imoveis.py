@@ -86,8 +86,9 @@ def criar_imovel(dados: dict) -> dict:
         cur = conn.execute(
             """INSERT INTO imoveis
                 (slug, titulo, bairro, tipo, quartos, suites, vagas,
-                 area_util, preco, descricao, caracteristicas, destaque, ativo)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                 area_util, preco, descricao, caracteristicas, destaque, ativo,
+                 tour_360_url)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 slug,
                 dados["titulo"],
@@ -102,6 +103,7 @@ def criar_imovel(dados: dict) -> dict:
                 caract,
                 int(bool(dados.get("destaque", False))),
                 int(bool(dados.get("ativo", True))),
+                dados.get("tour_360_url"),
             ),
         )
         novo_id = int(cur.lastrowid)
@@ -114,6 +116,7 @@ def atualizar_imovel(imovel_id: int, dados: dict) -> dict | None:
     campos_permitidos = {
         "titulo", "bairro", "tipo", "quartos", "suites", "vagas",
         "area_util", "preco", "descricao", "destaque", "ativo",
+        "tour_360_url",
     }
     sets: list[str] = []
     params: list[Any] = []

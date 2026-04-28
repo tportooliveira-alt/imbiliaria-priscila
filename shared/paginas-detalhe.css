@@ -107,6 +107,29 @@
   background: var(--cinza-1);
 }
 
+.detalhe-tour-externo {
+  margin: 2rem 0 3rem;
+}
+.detalhe-tour-externo h2 {
+  font: 600 1.4rem/1.2 var(--ff-display);
+  margin: 0 0 1rem;
+}
+.detalhe-tour-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--cinza-1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.detalhe-tour-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
 .detalhe-cols {
   display: grid;
   grid-template-columns: 1fr;

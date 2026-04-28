@@ -1,7 +1,7 @@
 """Pipeline de processamento de imagens.
 
 Recebe bytes de upload (JPEG/PNG/WebP/HEIC), valida magic bytes, remove EXIF,
-gera 4 versões em WebP otimizadas e mantém a original.
+gera 4 versões em WebP otimizadas (com watermark) e mantém a original limpa.
 
 Hierarquia gerada por imagem:
     assets/imoveis/{slug}/{uuid}/original.jpg
@@ -13,11 +13,12 @@ Hierarquia gerada por imagem:
 from __future__ import annotations
 
 import io
+import os
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
-from PIL import Image, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 try:
     from pillow_heif import register_heif_opener
@@ -146,7 +147,7 @@ def processar_upload(
         para_jpeg = sem_exif if sem_exif.mode == "RGB" else sem_exif.convert("RGB")
     para_jpeg.save(base / "original.jpg", format="JPEG", quality=95, optimize=True)
 
-    # Variantes WebP, mantendo aspect ratio
+    # Variantes WebP, mantendo aspect ratio (com watermark exceto thumb 200)
     for largura_alvo, qualidade in TAMANHOS_WEBP:
         if largura_alvo >= largura:
             copia = sem_exif.copy()
@@ -154,6 +155,8 @@ def processar_upload(
             ratio = largura_alvo / largura
             nova_altura = int(altura * ratio)
             copia = sem_exif.resize((largura_alvo, nova_altura), Image.LANCZOS)
+        if largura_alvo >= 600 and _watermark_ativo():
+            copia = aplicar_watermark(copia)
         copia.save(base / f"{largura_alvo}.webp", format="WEBP", quality=qualidade, method=6)
 
     return ImagemProcessada(
@@ -162,3 +165,57 @@ def processar_upload(
         largura=largura,
         altura=altura,
     )
+
+
+# ─── Watermark (W6) ──────────────────────────────────────────────────────────
+def _watermark_ativo() -> bool:
+    """Pode ser desativado via WATERMARK_ATIVO=0 (default: ativo)."""
+    return os.environ.get("WATERMARK_ATIVO", "1") not in ("0", "false", "False")
+
+
+def aplicar_watermark(img: Image.Image, *, texto: str | None = None) -> Image.Image:
+    """Sobrepoe assinatura discreta no canto inferior direito.
+
+    Watermark editorial em RGBA, 6% da altura como tamanho de fonte,
+    cor branca semi-transparente (~70%) com sombra suave para legibilidade.
+    """
+    rotulo = texto or os.environ.get(
+        "WATERMARK_TEXTO",
+        "Priscila Vasconcelos · CRECI/BA 29.231",
+    )
+    base = img.convert("RGBA") if img.mode != "RGBA" else img.copy()
+    largura, altura = base.size
+
+    # tamanho de fonte proporcional (clamp 14..48)
+    tam = max(14, min(48, int(altura * 0.025)))
+    fonte = None
+    for nome in ("DejaVuSans.ttf", "Arial.ttf", "arial.ttf"):
+        try:
+            fonte = ImageFont.truetype(nome, tam)
+            break
+        except (OSError, IOError):
+            continue
+    if fonte is None:
+        fonte = ImageFont.load_default()
+
+    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    try:
+        bbox = draw.textbbox((0, 0), rotulo, font=fonte)
+        tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    except AttributeError:  # pragma: no cover
+        tw, th = draw.textsize(rotulo, font=fonte)
+
+    margem = max(8, int(altura * 0.015))
+    x = largura - tw - margem
+    y = altura - th - margem
+    # sombra
+    draw.text((x + 1, y + 1), rotulo, font=fonte, fill=(0, 0, 0, 140))
+    # texto principal
+    draw.text((x, y), rotulo, font=fonte, fill=(255, 255, 255, 200))
+
+    final = Image.alpha_composite(base, overlay)
+    if img.mode != "RGBA":
+        return final.convert(img.mode)
+    return final
+
