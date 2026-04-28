@@ -825,148 +825,130 @@ def agenda_enviar_lembretes(janela_horas: int = 24, _user=Depends(requer_admin))
         "fallback": False,
         "items": detalhes,
     }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
-# W4 — Agenda (visitas, reunioes, follow-ups)
+# W5 — Documentos do lead/imovel + Consentimentos LGPD + Proposta PDF
 # ─────────────────────────────────────────────────────────────────────────────
-class AgendaCriar(BaseModel):
-    titulo: str = Field(..., min_length=2, max_length=200)
-    inicio: str = Field(..., description="ISO8601 UTC")
-    fim: str = Field(..., description="ISO8601 UTC")
-    tipo: str = "visita"
-    lead_id: int | None = None
-    imovel_id: int | None = None
-    observacoes: str | None = Field(None, max_length=2000)
+from fastapi import File, Form, UploadFile  # noqa: E402
+from fastapi.responses import FileResponse, Response  # noqa: E402
+
+from app import documentos as documentos_repo  # noqa: E402
+from app import imoveis as imoveis_repo  # noqa: E402
+from app import proposta_pdf  # noqa: E402
 
 
-class AgendaAtualizar(BaseModel):
-    titulo: str | None = Field(None, min_length=2, max_length=200)
-    inicio: str | None = None
-    fim: str | None = None
-    tipo: str | None = None
-    status: str | None = None
-    lead_id: int | None = None
-    imovel_id: int | None = None
-    observacoes: str | None = Field(None, max_length=2000)
-
-
-@router.post("/agenda", status_code=201)
-def agenda_criar(payload: AgendaCriar, _user=Depends(requer_admin)) -> dict:
-    from app import agenda as agenda_repo
-    try:
-        novo_id = agenda_repo.criar(
-            titulo=payload.titulo,
-            inicio=payload.inicio,
-            fim=payload.fim,
-            tipo=payload.tipo,
-            lead_id=payload.lead_id,
-            imovel_id=payload.imovel_id,
-            observacoes=payload.observacoes or "",
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    item = agenda_repo.detalhar(novo_id)
-    return {"ok": True, "item": item}
-
-
-@router.get("/agenda")
-def agenda_listar(
-    inicio_de: str | None = None,
-    inicio_ate: str | None = None,
-    status: str | None = None,
-    lead_id: int | None = None,
+@router.post("/documentos", status_code=201)
+async def doc_upload(
+    arquivo: UploadFile = File(...),
+    lead_id: int | None = Form(None),
+    imovel_id: int | None = Form(None),
+    tipo: str = Form("outro"),
+    observacoes: str = Form(""),
     _user=Depends(requer_admin),
 ) -> dict:
-    from app import agenda as agenda_repo
+    conteudo = await arquivo.read()
     try:
-        items = agenda_repo.listar(
-            inicio_de=inicio_de, inicio_ate=inicio_ate,
-            status=status, lead_id=lead_id,
+        doc = documentos_repo.salvar(
+            nome_original=arquivo.filename or "arquivo",
+            conteudo=conteudo,
+            mime=arquivo.content_type,
+            lead_id=lead_id,
+            imovel_id=imovel_id,
+            tipo=tipo,
+            observacoes=observacoes,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    doc.pop("caminho", None)
+    return {"ok": True, "documento": doc}
+
+
+@router.get("/documentos")
+def doc_listar(
+    lead_id: int | None = None,
+    imovel_id: int | None = None,
+    _user=Depends(requer_admin),
+) -> dict:
+    items = documentos_repo.listar(lead_id=lead_id, imovel_id=imovel_id)
     return {"total": len(items), "items": items}
 
 
-@router.get("/agenda/{item_id}")
-def agenda_detalhe(item_id: int, _user=Depends(requer_admin)) -> dict:
-    from app import agenda as agenda_repo
-    item = agenda_repo.detalhar(item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="compromisso nao encontrado")
-    return item
+@router.get("/documentos/{doc_id}/download")
+def doc_download(doc_id: int, _user=Depends(requer_admin)) -> FileResponse:
+    info = documentos_repo.detalhar(doc_id)
+    if not info:
+        raise HTTPException(status_code=404, detail="documento nao encontrado")
+    return FileResponse(
+        info["caminho"],
+        media_type=info.get("mime") or "application/octet-stream",
+        filename=info["nome_original"],
+    )
 
 
-@router.patch("/agenda/{item_id}")
-def agenda_atualizar(item_id: int, payload: AgendaAtualizar, _user=Depends(requer_admin)) -> dict:
-    from app import agenda as agenda_repo
-    try:
-        item = agenda_repo.atualizar(item_id, **payload.model_dump(exclude_none=True))
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
-    if not item:
-        raise HTTPException(status_code=404, detail="compromisso nao encontrado")
-    return item
+@router.delete("/documentos/{doc_id}", status_code=204)
+def doc_remover(doc_id: int, _user=Depends(requer_admin)) -> None:
+    if not documentos_repo.remover(doc_id):
+        raise HTTPException(status_code=404, detail="documento nao encontrado")
 
 
-@router.delete("/agenda/{item_id}", status_code=204)
-def agenda_remover(item_id: int, _user=Depends(requer_admin)) -> None:
-    from app import agenda as agenda_repo
-    if not agenda_repo.remover(item_id):
-        raise HTTPException(status_code=404, detail="compromisso nao encontrado")
+@router.get("/consentimentos")
+def consentimentos_listar(
+    lead_id: int | None = None,
+    email: str | None = None,
+    _user=Depends(requer_admin),
+) -> dict:
+    items = documentos_repo.listar_consentimentos(lead_id=lead_id, email=email)
+    return {"total": len(items), "items": items}
 
 
-@router.post("/agenda/lembretes/enviar")
-def agenda_enviar_lembretes(janela_horas: int = 24, _user=Depends(requer_admin)) -> dict:
-    """Envia WhatsApp para leads com compromisso nas proximas N horas.
+class PropostaPayload(BaseModel):
+    imovel_id: int
+    lead_id: int
+    valor_proposta: float = Field(..., gt=0)
+    forma_pagamento: str = Field("Financiamento bancario", max_length=120)
+    condicoes: str = Field("", max_length=4000)
+    salvar_documento: bool = True
 
-    Sem Evolution configurada, retorna lista de pendentes para acionar manualmente.
-    """
-    from app import agenda as agenda_repo
-    from app import whatsapp
 
-    pendentes = agenda_repo.lembretes_a_enviar(janela_horas=janela_horas)
-    if not pendentes:
-        return {"total": 0, "enviados": 0, "fallback": False, "items": []}
+@router.post("/proposta-pdf")
+def gerar_proposta(payload: PropostaPayload, _user=Depends(requer_admin)) -> Response:
+    imovel = imoveis_repo.buscar_por_id(payload.imovel_id)
+    if not imovel:
+        raise HTTPException(status_code=404, detail="imovel nao encontrado")
+    lead = leads_repo.detalhar(payload.lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="lead nao encontrado")
 
-    if not whatsapp.disponivel():
-        return {
-            "total": len(pendentes),
-            "enviados": 0,
-            "fallback": True,
-            "items": pendentes,
-        }
+    pdf_bytes = proposta_pdf.gerar_proposta_pdf(
+        imovel=imovel,
+        lead=lead,
+        valor_proposta=payload.valor_proposta,
+        forma_pagamento=payload.forma_pagamento,
+        condicoes=payload.condicoes,
+    )
 
-    enviados = 0
-    detalhes = []
-    for item in pendentes:
-        if not item.get("lead_id"):
-            continue
-        lead = leads_repo.detalhar(int(item["lead_id"]))
-        telefone = (lead or {}).get("telefone") or ""
-        if not telefone:
-            continue
-        inicio_dt = datetime.fromisoformat(str(item["inicio"]).replace("Z", "+00:00"))
-        msg = (
-            f"Oi {(lead.get('nome') or '').split()[0] if lead.get('nome') else ''}! "
-            f"Lembrete: {item['titulo']} amanha as "
-            f"{inicio_dt.strftime('%H:%M')}. Confirma pra mim? — Priscila"
-        ).strip()
-        resp = whatsapp.enviar_mensagem(telefone, msg)
-        if resp.enviado:
-            agenda_repo.marcar_lembrete_enviado(int(item["id"]))
-            leads_repo.registrar_interacao(
-                int(lead["id"]),
-                tipo="whatsapp_enviado",
-                descricao=f"[Lembrete agenda] {item['titulo']}",
-                metadata={"agenda_id": item["id"], "mensagem_id": resp.mensagem_id},
+    if payload.salvar_documento:
+        try:
+            documentos_repo.salvar(
+                nome_original=f"proposta_{payload.imovel_id}_{payload.lead_id}.pdf",
+                conteudo=pdf_bytes,
+                mime="application/pdf",
+                lead_id=payload.lead_id,
+                imovel_id=payload.imovel_id,
+                tipo="proposta",
+                observacoes=f"Valor: R$ {payload.valor_proposta:.2f}",
             )
-            enviados += 1
-            detalhes.append({"id": item["id"], "ok": True})
-        else:
-            detalhes.append({"id": item["id"], "ok": False, "erro": resp.erro})
-    return {
-        "total": len(pendentes),
-        "enviados": enviados,
-        "fallback": False,
-        "items": detalhes,
-    }
+        except ValueError:
+            pass
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="proposta_{payload.imovel_id}_'
+                f'{payload.lead_id}.pdf"'
+            ),
+        },
+    )

@@ -14,6 +14,18 @@ function CookieBanner() {
 
   const decidir = (escolha) => {
     try { localStorage.setItem("pv-cookie-consent", escolha); } catch (_) { /* ignore */ }
+    // W5: registra consentimento LGPD no backend (rastro auditavel)
+    try {
+      fetch("/api/consentimento", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tipo: "cookies",
+          aceito: escolha === "aceitou",
+          texto_versao: "v1",
+        }),
+      }).catch(() => {});
+    } catch (_) { /* ignore */ }
     setVisivel(false);
   };
 

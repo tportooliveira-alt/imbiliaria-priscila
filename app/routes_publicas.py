@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app import avaliacao, busca_natural, financiamento, leads as leads_repo
@@ -631,3 +631,38 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
         "auto_reply": envio.enviado,
         "modelo": resposta.get("modelo"),
     }
+
+
+# ────────────────────────────────────────────────────────────────────────
+# W5 — Consentimento LGPD (banner publico)
+# ────────────────────────────────────────────────────────────────────────
+class ConsentimentoPayload(BaseModel):
+    tipo: str = Field("contato", max_length=40)
+    aceito: bool = True
+    email: str | None = Field(None, max_length=200)
+    telefone: str | None = Field(None, max_length=40)
+    texto_versao: str = Field("v1", max_length=20)
+
+
+@router.post("/api/consentimento", status_code=201)
+def registrar_consentimento_publico(
+    payload: ConsentimentoPayload,
+    request: Request,
+) -> dict:
+    from app import documentos as documentos_repo
+
+    ip = request.client.host if request.client else None
+    ua = request.headers.get("user-agent", "")[:300]
+    try:
+        consent_id = documentos_repo.registrar_consentimento(
+            tipo=payload.tipo,
+            aceito=payload.aceito,
+            email=payload.email,
+            telefone=payload.telefone,
+            ip=ip,
+            user_agent=ua,
+            texto_versao=payload.texto_versao,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"ok": True, "id": consent_id}

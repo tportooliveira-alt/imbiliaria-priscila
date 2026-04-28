@@ -1035,6 +1035,147 @@ function Alertas() {
   );
 }
 
+function Documentos() {
+  const [items, setItems] = React.useState([]);
+  const [carregando, setCarregando] = React.useState(true);
+  const [filtroLead, setFiltroLead] = React.useState("");
+  const [form, setForm] = React.useState({
+    tipo: "outro", lead_id: "", imovel_id: "", observacoes: "",
+  });
+  const [arquivo, setArquivo] = React.useState(null);
+  const inputRef = React.useRef(null);
+
+  async function carregar() {
+    setCarregando(true);
+    try {
+      const q = filtroLead ? `?lead_id=${filtroLead}` : "";
+      const r = await api(`/api/admin/documentos${q}`);
+      setItems(r.items || []);
+    } finally { setCarregando(false); }
+  }
+
+  React.useEffect(() => { carregar(); }, []);
+
+  async function enviar(e) {
+    e.preventDefault();
+    if (!arquivo) { alert("Selecione um arquivo."); return; }
+    const fd = new FormData();
+    fd.append("arquivo", arquivo);
+    fd.append("tipo", form.tipo);
+    if (form.lead_id) fd.append("lead_id", form.lead_id);
+    if (form.imovel_id) fd.append("imovel_id", form.imovel_id);
+    if (form.observacoes) fd.append("observacoes", form.observacoes);
+    try {
+      await api("/api/admin/documentos", { method: "POST", body: fd });
+      setArquivo(null);
+      if (inputRef.current) inputRef.current.value = "";
+      setForm({ tipo: "outro", lead_id: "", imovel_id: "", observacoes: "" });
+      await carregar();
+    } catch (err) { alert("Erro: " + err.message); }
+  }
+
+  async function baixar(id, nome) {
+    const tok = localStorage.getItem("pv_admin_token");
+    const r = await fetch(`/api/admin/documentos/${id}/download`, {
+      headers: { Authorization: `Bearer ${tok}` },
+    });
+    if (!r.ok) { alert("Erro ao baixar"); return; }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = nome; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function remover(id) {
+    if (!confirm("Remover este documento?")) return;
+    await api(`/api/admin/documentos/${id}`, { method: "DELETE" });
+    await carregar();
+  }
+
+  function formatTamanho(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  if (carregando) return <p>Carregando documentos…</p>;
+
+  return (
+    <div>
+      <div className="toolbar">
+        <h2>Documentos ({items.length})</h2>
+        <div style={{display: "flex", gap: 8, alignItems: "center"}}>
+          <input
+            type="number" placeholder="Filtrar por lead ID"
+            value={filtroLead} onChange={e => setFiltroLead(e.target.value)}
+            style={{width: 160}}
+          />
+          <button className="btn-secondary" style={{width: "auto"}} onClick={carregar}>Filtrar</button>
+        </div>
+      </div>
+
+      <form onSubmit={enviar} style={{border: "1px solid #c9c2af", padding: 16, borderRadius: 4, marginBottom: 16}}>
+        <h3 style={{marginTop: 0}}>Novo documento</h3>
+        <div style={{display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12}}>
+          <label>Tipo
+            <select value={form.tipo} onChange={e => setForm({...form, tipo: e.target.value})}>
+              <option value="rg">RG</option>
+              <option value="cpf">CPF</option>
+              <option value="comprovante_renda">Comprovante de renda</option>
+              <option value="comprovante_residencia">Comprovante de residencia</option>
+              <option value="contrato">Contrato</option>
+              <option value="proposta">Proposta</option>
+              <option value="outro">Outro</option>
+            </select>
+          </label>
+          <label>Lead ID
+            <input type="number" value={form.lead_id} onChange={e => setForm({...form, lead_id: e.target.value})} />
+          </label>
+          <label>Imovel ID
+            <input type="number" value={form.imovel_id} onChange={e => setForm({...form, imovel_id: e.target.value})} />
+          </label>
+        </div>
+        <label style={{display: "block", marginTop: 12}}>Observacoes
+          <input value={form.observacoes} onChange={e => setForm({...form, observacoes: e.target.value})} />
+        </label>
+        <label style={{display: "block", marginTop: 12}}>Arquivo (PDF, imagem ou DOC, max 10 MB)
+          <input ref={inputRef} type="file" onChange={e => setArquivo(e.target.files[0] || null)} required
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.doc,.docx" />
+        </label>
+        <button type="submit" className="btn-primary" style={{width: "auto", marginTop: 12}}>Enviar</button>
+      </form>
+
+      {items.length === 0 ? (
+        <p style={{color: "#777"}}>Nenhum documento cadastrado.</p>
+      ) : (
+        <table className="tab" style={{width: "100%"}}>
+          <thead>
+            <tr><th>Quando</th><th>Tipo</th><th>Nome</th><th>Lead</th><th>Imovel</th><th>Tamanho</th><th>Acoes</th></tr>
+          </thead>
+          <tbody>
+            {items.map(it => (
+              <tr key={it.id}>
+                <td>{new Date(it.criado_em + "Z").toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"})}</td>
+                <td>{it.tipo}</td>
+                <td>{it.nome_original}</td>
+                <td>{it.lead_id || "—"}</td>
+                <td>{it.imovel_id || "—"}</td>
+                <td>{formatTamanho(it.tamanho_bytes)}</td>
+                <td>
+                  <button className="btn-mini" onClick={() => baixar(it.id, it.nome_original)}>↓</button>
+                  {" "}
+                  <button className="btn-mini danger" onClick={() => remover(it.id)}>✕</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
 function Agenda() {
   const [items, setItems] = React.useState([]);
   const [carregando, setCarregando] = React.useState(true);
@@ -1226,6 +1367,7 @@ function App() {
           <button className={aba === "operacao-ia" ? "tab on" : "tab"} onClick={() => setAba("operacao-ia")}>Operacao IA</button>
           <button className={aba === "alertas" ? "tab on" : "tab"} onClick={() => setAba("alertas")}>Alertas</button>
           <button className={aba === "agenda" ? "tab on" : "tab"} onClick={() => setAba("agenda")}>Agenda</button>
+          <button className={aba === "documentos" ? "tab on" : "tab"} onClick={() => setAba("documentos")}>Documentos</button>
           <button className={aba === "imoveis" ? "tab on" : "tab"} onClick={() => setAba("imoveis")}>Imoveis</button>
         </nav>
         <div>
@@ -1241,6 +1383,7 @@ function App() {
         {aba === "operacao-ia" && <OperacaoIA />}
         {aba === "alertas" && <Alertas />}
         {aba === "agenda" && <Agenda />}
+        {aba === "documentos" && <Documentos />}
         {aba === "imoveis" && (<>
         <div className="toolbar">
           <h2>Imoveis ({imoveis.length})</h2>

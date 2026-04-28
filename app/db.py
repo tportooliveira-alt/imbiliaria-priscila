@@ -241,6 +241,43 @@ CREATE TABLE IF NOT EXISTS agenda (
 );
 CREATE INDEX IF NOT EXISTS idx_agenda_inicio ON agenda(inicio);
 CREATE INDEX IF NOT EXISTS idx_agenda_status ON agenda(status, inicio);
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- Documentos (W5) — RG, comprovante, contracheque, contrato etc.
+-- ─────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS documentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_id INTEGER,
+    imovel_id INTEGER,
+    tipo TEXT NOT NULL DEFAULT 'outro',       -- rg | cpf | comprovante_renda | comprovante_residencia | contrato | proposta | outro
+    nome_original TEXT NOT NULL,
+    caminho TEXT NOT NULL,                    -- caminho relativo no disco
+    mime TEXT,
+    tamanho_bytes INTEGER NOT NULL DEFAULT 0,
+    observacoes TEXT DEFAULT '',
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE,
+    FOREIGN KEY (imovel_id) REFERENCES imoveis(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_documentos_lead ON documentos(lead_id, criado_em);
+CREATE INDEX IF NOT EXISTS idx_documentos_imovel ON documentos(imovel_id);
+
+-- Consentimentos LGPD (rastro de aceite explicito)
+CREATE TABLE IF NOT EXISTS consentimentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_id INTEGER,
+    email TEXT,
+    telefone TEXT,
+    tipo TEXT NOT NULL DEFAULT 'contato',     -- contato | marketing | cookies | termos
+    aceito INTEGER NOT NULL DEFAULT 1,
+    ip TEXT,
+    user_agent TEXT,
+    texto_versao TEXT DEFAULT 'v1',
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_consentimentos_lead ON consentimentos(lead_id, criado_em);
+CREATE INDEX IF NOT EXISTS idx_consentimentos_email ON consentimentos(email);
 """
 
 
