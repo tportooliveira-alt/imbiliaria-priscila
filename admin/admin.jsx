@@ -243,6 +243,25 @@ function GerenciadorImagens({ imovel, aoFechar }) {
     await recarregar();
   }
 
+  async function autoOrganizar() {
+    if (!imagens.length) return;
+    if (!confirm(`Deixar a IA classificar e ordenar as ${imagens.length} fotos? Pode levar alguns segundos.`)) return;
+    setEnviando(imagens.length);
+    try {
+      const r = await api(`/api/admin/imoveis/${imovel.id}/imagens/auto-organizar`, { method: "POST" });
+      if (r.fallback) {
+        alert("IA indisponível (GOOGLE_API_KEY não configurada). Organize manualmente.");
+      } else {
+        alert(`✓ ${r.classificadas} de ${r.total} fotos classificadas e ordenadas editorialmente.`);
+      }
+      await recarregar();
+    } catch (e) {
+      alert("Erro: " + e.message);
+    } finally {
+      setEnviando(0);
+    }
+  }
+
   return (
     <div>
       <div className={`dropzone ${over ? "is-over" : ""}`}
@@ -271,6 +290,14 @@ function GerenciadorImagens({ imovel, aoFechar }) {
         <p style={{fontSize: 12, color: "#888", margin: "16px 0 8px"}}>
           {imagens.length} {imagens.length === 1 ? "foto" : "fotos"} · arraste os cards para reordenar · a ordem aqui e a ordem que aparece no site
         </p>
+      )}
+
+      {imagens.length >= 2 && (
+        <div style={{margin: "8px 0 16px"}}>
+          <button type="button" className="btn-secondary" style={{width: "auto"}} onClick={autoOrganizar}>
+            ✨ IA: classificar cômodos e ordenar editorialmente
+          </button>
+        </div>
       )}
 
       <div className="galeria">

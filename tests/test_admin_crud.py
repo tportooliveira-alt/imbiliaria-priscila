@@ -168,6 +168,87 @@ def test_headers_de_seguranca_presentes(cliente):
     r = cliente.get("/api/imoveis")
     assert r.headers.get("X-Content-Type-Options") == "nosniff"
     assert r.headers.get("X-Frame-Options") == "DENY"
+
+
+# ─── W3 Studio: auto-organizar imagens ───────────────────────────────────────
+def _criar_imovel_com_3_fotos(cliente, tok) -> int:
+    r = cliente.post(
+        "/api/admin/imoveis",
+        json={"titulo": "Casa Studio", "bairro": "Centro", "tipo": "Casa", "preco": 700000},
+        headers=_headers(tok),
+    )
+    imovel_id = r.json()["id"]
+    for cor in [(200, 100, 100), (100, 200, 100), (100, 100, 200)]:
+        img = Image.new("RGB", (800, 600), color=cor)
+        buf = io.BytesIO(); img.save(buf, format="JPEG", quality=85); buf.seek(0)
+        cliente.post(
+            f"/api/admin/imoveis/{imovel_id}/imagens",
+            files=[("files", ("f.jpg", buf, "image/jpeg"))],
+            headers=_headers(tok),
+        )
+    return imovel_id
+
+
+def test_auto_organizar_fallback_sem_chave(cliente, monkeypatch):
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    tok = _login(cliente)
+    iid = _criar_imovel_com_3_fotos(cliente, tok)
+    r = cliente.post(
+        f"/api/admin/imoveis/{iid}/imagens/auto-organizar",
+        headers=_headers(tok),
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["fallback"] is True
+    assert "imagens" in body
+
+
+def test_auto_organizar_404_sem_imagens(cliente):
+    tok = _login(cliente)
+    r = cliente.post(
+        "/api/admin/imoveis",
+        json={"titulo": "Sem fotos", "bairro": "Centro", "tipo": "Casa", "preco": 100},
+        headers=_headers(tok),
+    )
+    iid = r.json()["id"]
+    r = cliente.post(
+        f"/api/admin/imoveis/{iid}/imagens/auto-organizar",
+        headers=_headers(tok),
+    )
+    assert r.status_code == 404
+
+
+def test_auto_organizar_classifica_e_ordena(cliente, monkeypatch):
+    """Mocka classificacao para verificar atualizacao + reordenacao."""
+    monkeypatch.setenv("GOOGLE_API_KEY", "fake")
+    tok = _login(cliente)
+    iid = _criar_imovel_com_3_fotos(cliente, tok)
+
+    # primeira foto vira capa (upload define capa para a primeira), entao
+    # aqui simulamos detector dizendo: 1=quarto, 2=fachada (vira capa, mas
+    # ja existe → vira sala), 3=cozinha
+    respostas = iter(["quarto", "fachada", "cozinha"])
+    from app import visao
+    monkeypatch.setattr(visao, "classificar_comodo", lambda p, **kw: next(respostas, None))
+
+    r = cliente.post(
+        f"/api/admin/imoveis/{iid}/imagens/auto-organizar",
+        headers=_headers(tok),
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["fallback"] is False
+    assert body["classificadas"] >= 2
+    tipos = [im["tipo"] for im in body["imagens"]]
+    # ordem editorial: capa primeiro (se houver) ou sala
+    assert tipos[0] in ("capa", "sala")
+    assert "cozinha" in tipos or "quarto" in tipos
+
+
+def test_auto_organizar_exige_admin(cliente):
+    r = cliente.post("/api/admin/imoveis/1/imagens/auto-organizar")
+    assert r.status_code == 401
+
     assert "strict-origin" in r.headers.get("Referrer-Policy", "")
 
 

@@ -287,6 +287,70 @@ def reordenar(imovel_id: int, body: ReordemPayload, _: dict = Depends(requer_adm
     return {"ok": True, "imagens": imoveis.listar_imagens(imovel_id)}
 
 
+@router.post("/api/admin/imoveis/{imovel_id}/imagens/auto-organizar")
+def auto_organizar_imagens(imovel_id: int, _: dict = Depends(requer_admin)) -> dict:
+    """Studio (W3): classifica cada foto via Gemini Vision + ordena editorialmente.
+
+    Sem GOOGLE_API_KEY, retorna `{fallback: True}` e nao altera nada.
+    Erros de IA por imagem nao impedem o batch (mantem o tipo atual).
+    """
+    from app import visao
+
+    imovel = imoveis.detalhe_por_id(imovel_id) if hasattr(imoveis, "detalhe_por_id") else None
+    if imovel is None:
+        # fallback: confirma existencia checando se ha imagens
+        if not imoveis.listar_imagens(imovel_id):
+            raise HTTPException(status_code=404, detail="imovel sem imagens ou inexistente")
+
+    lista = imoveis.listar_imagens(imovel_id)
+    if not lista:
+        raise HTTPException(status_code=404, detail="nenhuma imagem para organizar")
+
+    if not visao.disponivel():
+        return {
+            "fallback": True,
+            "mensagem": "GOOGLE_API_KEY nao configurada; ordene manualmente.",
+            "imagens": lista,
+        }
+
+    pasta_assets = Path(__file__).resolve().parent.parent / "assets"
+    classificadas = 0
+    ja_havia_capa = any(im.get("tipo") == "capa" for im in lista)
+
+    for img in lista:
+        # arquivo no DB e relativo a /assets, ex: "imoveis/slug/uuid"
+        original = pasta_assets / img["arquivo"] / "original.jpg"
+        if not original.exists():
+            continue
+        novo_tipo = visao.classificar_comodo(original)
+        if not novo_tipo:
+            continue
+        # nao sobrescreve capa existente automaticamente (a primeira "capa"
+        # detectada vira capa apenas se ainda nao existir uma)
+        if novo_tipo == "capa" and ja_havia_capa:
+            novo_tipo = "sala"
+        try:
+            imoveis.atualizar_imagem(int(img["id"]), tipo=novo_tipo)
+            if novo_tipo == "capa":
+                ja_havia_capa = True
+            classificadas += 1
+        except ValueError:
+            continue
+
+    # reordena editorialmente apos classificar
+    atualizadas = imoveis.listar_imagens(imovel_id)
+    nova_ordem = visao.ordenar_editorial(atualizadas)
+    if nova_ordem:
+        imoveis.reordenar_imagens(imovel_id, nova_ordem)
+
+    return {
+        "fallback": False,
+        "classificadas": classificadas,
+        "total": len(lista),
+        "imagens": imoveis.listar_imagens(imovel_id),
+    }
+
+
 @router.delete("/api/admin/imagens/{imagem_id}", status_code=204)
 def remover_imagem(imagem_id: int, _: dict = Depends(requer_admin)) -> None:
     if not imoveis.remover_imagem(imagem_id):
