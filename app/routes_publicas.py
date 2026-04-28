@@ -517,3 +517,67 @@ def alerta_busca(payload: AlertaBuscaRequest) -> dict:
         "lead_id": lead_id,
         "mensagem": "Pronto! Te aviso assim que aparecer um imovel novo nesse perfil.",
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Webhook WhatsApp / Evolution API (W2.1)
+# ─────────────────────────────────────────────────────────────────────────────
+class WebhookWhatsApp(BaseModel):
+    """Payload simplificado do Evolution API webhook.
+
+    Aceita o formato `messages.upsert` (entrada de mensagens). Campos
+    desconhecidos sao ignorados.
+    """
+    event: str | None = None
+    instance: str | None = None
+    data: dict | None = None
+
+
+@router.post("/api/whatsapp/webhook")
+def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
+    """Recebe eventos do Evolution API e registra mensagens recebidas como interacao.
+
+    Valida `EVOLUTION_WEBHOOK_TOKEN` se configurado (header opcional do Evolution
+    nao e estavel entre versoes; preferimos secret no path em producao).
+    Aqui aceitamos qualquer call e filtramos so eventos relevantes.
+    """
+    if not payload.event or not payload.data:
+        return {"ignorado": True, "motivo": "evento vazio"}
+
+    # so processamos mensagens recebidas pelo lead (fromMe=False)
+    if "messages.upsert" not in (payload.event or ""):
+        return {"ignorado": True, "motivo": f"evento {payload.event} nao tratado"}
+
+    msg = payload.data or {}
+    key = msg.get("key") or {}
+    from_me = bool(key.get("fromMe"))
+    if from_me:
+        return {"ignorado": True, "motivo": "fromMe=true"}
+
+    remote = (key.get("remoteJid") or "").split("@")[0]
+    if not remote:
+        return {"ignorado": True, "motivo": "sem remoteJid"}
+
+    # extrai texto (varios formatos do whatsapp)
+    msg_content = msg.get("message") or {}
+    texto = (
+        msg_content.get("conversation")
+        or (msg_content.get("extendedTextMessage") or {}).get("text")
+        or (msg_content.get("imageMessage") or {}).get("caption")
+        or "[midia recebida]"
+    )
+
+    push_name = msg.get("pushName") or None
+
+    lead_id = leads_repo.upsert_lead(
+        nome=push_name,
+        telefone=remote,
+        origem="whatsapp",
+    )
+    leads_repo.registrar_interacao(
+        lead_id,
+        tipo="whatsapp_recebido",
+        descricao=str(texto)[:1000],
+        metadata={"mensagem_id": key.get("id")},
+    )
+    return {"ok": True, "lead_id": lead_id}

@@ -535,6 +535,28 @@ function DetalheLead({ id, aoFechar }) {
     window.open(`https://wa.me/55${tel}?text=${txt}`, "_blank");
   }
 
+  async function enviarWhatsAppDireto() {
+    if (!sugestao?.texto) return;
+    setSugestaoBusy(true);
+    try {
+      const r = await api(`/api/admin/leads/${id}/whatsapp`, {
+        method: "POST",
+        body: { texto: sugestao.texto },
+      });
+      if (r.fallback) {
+        setErro("Evolution API nao configurada — use 'Abrir WhatsApp'.");
+      } else {
+        setCopiado(true);
+        setTimeout(() => setCopiado(false), 2400);
+        await carregar();
+      }
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setSugestaoBusy(false);
+    }
+  }
+
   async function mudar(campo, valor) {
     await api(`/api/admin/leads/${id}`, { method: "PATCH", body: { [campo]: valor } });
     await carregar();
@@ -649,6 +671,11 @@ function DetalheLead({ id, aoFechar }) {
                           {canalSugestao === "whatsapp" && lead.telefone && (
                             <button className="btn-secondary" style={{width: "auto"}} onClick={abrirWhatsApp}>
                               Abrir WhatsApp
+                            </button>
+                          )}
+                          {canalSugestao === "whatsapp" && lead.telefone && (
+                            <button className="btn-primary" style={{width: "auto"}} onClick={enviarWhatsAppDireto} disabled={sugestaoBusy}>
+                              {sugestaoBusy ? "Enviando..." : "✈ Enviar agora"}
                             </button>
                           )}
                           <span style={{fontSize: 11, color: "#777", alignSelf: "center"}}>

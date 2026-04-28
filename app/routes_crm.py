@@ -538,3 +538,53 @@ def marcar_alerta_notificado(alerta_id: int, _user=Depends(requer_admin)) -> dic
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail="alerta nao encontrado ou inativo")
     return {"ok": True}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WhatsApp via Evolution API (W2.1) — envio direto pelo admin.
+# ─────────────────────────────────────────────────────────────────────────────
+class EnvioWhatsAppPayload(BaseModel):
+    texto: str = Field(..., min_length=1, max_length=4000)
+
+
+@router.post("/leads/{lead_id}/whatsapp")
+def enviar_whatsapp_lead(
+    lead_id: int,
+    payload: EnvioWhatsAppPayload,
+    _user=Depends(requer_admin),
+) -> dict:
+    """Envia mensagem WhatsApp ao lead e registra como interacao.
+
+    Quando Evolution API nao esta configurada (sem `EVOLUTION_API_URL`),
+    devolve `fallback=True` para a UI cair no `wa.me` do navegador.
+    """
+    from app import whatsapp
+
+    lead = leads_repo.detalhar(lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="lead nao encontrado")
+    telefone = (lead.get("telefone") or "").strip()
+    if not telefone:
+        raise HTTPException(status_code=400, detail="lead sem telefone cadastrado")
+
+    resultado = whatsapp.enviar_mensagem(telefone, payload.texto)
+    if resultado.fallback:
+        return {
+            "enviado": False,
+            "fallback": True,
+            "mensagem": "Evolution API nao configurada; use o botao 'Abrir WhatsApp' do navegador.",
+        }
+    if not resultado.enviado:
+        raise HTTPException(status_code=502, detail=resultado.erro or "falha ao enviar")
+
+    leads_repo.registrar_interacao(
+        lead_id,
+        tipo="whatsapp_enviado",
+        descricao=payload.texto[:500],
+        metadata={"mensagem_id": resultado.mensagem_id},
+    )
+    return {
+        "enviado": True,
+        "fallback": False,
+        "mensagem_id": resultado.mensagem_id,
+    }
