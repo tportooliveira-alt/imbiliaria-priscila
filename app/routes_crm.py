@@ -588,3 +588,93 @@ def enviar_whatsapp_lead(
         "fallback": False,
         "mensagem_id": resultado.mensagem_id,
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# W2.2 — Notificar alerta via WhatsApp (cruza match + dispara mensagem)
+# ─────────────────────────────────────────────────────────────────────────────
+def _formatar_mensagem_alerta(nome: str, imoveis: list[dict]) -> str:
+    """Mensagem amigavel listando ate 3 imoveis novos para o lead."""
+    saudacao = f"Oi {nome.split()[0]}! Aqui e a Priscila."
+    intro = "Apareceram opcoes novas que combinam com o que voce procura:"
+    linhas = []
+    for im in imoveis[:3]:
+        preco_fmt = f"R$ {float(im.get('preco') or 0):,.0f}".replace(",", ".")
+        bairro = im.get("bairro") or ""
+        quartos = im.get("quartos") or 0
+        titulo = im.get("titulo") or ""
+        slug = im.get("slug") or ""
+        linha = f"• {titulo} — {bairro}, {quartos}q — {preco_fmt}"
+        if slug:
+            linha += f"\n  https://priscilavasconcelos.com.br/v3-editorial/#imovel-{slug}"
+        linhas.append(linha)
+    fechamento = "Quer que eu te mande mais detalhes ou agende uma visita?"
+    return f"{saudacao}\n\n{intro}\n\n" + "\n".join(linhas) + f"\n\n{fechamento}"
+
+
+@router.post("/alertas/{alerta_id}/notificar-whatsapp")
+def notificar_alerta_whatsapp(alerta_id: int, _user=Depends(requer_admin)) -> dict:
+    """Cruza o alerta com imoveis ativos e dispara WhatsApp pela Evolution.
+
+    Sem Evolution configurada, devolve `fallback=True` com a mensagem pronta
+    para a Priscila copiar manualmente.
+    """
+    from app import imoveis as imoveis_repo
+    from app import whatsapp
+
+    alertas = leads_repo.listar_alertas(ativa=True)
+    alerta = next((a for a in alertas if a["id"] == alerta_id), None)
+    if not alerta:
+        raise HTTPException(status_code=404, detail="alerta nao encontrado ou inativo")
+
+    criado_alerta = alerta.get("criado_em") or ""
+    imoveis_ativos = imoveis_repo.listar_imoveis(somente_ativos=True)
+    matches = []
+    for im in imoveis_ativos:
+        criado_imovel = im.get("criado_em") or im.get("atualizado_em") or ""
+        if criado_alerta and criado_imovel and criado_imovel < criado_alerta:
+            continue
+        if _imovel_combina_com_filtros(im, alerta.get("filtros") or {}):
+            matches.append(im)
+    if not matches:
+        raise HTTPException(status_code=400, detail="nenhum imovel novo combina com este alerta")
+
+    mensagem = _formatar_mensagem_alerta(alerta["nome"], matches)
+    resultado = whatsapp.enviar_mensagem(alerta["contato"], mensagem)
+
+    if resultado.fallback:
+        return {
+            "enviado": False,
+            "fallback": True,
+            "mensagem": mensagem,
+            "imoveis_id": [im["id"] for im in matches[:3]],
+        }
+    if not resultado.enviado:
+        raise HTTPException(status_code=502, detail=resultado.erro or "falha ao enviar")
+
+    # incrementa contador igual ao marcar-notificado
+    from datetime import datetime as _dt
+    from app.db import db_session
+    with db_session() as conn:
+        conn.execute(
+            "UPDATE alertas_busca SET notificacoes_enviadas = notificacoes_enviadas + 1, "
+            "ultima_notificacao = ? WHERE id = ?",
+            (_dt.utcnow().isoformat(), alerta_id),
+        )
+        conn.commit()
+
+    # registra interacao no lead vinculado, se houver
+    if alerta.get("lead_id"):
+        leads_repo.registrar_interacao(
+            int(alerta["lead_id"]),
+            tipo="whatsapp_enviado",
+            descricao=f"[Alerta de busca] {len(matches)} imoveis enviados",
+            metadata={"alerta_id": alerta_id, "mensagem_id": resultado.mensagem_id},
+        )
+
+    return {
+        "enviado": True,
+        "fallback": False,
+        "mensagem_id": resultado.mensagem_id,
+        "imoveis_enviados": len(matches[:3]),
+    }

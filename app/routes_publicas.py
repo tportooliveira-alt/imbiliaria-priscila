@@ -580,4 +580,54 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
         descricao=str(texto)[:1000],
         metadata={"mensagem_id": key.get("id")},
     )
-    return {"ok": True, "lead_id": lead_id}
+
+    # ─── W2.3: auto-resposta IA opcional ──────────────────────────────────
+    import os as _os
+    if _os.getenv("WHATSAPP_AUTO_REPLY") != "1":
+        return {"ok": True, "lead_id": lead_id, "auto_reply": False}
+
+    from app import dispatcher, whatsapp as wa
+    if not wa.disponivel():
+        return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": "evolution_indisponivel"}
+
+    # historico das ultimas 5 interacoes do tipo whatsapp_*
+    detalhe = leads_repo.detalhar(lead_id) or {}
+    historico_raw = (detalhe.get("interacoes") or [])[:6]
+    historico: list[dict] = []
+    # ordem cronologica (mais antiga primeiro), excluindo a mensagem atual
+    for it in reversed(historico_raw):
+        tipo = it.get("tipo") or ""
+        if tipo == "whatsapp_recebido":
+            historico.append({"role": "user", "content": it.get("descricao") or ""})
+        elif tipo == "whatsapp_enviado":
+            historico.append({"role": "assistant", "content": it.get("descricao") or ""})
+
+    try:
+        resposta = dispatcher.responder(str(texto), historico=historico[-5:] or None)
+        texto_ia = (resposta.get("resposta") or "").strip()
+    except Exception as exc:  # IA indisponivel nao pode quebrar webhook
+        return {"ok": True, "lead_id": lead_id, "auto_reply": False, "erro_ia": str(exc)[:200]}
+
+    if not texto_ia:
+        return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": "ia_vazia"}
+
+    envio = wa.enviar_mensagem(remote, texto_ia)
+    if envio.enviado:
+        leads_repo.registrar_interacao(
+            lead_id,
+            tipo="whatsapp_enviado",
+            descricao=texto_ia[:500],
+            metadata={
+                "mensagem_id": envio.mensagem_id,
+                "auto_reply": True,
+                "modelo": resposta.get("modelo"),
+                "rota": resposta.get("rota"),
+            },
+        )
+
+    return {
+        "ok": True,
+        "lead_id": lead_id,
+        "auto_reply": envio.enviado,
+        "modelo": resposta.get("modelo"),
+    }

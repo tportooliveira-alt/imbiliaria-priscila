@@ -166,3 +166,128 @@ def test_webhook_ignora_evento_irrelevante(cliente):
     r = cliente.post("/api/whatsapp/webhook", json={"event": "presence.update", "data": {"x": 1}})
     assert r.status_code == 200
     assert r.json().get("ignorado") is True
+
+
+# ─── W2.2: notificar alerta via WhatsApp ────────────────────────────────────
+def test_notificar_alerta_whatsapp_fallback(cliente, monkeypatch):
+    monkeypatch.delenv("EVOLUTION_API_URL", raising=False)
+    h = _login(cliente)
+    from app import leads as leads_repo
+    from app import imoveis as imoveis_repo
+    aid = leads_repo.criar_alerta(
+        nome="Carla Lima", contato="77988887777",
+        filtros={"bairro": "Candeias", "preco_max": 900000},
+    )
+    import time as _t
+    _t.sleep(0.05)
+    imoveis_repo.criar_imovel({
+        "titulo": "Casa nova Candeias", "bairro": "Candeias",
+        "tipo": "Casa", "quartos": 3, "preco": 700000, "ativo": True,
+    })
+    r = cliente.post(f"/api/admin/alertas/{aid}/notificar-whatsapp", headers=h)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["fallback"] is True
+    assert "Candeias" in body["mensagem"]
+    assert "Carla" in body["mensagem"]
+
+
+def test_notificar_alerta_404(cliente):
+    h = _login(cliente)
+    r = cliente.post("/api/admin/alertas/99999/notificar-whatsapp", headers=h)
+    assert r.status_code == 404
+
+
+def test_notificar_alerta_sem_match_400(cliente):
+    h = _login(cliente)
+    from app import leads as leads_repo
+    aid = leads_repo.criar_alerta(
+        nome="Fulano", contato="77988880000",
+        filtros={"bairro": "Inexistente XYZ"},
+    )
+    r = cliente.post(f"/api/admin/alertas/{aid}/notificar-whatsapp", headers=h)
+    assert r.status_code == 400
+
+
+# ─── W2.3: auto-resposta IA no webhook ──────────────────────────────────────
+def test_webhook_sem_auto_reply_nao_responde(cliente, monkeypatch):
+    monkeypatch.delenv("WHATSAPP_AUTO_REPLY", raising=False)
+    payload = {
+        "event": "messages.upsert",
+        "data": {
+            "key": {"id": "X1", "remoteJid": "5577955550001@s.whatsapp.net", "fromMe": False},
+            "pushName": "Teste",
+            "message": {"conversation": "tem casa em candeias?"},
+        },
+    }
+    r = cliente.post("/api/whatsapp/webhook", json=payload)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["ok"] is True
+    assert body.get("auto_reply") is False
+
+
+def test_webhook_auto_reply_sem_evolution_indisponivel(cliente, monkeypatch):
+    monkeypatch.setenv("WHATSAPP_AUTO_REPLY", "1")
+    monkeypatch.delenv("EVOLUTION_API_URL", raising=False)
+    monkeypatch.delenv("EVOLUTION_API_KEY", raising=False)
+    payload = {
+        "event": "messages.upsert",
+        "data": {
+            "key": {"id": "X2", "remoteJid": "5577955550002@s.whatsapp.net", "fromMe": False},
+            "pushName": "Teste2",
+            "message": {"conversation": "oi"},
+        },
+    }
+    r = cliente.post("/api/whatsapp/webhook", json=payload)
+    assert r.status_code == 200
+    assert r.json().get("auto_reply") is False
+
+
+def test_webhook_auto_reply_chama_dispatcher(cliente, monkeypatch):
+    """Quando Evolution disponivel + auto_reply=1, chama IA e envia."""
+    monkeypatch.setenv("WHATSAPP_AUTO_REPLY", "1")
+    monkeypatch.setenv("EVOLUTION_API_URL", "http://evo.local")
+    monkeypatch.setenv("EVOLUTION_API_KEY", "key-fake")
+    monkeypatch.setenv("EVOLUTION_INSTANCIA", "test")
+
+    chamadas = {"dispatcher": 0, "envio": 0}
+
+    def fake_responder(mensagem, *, historico=None, tem_imagem=False):
+        chamadas["dispatcher"] += 1
+        return {"resposta": "Oi! Sim, tenho opcoes em Candeias.", "modelo": "fake", "rota": "atendimento"}
+
+    def fake_enviar(telefone, texto, *, timeout=8.0):
+        chamadas["envio"] += 1
+        from app.whatsapp import RespostaEnvio
+        return RespostaEnvio(enviado=True, mensagem_id="WAID123", fallback=False)
+
+    from app import dispatcher as dispatcher_mod
+    from app import whatsapp as wa_mod
+    monkeypatch.setattr(dispatcher_mod, "responder", fake_responder)
+    monkeypatch.setattr(wa_mod, "enviar_mensagem", fake_enviar)
+
+    payload = {
+        "event": "messages.upsert",
+        "data": {
+            "key": {"id": "X3", "remoteJid": "5577955550003@s.whatsapp.net", "fromMe": False},
+            "pushName": "Teste3",
+            "message": {"conversation": "tem casa em candeias?"},
+        },
+    }
+    r = cliente.post("/api/whatsapp/webhook", json=payload)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body.get("auto_reply") is True
+    assert chamadas["dispatcher"] == 1
+    assert chamadas["envio"] == 1
+
+    # registrou a interacao de saida
+    h = _login(cliente)
+    detalhe = cliente.get(f"/api/admin/leads/{body['lead_id']}", headers=h).json()
+    tipos = [i["tipo"] for i in detalhe.get("interacoes", [])]
+    assert "whatsapp_enviado" in tipos
+    assert "whatsapp_recebido" in tipos
+
+
+# ─── W2.2: notificar alerta via WhatsApp ────────────────────────────────────

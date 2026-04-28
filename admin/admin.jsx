@@ -925,6 +925,22 @@ function Alertas() {
     await carregar();
   }
 
+  async function notificarWhatsApp(id) {
+    if (!confirm("Enviar os imóveis novos via WhatsApp para este lead?")) return;
+    try {
+      const r = await api(`/api/admin/alertas/${id}/notificar-whatsapp`, { method: "POST" });
+      if (r.fallback) {
+        // mostra a mensagem pronta para o admin copiar manualmente
+        prompt("Evolution API não configurada. Copie e cole no WhatsApp:", r.mensagem);
+      } else {
+        alert(`✓ Enviado! ${r.imoveis_enviados} imóveis incluídos.`);
+      }
+      await carregar();
+    } catch (e) {
+      alert("Erro: " + e.message);
+    }
+  }
+
   async function desativar(id) {
     if (!confirm("Desativar este alerta?")) return;
     await api(`/api/admin/alertas/${id}`, { method: "DELETE" });
@@ -950,9 +966,14 @@ function Alertas() {
                 Filtros: {Object.entries(m.filtros).map(([k, v]) => `${k}=${v}`).join(", ") || "—"}
               </div>
             </div>
-            <button className="btn-secondary" style={{width: "auto"}} onClick={() => marcarNotificado(m.alerta_id)}>
-              ✓ Marcar notificado
-            </button>
+            <div style={{display: "flex", gap: 8}}>
+              <button className="btn-primary" style={{width: "auto"}} onClick={() => notificarWhatsApp(m.alerta_id)}>
+                📱 Notificar via WhatsApp
+              </button>
+              <button className="btn-secondary" style={{width: "auto"}} onClick={() => marcarNotificado(m.alerta_id)}>
+                ✓ Manual
+              </button>
+            </div>
           </div>
           <ul style={{margin: "10px 0 0 18px"}}>
             {m.imoveis.map(im => (
