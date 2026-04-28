@@ -219,6 +219,28 @@ CREATE TABLE IF NOT EXISTS alertas_busca (
     FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL
 );
 CREATE INDEX IF NOT EXISTS idx_alertas_busca_ativa ON alertas_busca(ativa, criado_em);
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- Agenda (W4) — visitas, reunioes, follow-ups
+-- ─────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS agenda (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    titulo TEXT NOT NULL,
+    inicio TEXT NOT NULL,                     -- ISO8601 (UTC)
+    fim TEXT NOT NULL,                        -- ISO8601 (UTC)
+    tipo TEXT NOT NULL DEFAULT 'visita',      -- visita | reuniao | captacao | followup | bloqueio
+    status TEXT NOT NULL DEFAULT 'agendado',  -- agendado | confirmado | cancelado | realizado
+    lead_id INTEGER,
+    imovel_id INTEGER,
+    observacoes TEXT DEFAULT '',
+    lembrete_enviado INTEGER NOT NULL DEFAULT 0,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL,
+    FOREIGN KEY (imovel_id) REFERENCES imoveis(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_agenda_inicio ON agenda(inicio);
+CREATE INDEX IF NOT EXISTS idx_agenda_status ON agenda(status, inicio);
 """
 
 

@@ -678,3 +678,295 @@ def notificar_alerta_whatsapp(alerta_id: int, _user=Depends(requer_admin)) -> di
         "mensagem_id": resultado.mensagem_id,
         "imoveis_enviados": len(matches[:3]),
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# W4 — Agenda (visitas, reunioes, follow-ups)
+# ─────────────────────────────────────────────────────────────────────────────
+class AgendaCriar(BaseModel):
+    titulo: str = Field(..., min_length=2, max_length=200)
+    inicio: str = Field(..., description="ISO8601 UTC")
+    fim: str = Field(..., description="ISO8601 UTC")
+    tipo: str = "visita"
+    lead_id: int | None = None
+    imovel_id: int | None = None
+    observacoes: str | None = Field(None, max_length=2000)
+
+
+class AgendaAtualizar(BaseModel):
+    titulo: str | None = Field(None, min_length=2, max_length=200)
+    inicio: str | None = None
+    fim: str | None = None
+    tipo: str | None = None
+    status: str | None = None
+    lead_id: int | None = None
+    imovel_id: int | None = None
+    observacoes: str | None = Field(None, max_length=2000)
+
+
+@router.post("/agenda", status_code=201)
+def agenda_criar(payload: AgendaCriar, _user=Depends(requer_admin)) -> dict:
+    from app import agenda as agenda_repo
+    try:
+        novo_id = agenda_repo.criar(
+            titulo=payload.titulo,
+            inicio=payload.inicio,
+            fim=payload.fim,
+            tipo=payload.tipo,
+            lead_id=payload.lead_id,
+            imovel_id=payload.imovel_id,
+            observacoes=payload.observacoes or "",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    item = agenda_repo.detalhar(novo_id)
+    return {"ok": True, "item": item}
+
+
+@router.get("/agenda")
+def agenda_listar(
+    inicio_de: str | None = None,
+    inicio_ate: str | None = None,
+    status: str | None = None,
+    lead_id: int | None = None,
+    _user=Depends(requer_admin),
+) -> dict:
+    from app import agenda as agenda_repo
+    try:
+        items = agenda_repo.listar(
+            inicio_de=inicio_de, inicio_ate=inicio_ate,
+            status=status, lead_id=lead_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"total": len(items), "items": items}
+
+
+@router.get("/agenda/{item_id}")
+def agenda_detalhe(item_id: int, _user=Depends(requer_admin)) -> dict:
+    from app import agenda as agenda_repo
+    item = agenda_repo.detalhar(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="compromisso nao encontrado")
+    return item
+
+
+@router.patch("/agenda/{item_id}")
+def agenda_atualizar(item_id: int, payload: AgendaAtualizar, _user=Depends(requer_admin)) -> dict:
+    from app import agenda as agenda_repo
+    try:
+        item = agenda_repo.atualizar(item_id, **payload.model_dump(exclude_none=True))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if not item:
+        raise HTTPException(status_code=404, detail="compromisso nao encontrado")
+    return item
+
+
+@router.delete("/agenda/{item_id}", status_code=204)
+def agenda_remover(item_id: int, _user=Depends(requer_admin)) -> None:
+    from app import agenda as agenda_repo
+    if not agenda_repo.remover(item_id):
+        raise HTTPException(status_code=404, detail="compromisso nao encontrado")
+
+
+@router.post("/agenda/lembretes/enviar")
+def agenda_enviar_lembretes(janela_horas: int = 24, _user=Depends(requer_admin)) -> dict:
+    """Envia WhatsApp para leads com compromisso nas proximas N horas.
+
+    Sem Evolution configurada, retorna lista de pendentes para acionar manualmente.
+    """
+    from app import agenda as agenda_repo
+    from app import whatsapp
+
+    pendentes = agenda_repo.lembretes_a_enviar(janela_horas=janela_horas)
+    if not pendentes:
+        return {"total": 0, "enviados": 0, "fallback": False, "items": []}
+
+    if not whatsapp.disponivel():
+        return {
+            "total": len(pendentes),
+            "enviados": 0,
+            "fallback": True,
+            "items": pendentes,
+        }
+
+    enviados = 0
+    detalhes = []
+    for item in pendentes:
+        if not item.get("lead_id"):
+            continue
+        lead = leads_repo.detalhar(int(item["lead_id"]))
+        telefone = (lead or {}).get("telefone") or ""
+        if not telefone:
+            continue
+        inicio_dt = datetime.fromisoformat(str(item["inicio"]).replace("Z", "+00:00"))
+        msg = (
+            f"Oi {(lead.get('nome') or '').split()[0] if lead.get('nome') else ''}! "
+            f"Lembrete: {item['titulo']} amanha as "
+            f"{inicio_dt.strftime('%H:%M')}. Confirma pra mim? — Priscila"
+        ).strip()
+        resp = whatsapp.enviar_mensagem(telefone, msg)
+        if resp.enviado:
+            agenda_repo.marcar_lembrete_enviado(int(item["id"]))
+            leads_repo.registrar_interacao(
+                int(lead["id"]),
+                tipo="whatsapp_enviado",
+                descricao=f"[Lembrete agenda] {item['titulo']}",
+                metadata={"agenda_id": item["id"], "mensagem_id": resp.mensagem_id},
+            )
+            enviados += 1
+            detalhes.append({"id": item["id"], "ok": True})
+        else:
+            detalhes.append({"id": item["id"], "ok": False, "erro": resp.erro})
+    return {
+        "total": len(pendentes),
+        "enviados": enviados,
+        "fallback": False,
+        "items": detalhes,
+    }
+# ─────────────────────────────────────────────────────────────────────────────
+# W4 — Agenda (visitas, reunioes, follow-ups)
+# ─────────────────────────────────────────────────────────────────────────────
+class AgendaCriar(BaseModel):
+    titulo: str = Field(..., min_length=2, max_length=200)
+    inicio: str = Field(..., description="ISO8601 UTC")
+    fim: str = Field(..., description="ISO8601 UTC")
+    tipo: str = "visita"
+    lead_id: int | None = None
+    imovel_id: int | None = None
+    observacoes: str | None = Field(None, max_length=2000)
+
+
+class AgendaAtualizar(BaseModel):
+    titulo: str | None = Field(None, min_length=2, max_length=200)
+    inicio: str | None = None
+    fim: str | None = None
+    tipo: str | None = None
+    status: str | None = None
+    lead_id: int | None = None
+    imovel_id: int | None = None
+    observacoes: str | None = Field(None, max_length=2000)
+
+
+@router.post("/agenda", status_code=201)
+def agenda_criar(payload: AgendaCriar, _user=Depends(requer_admin)) -> dict:
+    from app import agenda as agenda_repo
+    try:
+        novo_id = agenda_repo.criar(
+            titulo=payload.titulo,
+            inicio=payload.inicio,
+            fim=payload.fim,
+            tipo=payload.tipo,
+            lead_id=payload.lead_id,
+            imovel_id=payload.imovel_id,
+            observacoes=payload.observacoes or "",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    item = agenda_repo.detalhar(novo_id)
+    return {"ok": True, "item": item}
+
+
+@router.get("/agenda")
+def agenda_listar(
+    inicio_de: str | None = None,
+    inicio_ate: str | None = None,
+    status: str | None = None,
+    lead_id: int | None = None,
+    _user=Depends(requer_admin),
+) -> dict:
+    from app import agenda as agenda_repo
+    try:
+        items = agenda_repo.listar(
+            inicio_de=inicio_de, inicio_ate=inicio_ate,
+            status=status, lead_id=lead_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"total": len(items), "items": items}
+
+
+@router.get("/agenda/{item_id}")
+def agenda_detalhe(item_id: int, _user=Depends(requer_admin)) -> dict:
+    from app import agenda as agenda_repo
+    item = agenda_repo.detalhar(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="compromisso nao encontrado")
+    return item
+
+
+@router.patch("/agenda/{item_id}")
+def agenda_atualizar(item_id: int, payload: AgendaAtualizar, _user=Depends(requer_admin)) -> dict:
+    from app import agenda as agenda_repo
+    try:
+        item = agenda_repo.atualizar(item_id, **payload.model_dump(exclude_none=True))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if not item:
+        raise HTTPException(status_code=404, detail="compromisso nao encontrado")
+    return item
+
+
+@router.delete("/agenda/{item_id}", status_code=204)
+def agenda_remover(item_id: int, _user=Depends(requer_admin)) -> None:
+    from app import agenda as agenda_repo
+    if not agenda_repo.remover(item_id):
+        raise HTTPException(status_code=404, detail="compromisso nao encontrado")
+
+
+@router.post("/agenda/lembretes/enviar")
+def agenda_enviar_lembretes(janela_horas: int = 24, _user=Depends(requer_admin)) -> dict:
+    """Envia WhatsApp para leads com compromisso nas proximas N horas.
+
+    Sem Evolution configurada, retorna lista de pendentes para acionar manualmente.
+    """
+    from app import agenda as agenda_repo
+    from app import whatsapp
+
+    pendentes = agenda_repo.lembretes_a_enviar(janela_horas=janela_horas)
+    if not pendentes:
+        return {"total": 0, "enviados": 0, "fallback": False, "items": []}
+
+    if not whatsapp.disponivel():
+        return {
+            "total": len(pendentes),
+            "enviados": 0,
+            "fallback": True,
+            "items": pendentes,
+        }
+
+    enviados = 0
+    detalhes = []
+    for item in pendentes:
+        if not item.get("lead_id"):
+            continue
+        lead = leads_repo.detalhar(int(item["lead_id"]))
+        telefone = (lead or {}).get("telefone") or ""
+        if not telefone:
+            continue
+        inicio_dt = datetime.fromisoformat(str(item["inicio"]).replace("Z", "+00:00"))
+        msg = (
+            f"Oi {(lead.get('nome') or '').split()[0] if lead.get('nome') else ''}! "
+            f"Lembrete: {item['titulo']} amanha as "
+            f"{inicio_dt.strftime('%H:%M')}. Confirma pra mim? — Priscila"
+        ).strip()
+        resp = whatsapp.enviar_mensagem(telefone, msg)
+        if resp.enviado:
+            agenda_repo.marcar_lembrete_enviado(int(item["id"]))
+            leads_repo.registrar_interacao(
+                int(lead["id"]),
+                tipo="whatsapp_enviado",
+                descricao=f"[Lembrete agenda] {item['titulo']}",
+                metadata={"agenda_id": item["id"], "mensagem_id": resp.mensagem_id},
+            )
+            enviados += 1
+            detalhes.append({"id": item["id"], "ok": True})
+        else:
+            detalhes.append({"id": item["id"], "ok": False, "erro": resp.erro})
+    return {
+        "total": len(pendentes),
+        "enviados": enviados,
+        "fallback": False,
+        "items": detalhes,
+    }

@@ -1035,6 +1035,148 @@ function Alertas() {
   );
 }
 
+function Agenda() {
+  const [items, setItems] = React.useState([]);
+  const [carregando, setCarregando] = React.useState(true);
+  const [criando, setCriando] = React.useState(false);
+  const [form, setForm] = React.useState({
+    titulo: "", inicio: "", fim: "", tipo: "visita",
+    lead_id: "", imovel_id: "", observacoes: "",
+  });
+
+  async function carregar() {
+    setCarregando(true);
+    try {
+      const r = await api("/api/admin/agenda");
+      setItems(r.items || []);
+    } finally { setCarregando(false); }
+  }
+
+  React.useEffect(() => { carregar(); }, []);
+
+  async function salvar(e) {
+    e.preventDefault();
+    if (!form.titulo || !form.inicio || !form.fim) {
+      alert("Preencha titulo, inicio e fim."); return;
+    }
+    try {
+      const body = {
+        titulo: form.titulo,
+        inicio: new Date(form.inicio).toISOString(),
+        fim: new Date(form.fim).toISOString(),
+        tipo: form.tipo,
+        observacoes: form.observacoes || null,
+        lead_id: form.lead_id ? Number(form.lead_id) : null,
+        imovel_id: form.imovel_id ? Number(form.imovel_id) : null,
+      };
+      await api("/api/admin/agenda", { method: "POST", body });
+      setCriando(false);
+      setForm({ titulo: "", inicio: "", fim: "", tipo: "visita", lead_id: "", imovel_id: "", observacoes: "" });
+      await carregar();
+    } catch (err) { alert("Erro: " + err.message); }
+  }
+
+  async function mudarStatus(id, status) {
+    await api(`/api/admin/agenda/${id}`, { method: "PATCH", body: { status } });
+    await carregar();
+  }
+
+  async function remover(id) {
+    if (!confirm("Remover este compromisso?")) return;
+    await api(`/api/admin/agenda/${id}`, { method: "DELETE" });
+    await carregar();
+  }
+
+  async function dispararLembretes() {
+    try {
+      const r = await api("/api/admin/agenda/lembretes/enviar", { method: "POST" });
+      if (r.fallback) {
+        alert(`Evolution API nao configurada. ${r.total} pendentes — envie manualmente.`);
+      } else {
+        alert(`✓ ${r.enviados} de ${r.total} lembretes enviados.`);
+      }
+      await carregar();
+    } catch (err) { alert("Erro: " + err.message); }
+  }
+
+  if (carregando) return <p>Carregando agenda…</p>;
+
+  return (
+    <div>
+      <div className="toolbar">
+        <h2>Agenda ({items.length})</h2>
+        <div style={{display: "flex", gap: 8}}>
+          <button className="btn-secondary" style={{width: "auto"}} onClick={dispararLembretes}>
+            📱 Enviar lembretes (24h)
+          </button>
+          <button className="btn-add" onClick={() => setCriando(!criando)}>
+            {criando ? "Cancelar" : "+ Novo compromisso"}
+          </button>
+        </div>
+      </div>
+
+      {criando && (
+        <form onSubmit={salvar} style={{border: "1px solid #c9c2af", padding: 16, borderRadius: 4, marginBottom: 16}}>
+          <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12}}>
+            <label>Titulo<input value={form.titulo} onChange={e => setForm({...form, titulo: e.target.value})} required /></label>
+            <label>Tipo
+              <select value={form.tipo} onChange={e => setForm({...form, tipo: e.target.value})}>
+                <option value="visita">Visita</option>
+                <option value="reuniao">Reuniao</option>
+                <option value="captacao">Captacao</option>
+                <option value="followup">Follow-up</option>
+                <option value="bloqueio">Bloqueio</option>
+              </select>
+            </label>
+            <label>Inicio<input type="datetime-local" value={form.inicio} onChange={e => setForm({...form, inicio: e.target.value})} required /></label>
+            <label>Fim<input type="datetime-local" value={form.fim} onChange={e => setForm({...form, fim: e.target.value})} required /></label>
+            <label>Lead ID (opcional)<input type="number" value={form.lead_id} onChange={e => setForm({...form, lead_id: e.target.value})} /></label>
+            <label>Imovel ID (opcional)<input type="number" value={form.imovel_id} onChange={e => setForm({...form, imovel_id: e.target.value})} /></label>
+          </div>
+          <label style={{display: "block", marginTop: 12}}>Observacoes
+            <textarea rows={2} value={form.observacoes} onChange={e => setForm({...form, observacoes: e.target.value})} />
+          </label>
+          <button type="submit" className="btn-primary" style={{width: "auto", marginTop: 12}}>Salvar</button>
+        </form>
+      )}
+
+      {items.length === 0 ? (
+        <p style={{color: "#777"}}>Sem compromissos. Adicione o primeiro acima.</p>
+      ) : (
+        <table className="tab" style={{width: "100%"}}>
+          <thead>
+            <tr><th>Quando</th><th>Titulo</th><th>Tipo</th><th>Status</th><th>Lead</th><th>Acoes</th></tr>
+          </thead>
+          <tbody>
+            {items.map(it => {
+              const ini = new Date(it.inicio);
+              return (
+                <tr key={it.id}>
+                  <td>{ini.toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"})}</td>
+                  <td>{it.titulo}</td>
+                  <td>{it.tipo}</td>
+                  <td>
+                    <select value={it.status} onChange={e => mudarStatus(it.id, e.target.value)}>
+                      <option value="agendado">Agendado</option>
+                      <option value="confirmado">Confirmado</option>
+                      <option value="realizado">Realizado</option>
+                      <option value="cancelado">Cancelado</option>
+                    </select>
+                  </td>
+                  <td>{it.lead_id || "—"}</td>
+                  <td>
+                    <button className="btn-mini danger" onClick={() => remover(it.id)}>✕</button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [user, setUser] = React.useState(null);
   const [carregando, setCarregando] = React.useState(true);
@@ -1083,6 +1225,7 @@ function App() {
           <button className={aba === "leads" ? "tab on" : "tab"} onClick={() => setAba("leads")}>Leads</button>
           <button className={aba === "operacao-ia" ? "tab on" : "tab"} onClick={() => setAba("operacao-ia")}>Operacao IA</button>
           <button className={aba === "alertas" ? "tab on" : "tab"} onClick={() => setAba("alertas")}>Alertas</button>
+          <button className={aba === "agenda" ? "tab on" : "tab"} onClick={() => setAba("agenda")}>Agenda</button>
           <button className={aba === "imoveis" ? "tab on" : "tab"} onClick={() => setAba("imoveis")}>Imoveis</button>
         </nav>
         <div>
@@ -1097,6 +1240,7 @@ function App() {
         {aba === "leads" && <Leads />}
         {aba === "operacao-ia" && <OperacaoIA />}
         {aba === "alertas" && <Alertas />}
+        {aba === "agenda" && <Agenda />}
         {aba === "imoveis" && (<>
         <div className="toolbar">
           <h2>Imoveis ({imoveis.length})</h2>
