@@ -97,6 +97,8 @@ function App() {
         <ImovelDetalhe codigo={route.id} onVoltar={voltarHome}/>
         <FooterSimples onAnuncieOpen={() => setAnuncieOpen(true)}/>
         <AIChat variant="editorial"/>
+        {window.ComparadorDrawer && <window.ComparadorDrawer/>}
+        {window.ComparadorDrawer && <window.ComparadorDrawer/>}
         {anuncieOpen && <AnuncieImovel onClose={() => setAnuncieOpen(false)}/>}
         <CookieBanner/>
       </>
@@ -109,6 +111,20 @@ function App() {
         <BairroDetalhe slug={route.id} onVoltar={voltarHome}/>
         <FooterSimples onAnuncieOpen={() => setAnuncieOpen(true)}/>
         <AIChat variant="editorial"/>
+        {window.ComparadorDrawer && <window.ComparadorDrawer/>}
+        {anuncieOpen && <AnuncieImovel onClose={() => setAnuncieOpen(false)}/>}
+        <CookieBanner/>
+      </>
+    );
+  }
+  if (route.tipo === "favoritos" && window.PaginaFavoritos) {
+    return (
+      <>
+        <NavSimples onAnuncieOpen={() => setAnuncieOpen(true)}/>
+        <window.PaginaFavoritos onVoltar={voltarHome}/>
+        <FooterSimples onAnuncieOpen={() => setAnuncieOpen(true)}/>
+        <AIChat variant="editorial"/>
+        {window.ComparadorDrawer && <window.ComparadorDrawer/>}
         {anuncieOpen && <AnuncieImovel onClose={() => setAnuncieOpen(false)}/>}
         <CookieBanner/>
       </>
@@ -139,6 +155,7 @@ function App() {
             <a href="#metodo">O método</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setAnuncieOpen(true); }}>Anuncie seu imóvel</a>
           </div>
+          {window.ContadorFavoritosNav ? <window.ContadorFavoritosNav/> : null}
           <a href="#contato" className="btnH btnH-solid">Falar comigo</a>
         </div>
       </nav>
@@ -223,6 +240,9 @@ function App() {
           </div>
         </div>
       </section>
+
+      {/* ═══════ BUSCA NATURAL (IA) ═══════ */}
+      {window.BuscaNatural && <window.BuscaNatural/>}
 
       {/* ═══════ IMÓVEIS ═══════ */}
       <PropertyGrid filter={filter} variant="editorial" subtitle="A IA já cruzou perfil, orçamento e bairro. Estes são os matches."/>
@@ -420,7 +440,9 @@ function App() {
         </div>
       </footer>
 
-      <AIChat variant="editorial"/>
+      <window.ComparadorDrawer && <window.ComparadorDrawer/>}
+      {AIChat variant="editorial"/>
+      {window.ComparadorDrawer && <window.ComparadorDrawer/>}
       {anuncieOpen && <AnuncieImovel onClose={() => setAnuncieOpen(false)}/>}
       <CookieBanner/>
     </>

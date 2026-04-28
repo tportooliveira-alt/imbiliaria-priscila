@@ -89,9 +89,14 @@ function PropertyCard({ imovel, variant }) {
             <button className="pcard-share" type="button" onClick={compartilhar} aria-label="Compartilhar no WhatsApp" title="Enviar pra alguém pelo WhatsApp">
               <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M13.6 2.4A7.5 7.5 0 001.5 12.3L.5 15.5l3.3-1A7.5 7.5 0 1013.6 2.4zM8 13.6a5.6 5.6 0 01-2.8-.8l-.2-.1-2 .6.6-1.9-.1-.2A5.6 5.6 0 118 13.6zm3.1-4.2c-.2-.1-1-.5-1.2-.5-.2-.1-.3-.1-.4.1l-.5.6c-.1.1-.2.1-.4 0a4.5 4.5 0 01-2.2-2c-.2-.3.2-.3.5-.9 0-.1 0-.2 0-.3l-.5-1.2c-.1-.3-.3-.3-.4-.3h-.4a.7.7 0 00-.5.2 2 2 0 00-.6 1.5c0 .9.6 1.7.7 1.9a6.7 6.7 0 002.6 2.3c1.7.7 1.7.5 2 .4a1.7 1.7 0 001.2-.8c.1-.3.1-.6 0-.6 0-.1-.2-.1-.4-.2z"/></svg>
             </button>
-            <button className="pcard-fav" type="button" aria-label="Favoritar" title="Salvar para depois">
-              <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><path d="M8 14s-5-3-5-7.5A3 3 0 018 4a3 3 0 015 2.5C13 11 8 14 8 14z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>
-            </button>
+            {window.BotaoComparar
+              ? <window.BotaoComparar codigo={imovel.codigo}/>
+              : null}
+            {window.BotaoFavoritar
+              ? <window.BotaoFavoritar codigo={imovel.codigo} variant={variant}/>
+              : <button className="pcard-fav" type="button" aria-label="Favoritar" title="Salvar para depois">
+                  <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><path d="M8 14s-5-3-5-7.5A3 3 0 018 4a3 3 0 015 2.5C13 11 8 14 8 14z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>
+                </button>}
           </div>
         </div>
       </div>

@@ -6,12 +6,30 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app import avaliacao, financiamento, leads as leads_repo
+from app import avaliacao, busca_natural, financiamento, leads as leads_repo
 from app.conversas import registrar_evento_funil
 from app.db import db_session
 from app.m2_vdc import BAIRROS_DISPONIVEIS
 
 router = APIRouter()
+
+
+# ────────────────────────────────────────────────────────────────────────
+# Busca em linguagem natural
+# ────────────────────────────────────────────────────────────────────────
+class BuscaNaturalRequest(BaseModel):
+    texto: str = Field(..., min_length=2, max_length=500)
+    usar_ia: bool = True
+    limite: int = Field(30, ge=1, le=60)
+
+
+@router.post("/api/busca-natural")
+def busca_natural_endpoint(payload: BuscaNaturalRequest) -> dict:
+    return busca_natural.buscar(
+        payload.texto,
+        usar_ia=payload.usar_ia,
+        limite=payload.limite,
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────

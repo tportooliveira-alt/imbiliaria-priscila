@@ -224,6 +224,56 @@ def test_copilot_lead_404_quando_nao_existe(cliente):
     assert r.status_code == 404
 
 
+def test_sugerir_resposta_sem_chave_retorna_fallback(cliente, monkeypatch):
+    """B.2: sem ANTHROPIC_API_KEY, endpoint devolve fallback gracioso."""
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    h = _login(cliente)
+    cliente.post(
+        "/api/avaliar-imovel",
+        json={"bairro": "Candeias", "area_util": 100, "quartos": 2,
+              "nome": "Joao", "contato": "77999990000"},
+    )
+    leads = cliente.get("/api/admin/leads", headers=h).json()["leads"]
+    lead_id = leads[0]["id"]
+    r = cliente.post(
+        f"/api/admin/leads/{lead_id}/copilot/sugerir-resposta",
+        json={"canal": "whatsapp"},
+        headers=h,
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["fallback"] is True
+    assert body["canal"] == "whatsapp"
+    assert "mensagem_fallback" in body
+
+
+def test_sugerir_resposta_404_quando_lead_nao_existe(cliente):
+    h = _login(cliente)
+    r = cliente.post(
+        "/api/admin/leads/99999/copilot/sugerir-resposta",
+        json={"canal": "email"},
+        headers=h,
+    )
+    assert r.status_code == 404
+
+
+def test_sugerir_resposta_canal_invalido_422(cliente):
+    h = _login(cliente)
+    cliente.post(
+        "/api/avaliar-imovel",
+        json={"bairro": "Centro", "area_util": 80, "quartos": 2,
+              "nome": "Pedro", "contato": "77999991111"},
+    )
+    leads = cliente.get("/api/admin/leads", headers=h).json()["leads"]
+    lead_id = leads[0]["id"]
+    r = cliente.post(
+        f"/api/admin/leads/{lead_id}/copilot/sugerir-resposta",
+        json={"canal": "sms"},  # nao permitido
+        headers=h,
+    )
+    assert r.status_code == 422
+
+
 def test_alerta_busca_cria_e_lista(cliente):
     """C.4: visitante salva filtro, admin lista."""
     h = _login(cliente)
@@ -270,3 +320,67 @@ def test_alerta_desativar(cliente):
     alertas = cliente.get("/api/admin/alertas", headers=h).json()["alertas"]
     assert all(a["id"] != alerta_id for a in alertas)
 
+
+
+def test_alertas_matches_retorna_imoveis_compativeis(cliente):
+    """B.4: cruza alertas ativos com imoveis criados depois."""
+    h = _login(cliente)
+    # cria alerta primeiro (filtro: bairro=Candeias, preco_max=900000)
+    cliente.post(
+        "/api/avaliar-imovel",
+        json={"bairro": "Candeias", "area_util": 100, "quartos": 2,
+              "nome": "Maria", "contato": "77999990001"},
+    )
+    leads = cliente.get("/api/admin/leads", headers=h).json()["leads"]
+    lead_id = leads[0]["id"]
+    # cria alerta vinculado via DB direto para garantir ordem
+    from app import leads as leads_repo
+    leads_repo.criar_alerta(
+        nome="Maria",
+        contato="77999990001",
+        filtros={"bairro": "Candeias", "preco_max": 900000, "quartos_min": 2},
+        lead_id=lead_id,
+    )
+    import time as _t
+    _t.sleep(0.05)
+    # cria imovel que casa
+    from app import imoveis as imoveis_repo
+    novo = imoveis_repo.criar_imovel({
+        "titulo": "Casa Candeias 3q",
+        "bairro": "Candeias", "tipo": "Casa",
+        "quartos": 3, "preco": 750000, "ativo": True,
+    })
+    # imovel que NAO casa (bairro diferente)
+    imoveis_repo.criar_imovel({
+        "titulo": "Casa Centro",
+        "bairro": "Centro", "tipo": "Casa",
+        "quartos": 3, "preco": 600000, "ativo": True,
+    })
+    r = cliente.get("/api/admin/alertas/matches", headers=h)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total"] == 1
+    match = body["matches"][0]
+    assert match["nome"] == "Maria"
+    ids = [im["id"] for im in match["imoveis"]]
+    assert novo["id"] in ids
+
+
+def test_alerta_marcar_notificado_incrementa(cliente):
+    h = _login(cliente)
+    from app import leads as leads_repo
+    aid = leads_repo.criar_alerta(
+        nome="Joao", contato="77999990002", filtros={"bairro": "Centro"},
+    )
+    r = cliente.post(f"/api/admin/alertas/{aid}/marcar-notificado", headers=h)
+    assert r.status_code == 200
+    alertas = cliente.get("/api/admin/alertas", headers=h).json()["alertas"]
+    a = next(x for x in alertas if x["id"] == aid)
+    assert a["notificacoes_enviadas"] == 1
+    assert a["ultima_notificacao"] is not None
+
+
+def test_alerta_marcar_notificado_404_inexistente(cliente):
+    h = _login(cliente)
+    r = cliente.post("/api/admin/alertas/99999/marcar-notificado", headers=h)
+    assert r.status_code == 404

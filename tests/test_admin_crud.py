@@ -169,3 +169,46 @@ def test_headers_de_seguranca_presentes(cliente):
     assert r.headers.get("X-Content-Type-Options") == "nosniff"
     assert r.headers.get("X-Frame-Options") == "DENY"
     assert "strict-origin" in r.headers.get("Referrer-Policy", "")
+
+
+def test_gerar_descricao_sem_chave_retorna_fallback(cliente, monkeypatch):
+    """B.3: gera-descricao devolve fallback gracioso sem ANTHROPIC_API_KEY."""
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    tok = _login(cliente)
+    r = cliente.post(
+        "/api/admin/imoveis/gerar-descricao",
+        json={
+            "titulo": "Casa moderna no Candeias",
+            "bairro": "Candeias",
+            "tipo": "Casa",
+            "quartos": 3,
+            "suites": 1,
+            "vagas": 2,
+            "area_util": 180,
+            "preco": 850000,
+            "caracteristicas": ["piscina", "churrasqueira"],
+        },
+        headers=_headers(tok),
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["fallback"] is True
+    assert "mensagem_fallback" in body
+
+
+def test_gerar_descricao_exige_admin(cliente):
+    r = cliente.post(
+        "/api/admin/imoveis/gerar-descricao",
+        json={"titulo": "X", "bairro": "Y", "tipo": "Casa"},
+    )
+    assert r.status_code == 401
+
+
+def test_gerar_descricao_validacao_payload(cliente):
+    tok = _login(cliente)
+    r = cliente.post(
+        "/api/admin/imoveis/gerar-descricao",
+        json={"titulo": "ab", "bairro": "X", "tipo": "Casa"},  # titulo < 3
+        headers=_headers(tok),
+    )
+    assert r.status_code == 422

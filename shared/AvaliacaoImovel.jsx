@@ -135,10 +135,28 @@ function AvaliacaoImovel() {
         <div className="aval-regua" aria-hidden="true">
           <div className="aval-regua-trilho">
             <div className="aval-regua-faixa"/>
-            <div className="aval-regua-marcador" style={{ left: "50%" }} title="Valor central"/>
+            <div className="aval-regua-mark aval-regua-mark-min" style={{ left: "0%" }}>
+              <span className="aval-regua-tooltip">Mín</span>
+            </div>
+            <div className="aval-regua-mark aval-regua-mark-central" style={{ left: "50%" }}>
+              <span className="aval-regua-tooltip">Valor central</span>
+            </div>
+            <div className="aval-regua-mark aval-regua-mark-max" style={{ left: "100%" }}>
+              <span className="aval-regua-tooltip">Máx</span>
+            </div>
           </div>
           <div className="aval-regua-labels">
             <span>{formatarValor(resultado.valor_minimo)}</span>
+            <span>{formatarValor(resultado.valor_centralmark-central" style={{ left: "50%" }}>
+              <span className="aval-regua-tooltip">Valor central</span>
+            </div>
+            <div className="aval-regua-mark aval-regua-mark-max" style={{ left: "100%" }}>
+              <span className="aval-regua-tooltip">Máx</span>
+            </div>
+          </div>
+          <div className="aval-regua-labels">
+            <span>{formatarValor(resultado.valor_minimo)}</span>
+            <span>{formatarValor(resultado.valor_central)}</span>
             <span>{formatarValor(resultado.valor_maximo)}</span>
           </div>
         </div>

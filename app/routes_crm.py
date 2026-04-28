@@ -274,6 +274,172 @@ def copilot_lead(lead_id: int, _user=Depends(requer_admin)) -> dict:
     }
 
 
+# ----- Sugestão de resposta IA (Claude) -----
+class SugerirRespostaPayload(BaseModel):
+    canal: str = Field("whatsapp", pattern="^(whatsapp|email|ligacao)$")
+    instrucao_extra: str | None = Field(None, max_length=500)
+
+
+def _montar_contexto_lead(lead: dict, copilot: dict) -> str:
+    linhas = [
+        f"Lead: {lead.get('nome') or 'sem nome'} (id {lead.get('id')})",
+        f"Estágio: {lead.get('estagio')} | Temperatura: {lead.get('temperatura')} | Score: {lead.get('score')}/100",
+        f"Origem: {lead.get('origem')} | Telefone: {lead.get('telefone') or '-'} | Email: {lead.get('email') or '-'}",
+    ]
+    tags = lead.get("tags") or []
+    if tags:
+        linhas.append("Tags: " + ", ".join(tags))
+    if lead.get("observacoes"):
+        linhas.append("Observações internas: " + lead["observacoes"])
+    if copilot.get("objecoes_detectadas"):
+        linhas.append("Objeções detectadas: " + ", ".join(copilot["objecoes_detectadas"]))
+    interacoes = (lead.get("interacoes") or [])[:8]
+    if interacoes:
+        linhas.append("\nÚltimas interações (mais recente primeiro):")
+        for i in interacoes:
+            linhas.append(f"  - [{i.get('tipo')}] {i.get('descricao')}")
+    return "\n".join(linhas)
+
+
+@router.post("/leads/{lead_id}/copilot/sugerir-resposta")
+def sugerir_resposta(
+    lead_id: int,
+    payload: SugerirRespostaPayload,
+    _user=Depends(requer_admin),
+) -> dict:
+    lead = leads_repo.detalhar(lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="lead nao encontrado")
+
+    copilot = copilot_lead(lead_id, _user=_user)
+    contexto = _montar_contexto_lead(lead, copilot)
+
+    canal = payload.canal
+    canal_instrucao = {
+        "whatsapp": "Mensagem curta de WhatsApp (máx 4 linhas, tom direto, sem saudação longa).",
+        "email": "E-mail profissional, com saudação e assinatura 'Priscila Vasconcelos | CRECI/BA 29.231'.",
+        "ligacao": "Roteiro de ligação: 3 bullets curtos do que falar, em ordem.",
+    }[canal]
+
+    from app.clients import ClienteClaude
+    from app.prompts import PRISCILA_PERSONA
+
+    sistema = (
+        PRISCILA_PERSONA
+        + "\n\nMODO CO-PILOT: você está escrevendo uma sugestão de resposta para a Priscila enviar pessoalmente. "
+        + "Escreva como SE FOSSE a Priscila respondendo. Não explique nada para a Priscila, não faça meta-comentário. "
+        + "Só entregue o texto pronto para copiar e colar. Sem aspas, sem prefixo 'Resposta:'.\n\n"
+        + f"FORMATO: {canal_instrucao}"
+    )
+
+    instrucao = payload.instrucao_extra or ""
+    mensagem = (
+        f"Contexto do lead:\n{contexto}\n\n"
+        f"Próxima ação sugerida pelo sistema: {copilot.get('proxima_acao')}\n"
+        + (f"Instrução adicional: {instrucao}\n" if instrucao else "")
+        + "\nEscreva a mensagem agora."
+    )
+
+    cli = ClienteClaude("claude-sonnet-4-5")
+    if not cli.available():
+        return {
+            "texto": "",
+            "canal": canal,
+            "fallback": True,
+            "mensagem_fallback": "Sugestão IA indisponível (sem ANTHROPIC_API_KEY). Use o resumo do co-pilot para escrever manualmente.",
+        }
+    resp = cli.gerar(sistema, mensagem)
+    return {
+        "texto": (resp.texto or "").strip(),
+        "canal": canal,
+        "modelo": resp.modelo,
+        "fallback": resp.fallback,
+    }
+
+
+# ----- Sugestão de resposta IA (Claude) -----
+class SugerirRespostaPayload(BaseModel):
+    canal: str = Field("whatsapp", pattern="^(whatsapp|email|ligacao)$")
+    instrucao_extra: str | None = Field(None, max_length=500)
+
+
+def _montar_contexto_lead(lead: dict, copilot: dict) -> str:
+    linhas = [
+        f"Lead: {lead.get('nome') or 'sem nome'} (id {lead.get('id')})",
+        f"Estágio: {lead.get('estagio')} | Temperatura: {lead.get('temperatura')} | Score: {lead.get('score')}/100",
+        f"Origem: {lead.get('origem')} | Telefone: {lead.get('telefone') or '-'} | Email: {lead.get('email') or '-'}",
+    ]
+    tags = lead.get("tags") or []
+    if tags:
+        linhas.append("Tags: " + ", ".join(tags))
+    if lead.get("observacoes"):
+        linhas.append("Observações internas: " + lead["observacoes"])
+    if copilot.get("objecoes_detectadas"):
+        linhas.append("Objeções detectadas: " + ", ".join(copilot["objecoes_detectadas"]))
+    interacoes = (lead.get("interacoes") or [])[:8]
+    if interacoes:
+        linhas.append("\nÚltimas interações (mais recente primeiro):")
+        for i in interacoes:
+            linhas.append(f"  - [{i.get('tipo')}] {i.get('descricao')}")
+    return "\n".join(linhas)
+
+
+@router.post("/leads/{lead_id}/copilot/sugerir-resposta")
+def sugerir_resposta(
+    lead_id: int,
+    payload: SugerirRespostaPayload,
+    _user=Depends(requer_admin),
+) -> dict:
+    lead = leads_repo.detalhar(lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="lead nao encontrado")
+
+    copilot = copilot_lead(lead_id, _user=_user)
+    contexto = _montar_contexto_lead(lead, copilot)
+
+    canal = payload.canal
+    canal_instrucao = {
+        "whatsapp": "Mensagem curta de WhatsApp (máx 4 linhas, tom direto, sem saudação longa).",
+        "email": "E-mail profissional, com saudação e assinatura 'Priscila Vasconcelos | CRECI/BA 29.231'.",
+        "ligacao": "Roteiro de ligação: 3 bullets curtos do que falar, em ordem.",
+    }[canal]
+
+    from app.clients import ClienteClaude
+    from app.prompts import PRISCILA_PERSONA
+
+    sistema = (
+        PRISCILA_PERSONA
+        + "\n\nMODO CO-PILOT: você está escrevendo uma sugestão de resposta para a Priscila enviar pessoalmente. "
+        + "Escreva como SE FOSSE a Priscila respondendo. Não explique nada para a Priscila, não faça meta-comentário. "
+        + "Só entregue o texto pronto para copiar e colar. Sem aspas, sem prefixo 'Resposta:'.\n\n"
+        + f"FORMATO: {canal_instrucao}"
+    )
+
+    instrucao = payload.instrucao_extra or ""
+    mensagem = (
+        f"Contexto do lead:\n{contexto}\n\n"
+        f"Próxima ação sugerida pelo sistema: {copilot.get('proxima_acao')}\n"
+        + (f"Instrução adicional: {instrucao}\n" if instrucao else "")
+        + "\nEscreva a mensagem agora."
+    )
+
+    cli = ClienteClaude("claude-sonnet-4-5")
+    if not cli.available():
+        return {
+            "texto": "",
+            "canal": canal,
+            "fallback": True,
+            "mensagem_fallback": "Sugestão IA indisponível (sem ANTHROPIC_API_KEY). Use o resumo do co-pilot para escrever manualmente.",
+        }
+    resp = cli.gerar(sistema, mensagem)
+    return {
+        "texto": (resp.texto or "").strip(),
+        "canal": canal,
+        "modelo": resp.modelo,
+        "fallback": resp.fallback,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Alertas de busca (C.4) — visitante salva filtro e recebe novidades.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -291,4 +457,84 @@ def listar_alertas(_user=Depends(requer_admin)) -> dict:
 @router.delete("/alertas/{alerta_id}")
 def remover_alerta(alerta_id: int, _user=Depends(requer_admin)) -> dict:
     leads_repo.desativar_alerta(alerta_id)
+    return {"ok": True}
+
+
+def _imovel_combina_com_filtros(imovel: dict, filtros: dict) -> bool:
+    """Heurística simples — todos os filtros presentes precisam casar."""
+    if not filtros:
+        return False
+    bairro = (filtros.get("bairro") or "").strip().lower()
+    if bairro and (imovel.get("bairro") or "").strip().lower() != bairro:
+        return False
+    tipo = (filtros.get("tipo") or "").strip().lower()
+    if tipo and (imovel.get("tipo") or "").strip().lower() != tipo:
+        return False
+    preco = float(imovel.get("preco") or 0)
+    if filtros.get("preco_min") and preco < float(filtros["preco_min"]):
+        return False
+    if filtros.get("preco_max") and preco > float(filtros["preco_max"]):
+        return False
+    if filtros.get("quartos_min") and int(imovel.get("quartos") or 0) < int(filtros["quartos_min"]):
+        return False
+    if filtros.get("area_min") and float(imovel.get("area_util") or 0) < float(filtros["area_min"]):
+        return False
+    return True
+
+
+@router.get("/alertas/matches")
+def alertas_matches(_user=Depends(requer_admin)) -> dict:
+    """B.4: cruza alertas ativos com imoveis ativos criados após o alerta.
+
+    Retorna lista de matches sem mutar nada — a Priscila decide se notifica.
+    """
+    from app import imoveis as imoveis_repo
+
+    alertas = leads_repo.listar_alertas(ativa=True)
+    imoveis_ativos = imoveis_repo.listar_imoveis(somente_ativos=True)
+
+    resultado: list[dict] = []
+    for a in alertas:
+        criado_alerta = a.get("criado_em") or ""
+        novos: list[dict] = []
+        for im in imoveis_ativos:
+            criado_imovel = im.get("criado_em") or im.get("atualizado_em") or ""
+            # so propor imoveis cadastrados apos o alerta
+            if criado_alerta and criado_imovel and criado_imovel < criado_alerta:
+                continue
+            if _imovel_combina_com_filtros(im, a.get("filtros") or {}):
+                novos.append({
+                    "id": im.get("id"),
+                    "slug": im.get("slug"),
+                    "titulo": im.get("titulo"),
+                    "bairro": im.get("bairro"),
+                    "preco": im.get("preco"),
+                    "quartos": im.get("quartos"),
+                })
+        if novos:
+            resultado.append({
+                "alerta_id": a["id"],
+                "nome": a["nome"],
+                "contato": a["contato"],
+                "filtros": a["filtros"],
+                "imoveis": novos,
+            })
+    return {"total": len(resultado), "matches": resultado}
+
+
+@router.post("/alertas/{alerta_id}/marcar-notificado")
+def marcar_alerta_notificado(alerta_id: int, _user=Depends(requer_admin)) -> dict:
+    """Incrementa contador apos a Priscila confirmar que enviou ao lead."""
+    from datetime import datetime as _dt
+    from app.db import db_session
+
+    with db_session() as conn:
+        cur = conn.execute(
+            "UPDATE alertas_busca SET notificacoes_enviadas = notificacoes_enviadas + 1, "
+            "ultima_notificacao = ? WHERE id = ? AND ativa = 1",
+            (_dt.utcnow().isoformat(), alerta_id),
+        )
+        conn.commit()
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="alerta nao encontrado ou inativo")
     return {"ok": True}

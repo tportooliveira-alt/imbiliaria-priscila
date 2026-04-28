@@ -77,8 +77,40 @@ function FormImovel({ inicial, aoSalvar, aoCancelar }) {
   });
   const [erro, setErro] = React.useState("");
   const [salvando, setSalvando] = React.useState(false);
+  const [gerandoDesc, setGerandoDesc] = React.useState(false);
+  const [avisoDesc, setAvisoDesc] = React.useState("");
 
   function up(k, v) { setDados(d => ({ ...d, [k]: v })); }
+
+  async function gerarDescricao() {
+    setAvisoDesc("");
+    if (!dados.titulo || !dados.bairro || !dados.tipo) {
+      setAvisoDesc("Preencha titulo, bairro e tipo antes de gerar.");
+      return;
+    }
+    setGerandoDesc(true);
+    try {
+      const r = await api("/api/admin/imoveis/gerar-descricao", {
+        method: "POST",
+        body: {
+          titulo: dados.titulo, bairro: dados.bairro, tipo: dados.tipo,
+          quartos: +dados.quartos || 0, suites: +dados.suites || 0, vagas: +dados.vagas || 0,
+          area_util: +dados.area_util || 0, preco: +dados.preco || 0,
+          caracteristicas: dados.caracteristicas || [],
+        },
+      });
+      if (r.fallback) {
+        setAvisoDesc(r.mensagem_fallback || "IA indisponivel.");
+      } else if (r.texto) {
+        up("descricao", r.texto);
+        setAvisoDesc(`✓ Gerado por ${r.modelo || "IA"} — revise antes de salvar.`);
+      }
+    } catch (err) {
+      setAvisoDesc(err.message);
+    } finally {
+      setGerandoDesc(false);
+    }
+  }
 
   async function submit(e) {
     e.preventDefault();
@@ -115,7 +147,22 @@ function FormImovel({ inicial, aoSalvar, aoCancelar }) {
         <div className="field"><label>Area util (m²)</label><input type="number" min={0} step="0.01" value={dados.area_util} onChange={e => up("area_util", +e.target.value)} /></div>
         <div className="field"><label>Preco (R$)</label><input type="number" min={0} step="0.01" value={dados.preco} onChange={e => up("preco", +e.target.value)} required /></div>
       </div>
-      <div className="field"><label>Descricao</label><textarea value={dados.descricao} onChange={e => up("descricao", e.target.value)} /></div>
+      <div className="field">
+        <label style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+          <span>Descricao</span>
+          <button
+            type="button"
+            className="btn-secondary"
+            style={{width: "auto", padding: "4px 12px", fontSize: 12, textTransform: "none", letterSpacing: 0}}
+            onClick={gerarDescricao}
+            disabled={gerandoDesc}
+          >
+            {gerandoDesc ? "Gerando..." : "✨ Gerar com IA"}
+          </button>
+        </label>
+        <textarea value={dados.descricao} onChange={e => up("descricao", e.target.value)} rows={6} />
+        {avisoDesc && <small style={{color: avisoDesc.startsWith("✓") ? "#2a7a2a" : "#a83333"}}>{avisoDesc}</small>}
+      </div>
       <div className="field" style={{display: "flex", gap: 18}}>
         <label style={{display: "flex", alignItems: "center", gap: 8, textTransform: "none", letterSpacing: 0, fontSize: 14, color: "#1a1a1a", marginBottom: 0}}>
           <input type="checkbox" style={{width: "auto"}} checked={dados.destaque} onChange={e => up("destaque", e.target.checked)} /> Destaque
@@ -431,6 +478,11 @@ function DetalheLead({ id, aoFechar }) {
   const [erro, setErro] = React.useState("");
   const [copilot, setCopilot] = React.useState(null);
   const [copilotBusy, setCopilotBusy] = React.useState(false);
+  const [sugestao, setSugestao] = React.useState(null);
+  const [sugestaoBusy, setSugestaoBusy] = React.useState(false);
+  const [canalSugestao, setCanalSugestao] = React.useState("whatsapp");
+  const [instrucaoExtra, setInstrucaoExtra] = React.useState("");
+  const [copiado, setCopiado] = React.useState(false);
 
   React.useEffect(() => { carregar(); }, [id]);
 
@@ -449,6 +501,38 @@ function DetalheLead({ id, aoFechar }) {
     } finally {
       setCopilotBusy(false);
     }
+  }
+
+  async function pedirSugestao() {
+    setSugestaoBusy(true);
+    setSugestao(null);
+    setCopiado(false);
+    try {
+      const r = await api(`/api/admin/leads/${id}/copilot/sugerir-resposta`, {
+        method: "POST",
+        body: { canal: canalSugestao, instrucao_extra: instrucaoExtra || null },
+      });
+      setSugestao(r);
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setSugestaoBusy(false);
+    }
+  }
+
+  function copiarSugestao() {
+    if (!sugestao?.texto) return;
+    navigator.clipboard.writeText(sugestao.texto).then(() => {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 1800);
+    });
+  }
+
+  function abrirWhatsApp() {
+    if (!sugestao?.texto || !lead?.telefone) return;
+    const tel = lead.telefone.replace(/\D/g, "");
+    const txt = encodeURIComponent(sugestao.texto);
+    window.open(`https://wa.me/55${tel}?text=${txt}`, "_blank");
   }
 
   async function mudar(campo, valor) {
@@ -526,6 +610,56 @@ function DetalheLead({ id, aoFechar }) {
                   </ul>
                 </div>
               )}
+
+              <div style={{marginTop: 16, paddingTop: 14, borderTop: "1px dashed #c9c2af"}}>
+                <b style={{fontSize: 13}}>Sugestão de resposta IA:</b>
+                <div style={{display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginTop: 8}}>
+                  <select value={canalSugestao} onChange={e => setCanalSugestao(e.target.value)} style={{padding: "6px 8px"}}>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="email">E-mail</option>
+                    <option value="ligacao">Roteiro ligação</option>
+                  </select>
+                  <input
+                    placeholder="Inst. extra (ex: focar em Boa Vista)"
+                    value={instrucaoExtra}
+                    onChange={e => setInstrucaoExtra(e.target.value)}
+                    style={{flex: 1, minWidth: 200, padding: "6px 8px"}}
+                    maxLength={500}
+                  />
+                  <button className="btn-primary" style={{width: "auto"}} onClick={pedirSugestao} disabled={sugestaoBusy}>
+                    {sugestaoBusy ? "Gerando..." : "Sugerir resposta"}
+                  </button>
+                </div>
+                {sugestao && (
+                  <div style={{marginTop: 10}}>
+                    {sugestao.fallback ? (
+                      <p style={{color: "#a83333", fontSize: 13}}>{sugestao.mensagem_fallback || "IA indisponível."}</p>
+                    ) : (
+                      <>
+                        <textarea
+                          value={sugestao.texto}
+                          onChange={e => setSugestao(s => ({...s, texto: e.target.value}))}
+                          rows={canalSugestao === "email" ? 8 : 5}
+                          style={{width: "100%", padding: 10, fontSize: 14, fontFamily: "inherit", border: "1px solid #c9c2af", borderRadius: 4}}
+                        />
+                        <div style={{display: "flex", gap: 8, marginTop: 6}}>
+                          <button className="btn-secondary" style={{width: "auto"}} onClick={copiarSugestao}>
+                            {copiado ? "✓ Copiado" : "Copiar"}
+                          </button>
+                          {canalSugestao === "whatsapp" && lead.telefone && (
+                            <button className="btn-secondary" style={{width: "auto"}} onClick={abrirWhatsApp}>
+                              Abrir WhatsApp
+                            </button>
+                          )}
+                          <span style={{fontSize: 11, color: "#777", alignSelf: "center"}}>
+                            modelo: {sugestao.modelo || "—"}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -734,6 +868,98 @@ function DetalheConversa({ id, aoFechar }) {
   );
 }
 
+function Alertas() {
+  const [matches, setMatches] = React.useState(null);
+  const [alertas, setAlertas] = React.useState([]);
+  const [carregando, setCarregando] = React.useState(false);
+  const [erro, setErro] = React.useState("");
+
+  async function carregar() {
+    setCarregando(true);
+    setErro("");
+    try {
+      const [a, m] = await Promise.all([
+        api("/api/admin/alertas"),
+        api("/api/admin/alertas/matches"),
+      ]);
+      setAlertas(a.alertas || []);
+      setMatches(m);
+    } catch (e) {
+      setErro(e.message);
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  React.useEffect(() => { carregar(); }, []);
+
+  async function marcarNotificado(id) {
+    await api(`/api/admin/alertas/${id}/marcar-notificado`, { method: "POST" });
+    await carregar();
+  }
+
+  async function desativar(id) {
+    if (!confirm("Desativar este alerta?")) return;
+    await api(`/api/admin/alertas/${id}`, { method: "DELETE" });
+    await carregar();
+  }
+
+  if (carregando) return <p style={{padding: 24}}>Carregando alertas...</p>;
+  if (erro) return <div className="alerta">{erro}</div>;
+
+  return (
+    <div style={{padding: 24, maxWidth: 1100}}>
+      <h2>Alertas de busca</h2>
+      <p style={{color: "#555"}}>Filtros salvos por visitantes do site. Quando um imóvel novo combina, ele aparece aqui para você notificar manualmente.</p>
+
+      <h3 style={{marginTop: 24}}>Matches novos ({matches?.total || 0})</h3>
+      {matches?.matches?.length === 0 && <p style={{color: "#777"}}>Nenhum match no momento.</p>}
+      {matches?.matches?.map(m => (
+        <div key={m.alerta_id} style={{border: "1px solid #c9c2af", padding: 16, marginBottom: 12, borderRadius: 4}}>
+          <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+            <div>
+              <b>{m.nome}</b> — <span style={{color: "#555"}}>{m.contato}</span>
+              <div style={{fontSize: 12, color: "#777", marginTop: 4}}>
+                Filtros: {Object.entries(m.filtros).map(([k, v]) => `${k}=${v}`).join(", ") || "—"}
+              </div>
+            </div>
+            <button className="btn-secondary" style={{width: "auto"}} onClick={() => marcarNotificado(m.alerta_id)}>
+              ✓ Marcar notificado
+            </button>
+          </div>
+          <ul style={{margin: "10px 0 0 18px"}}>
+            {m.imoveis.map(im => (
+              <li key={im.id} style={{marginBottom: 4}}>
+                <a href={`/v3-editorial/#imovel-${im.slug}`} target="_blank" rel="noreferrer">{im.titulo}</a>
+                {" "}— {im.bairro} · {im.quartos}q · R$ {Number(im.preco).toLocaleString("pt-BR")}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      <h3 style={{marginTop: 32}}>Todos os alertas ativos ({alertas.length})</h3>
+      <table className="tab" style={{width: "100%", marginTop: 8}}>
+        <thead>
+          <tr><th>Nome</th><th>Contato</th><th>Filtros</th><th>Notif.</th><th>Última</th><th></th></tr>
+        </thead>
+        <tbody>
+          {alertas.map(a => (
+            <tr key={a.id}>
+              <td>{a.nome}</td>
+              <td>{a.contato}</td>
+              <td style={{fontSize: 12}}>{Object.entries(a.filtros || {}).map(([k, v]) => `${k}=${v}`).join(", ") || "—"}</td>
+              <td>{a.notificacoes_enviadas || 0}</td>
+              <td style={{fontSize: 12, color: "#777"}}>{a.ultima_notificacao?.slice(0, 10) || "—"}</td>
+              <td><button onClick={() => desativar(a.id)}>Desativar</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function App() {
   const [user, setUser] = React.useState(null);
   const [carregando, setCarregando] = React.useState(true);
@@ -781,6 +1007,7 @@ function App() {
           <button className={aba === "dashboard" ? "tab on" : "tab"} onClick={() => setAba("dashboard")}>Dashboard</button>
           <button className={aba === "leads" ? "tab on" : "tab"} onClick={() => setAba("leads")}>Leads</button>
           <button className={aba === "operacao-ia" ? "tab on" : "tab"} onClick={() => setAba("operacao-ia")}>Operacao IA</button>
+          <button className={aba === "alertas" ? "tab on" : "tab"} onClick={() => setAba("alertas")}>Alertas</button>
           <button className={aba === "imoveis" ? "tab on" : "tab"} onClick={() => setAba("imoveis")}>Imoveis</button>
         </nav>
         <div>
@@ -794,6 +1021,7 @@ function App() {
         {aba === "dashboard" && <Dashboard />}
         {aba === "leads" && <Leads />}
         {aba === "operacao-ia" && <OperacaoIA />}
+        {aba === "alertas" && <Alertas />}
         {aba === "imoveis" && (<>
         <div className="toolbar">
           <h2>Imoveis ({imoveis.length})</h2>

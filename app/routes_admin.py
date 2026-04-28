@@ -176,6 +176,74 @@ def remover(imovel_id: int, _: dict = Depends(requer_admin)) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Descrição editorial (B.3) — gera texto pronto via Claude
+# ─────────────────────────────────────────────────────────────────────────────
+class GerarDescricaoPayload(BaseModel):
+    titulo: str = Field(..., min_length=3, max_length=200)
+    bairro: str = Field(..., min_length=2, max_length=120)
+    tipo: str = Field(..., max_length=40)
+    quartos: int = 0
+    suites: int = 0
+    vagas: int = 0
+    area_util: float = 0
+    preco: float = 0
+    caracteristicas: list[str] = Field(default_factory=list)
+    instrucao_extra: str | None = Field(None, max_length=400)
+
+
+@router.post("/api/admin/imoveis/gerar-descricao")
+def gerar_descricao(body: GerarDescricaoPayload, _: dict = Depends(requer_admin)) -> dict:
+    from app.clients import ClienteClaude
+    from app.prompts import Rota, system_prompt
+
+    sistema = system_prompt(Rota.DESCRICAO)
+
+    partes = [
+        f"Tipo: {body.tipo}",
+        f"Bairro: {body.bairro} (Vitoria da Conquista - BA)",
+        f"Titulo de trabalho: {body.titulo}",
+    ]
+    if body.area_util:
+        partes.append(f"Area util: {body.area_util:g} m²")
+    ficha = []
+    if body.quartos:
+        ficha.append(f"{body.quartos} quartos")
+    if body.suites:
+        ficha.append(f"{body.suites} suites")
+    if body.vagas:
+        ficha.append(f"{body.vagas} vagas")
+    if ficha:
+        partes.append("Ficha: " + ", ".join(ficha))
+    if body.preco:
+        partes.append(f"Preco: R$ {body.preco:,.0f}".replace(",", "."))
+    if body.caracteristicas:
+        partes.append("Caracteristicas: " + ", ".join(body.caracteristicas))
+    if body.instrucao_extra:
+        partes.append("Instrucao adicional: " + body.instrucao_extra)
+
+    mensagem = (
+        "Gere a descricao editorial deste imovel agora. "
+        "Entregue APENAS o texto pronto para o anuncio, sem titulos de secao, "
+        "sem aspas externas, sem meta-comentarios.\n\n"
+        + "\n".join(partes)
+    )
+
+    cli = ClienteClaude("claude-sonnet-4-5")
+    if not cli.available():
+        return {
+            "texto": "",
+            "fallback": True,
+            "mensagem_fallback": "IA indisponivel (sem ANTHROPIC_API_KEY).",
+        }
+    resp = cli.gerar(sistema, mensagem)
+    return {
+        "texto": (resp.texto or "").strip(),
+        "modelo": resp.modelo,
+        "fallback": resp.fallback,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Imagens (admin)
 # ─────────────────────────────────────────────────────────────────────────────
 @router.post("/api/admin/imoveis/{imovel_id}/imagens", status_code=201)
