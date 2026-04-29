@@ -14,7 +14,6 @@ function useHashRoute() {
   const m2 = hash.match(/^#\/bairro\/([a-zA-Z0-9-]+)/);
   if (m2) return { tipo: "bairro", id: m2[1].toLowerCase() };
   if (hash.match(/^#\/favoritos/)) return { tipo: "favoritos", id: null };
-  if (hash.match(/^#\/favoritos/)) return { tipo: "favoritos", id: null };
   return { tipo: "home", id: null };
 }
 
@@ -28,7 +27,8 @@ function _setMeta(titulo, descricao) {
     meta.setAttribute("name", "description");
     document.head.appendChild(meta);
   }
- 
+  meta.setAttribute("content", descricao);
+}
 
 // Injeta JSON-LD do imóvel (RealEstateListing). Substitui se já existir.
 function _setJsonLdImovel(imovel) {
@@ -59,52 +59,6 @@ function _setJsonLdImovel(imovel) {
       "price": imovel.preco,
       "priceCurrency": "BRL",
       "availability": "https://schema.org/InStock"
-    },
-    "numberOfRooms": imovel.quartos,
-    "floorSize": { "@type": "QuantitativeValue", "value": imovel.area, "unitCode": "MTK" },
-    "broker": { "@type": "RealEstateAgent", "name": "Priscila Vasconcelos", "identifier": "CRECI/BA 29.231" }
-  };
-  if (!el) {
-    el = document.createElement("script");
-    el.id = id;
-    el.type = "application/ld+json";
-    document.head.appendChild(el);
-  }
-  el.textContent = JSON.stringify(data);
-} meta.setAttribute("content", descricao);
-}
-
-// Injeta JSON-LD do imóvel (RealEstateListing). Substitui se já existir.
-function _setJsonLdImovel(imovel) {
-  const id = "jsonld-imovel";
-  let el = document.getElementById(id);
-  if (!imovel) {
-    if (el) el.remove();
-    return;
-  }
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "RealEstateListing",
-    "name": imovel.titulo,
-    "description": imovel.descricao,
-    "url": `${location.origin}${location.pathname}#/imovel/${(imovel.codigo || "").toLowerCase()}`,
-    "identifier": imovel.codigo,
-    "image": imovel.img && (imovel.img.startsWith("http") ? imovel.img : `${location.origin}/${imovel.img.replace(/^\.+\//, "")}`),
-    "datePosted": new Date().toISOString().slice(0, 10),
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Vitória da Conquista",
-      "addressRegion": "BA",
-      "addressCountry": "BR",
-      "streetAddress": imovel.bairro
-    },
-    "offers": {
-      "@type": "Offer",
-      "price": imovel.preco,
-      _setJsonLdImovel(imovel);
-      window.scrollTo({ top: 0, behavior: "instant" });
-    }
-    return () => _setJsonLdImovel(null); "availability": "https://schema.org/InStock"
     },
     "numberOfRooms": imovel.quartos,
     "floorSize": { "@type": "QuantitativeValue", "value": imovel.area, "unitCode": "MTK" },

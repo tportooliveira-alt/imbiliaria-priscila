@@ -147,15 +147,6 @@ function AvaliacaoImovel() {
           </div>
           <div className="aval-regua-labels">
             <span>{formatarValor(resultado.valor_minimo)}</span>
-            <span>{formatarValor(resultado.valor_centralmark-central" style={{ left: "50%" }}>
-              <span className="aval-regua-tooltip">Valor central</span>
-            </div>
-            <div className="aval-regua-mark aval-regua-mark-max" style={{ left: "100%" }}>
-              <span className="aval-regua-tooltip">Máx</span>
-            </div>
-          </div>
-          <div className="aval-regua-labels">
-            <span>{formatarValor(resultado.valor_minimo)}</span>
             <span>{formatarValor(resultado.valor_central)}</span>
             <span>{formatarValor(resultado.valor_maximo)}</span>
           </div>

@@ -98,7 +98,6 @@ function App() {
         <FooterSimples onAnuncieOpen={() => setAnuncieOpen(true)}/>
         <AIChat variant="editorial"/>
         {window.ComparadorDrawer && <window.ComparadorDrawer/>}
-        {window.ComparadorDrawer && <window.ComparadorDrawer/>}
         {anuncieOpen && <AnuncieImovel onClose={() => setAnuncieOpen(false)}/>}
         <CookieBanner/>
       </>
@@ -440,9 +439,8 @@ function App() {
         </div>
       </footer>
 
-      <window.ComparadorDrawer && <window.ComparadorDrawer/>}
-      {AIChat variant="editorial"/>
       {window.ComparadorDrawer && <window.ComparadorDrawer/>}
+      <AIChat variant="editorial"/>
       {anuncieOpen && <AnuncieImovel onClose={() => setAnuncieOpen(false)}/>}
       <CookieBanner/>
     </>
@@ -488,4 +486,3 @@ function FooterSimples({ onAnuncieOpen }) {
 
 const root = ReactDOM.createRoot(document.getElementById("app"));
 root.render(<App/>);
-
