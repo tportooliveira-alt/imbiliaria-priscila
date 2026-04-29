@@ -11,10 +11,6 @@ function AIChat({ variant = "cerulean" }) {
   const [input, setInput] = React.useState("");
   const [showTeaser, setShowTeaser] = React.useState(false);
   const [netError, setNetError] = React.useState("");
-  const [leadMeta, setLeadMeta] = React.useState(null);
-  const [analysis, setAnalysis] = React.useState(null);
-  const [funnel, setFunnel] = React.useState(null);
-  const [analysisBusy, setAnalysisBusy] = React.useState(false);
   const [sessionId, setSessionId] = React.useState(() => {
     try {
       return window.sessionStorage.getItem("pv-chat-session") || "";
@@ -44,16 +40,6 @@ function AIChat({ variant = "cerulean" }) {
     const t = setTimeout(() => setShowTeaser(true), 4500);
     return () => clearTimeout(t);
   }, [open]);
-
-  React.useEffect(() => {
-    if (!open) return;
-    fetch("/api/funnel")
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data) setFunnel(data);
-      })
-      .catch(() => {});
-  }, [open, msgs.length]);
 
   const toApiHistory = list => list
     .filter(m => m.role === "user" || m.role === "ai")
@@ -92,15 +78,6 @@ function AIChat({ variant = "cerulean" }) {
       const data = await r.json();
       setTyping(false);
       if (data.session_id) setSessionId(data.session_id);
-      setLeadMeta({
-        score: data.lead_score,
-        stage: data.lead_stage,
-        nextQuestion: data.lead_next_question,
-        fields: data.lead_fields,
-        providerMetadata: data.provider_metadata || {},
-        route: data.rota,
-        model: data.modelo,
-      });
       setMsgs(m => [...m, { role: "ai", text: data.resposta || "Sem resposta no momento.", t: Date.now() }]);
     } catch (err) {
       setTyping(false);
@@ -111,31 +88,6 @@ function AIChat({ variant = "cerulean" }) {
         content: mm.text,
       }));
       setMsgs(m => [...m, { role: "ai", text: window.aiChatResponse(userText, histLocal), t: Date.now() }]);
-    }
-  };
-
-  const runAnalysis = async () => {
-    const historyPayload = toApiHistory(msgs);
-    if (!historyPayload.length) return;
-
-    setAnalysisBusy(true);
-    try {
-      const r = await fetch("/api/analisar-lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ history: historyPayload, session_id: sessionId || undefined }),
-      });
-
-      if (!r.ok) {
-        throw new Error(`HTTP ${r.status}`);
-      }
-
-      const data = await r.json();
-      setAnalysis(data);
-    } catch (err) {
-      setAnalysis({ resumo: "Nao foi possivel gerar a analise agora.", fallback: true });
-    } finally {
-      setAnalysisBusy(false);
     }
   };
 
@@ -198,65 +150,6 @@ function AIChat({ variant = "cerulean" }) {
           </header>
 
           <div className="aic-body" ref={bodyRef}>
-            {(leadMeta || analysis || funnel) && (
-              <section className="aic-insights">
-                <div className="aic-insights-head">
-                  <strong>Painel da conversa</strong>
-                  <button type="button" className="aic-mini-btn" onClick={runAnalysis} disabled={analysisBusy}>
-                    {analysisBusy ? "Lendo..." : "Analisar lead"}
-                  </button>
-                </div>
-
-                {leadMeta && (
-                  <div className="aic-cards">
-                    <div className="aic-card">
-                      <span>Estagio</span>
-                      <strong>{leadMeta.stage}</strong>
-                    </div>
-                    <div className="aic-card">
-                      <span>Score</span>
-                      <strong>{leadMeta.score}</strong>
-                    </div>
-                    <div className="aic-card aic-card-wide">
-                      <span>Proxima pergunta</span>
-                      <strong>{leadMeta.nextQuestion}</strong>
-                    </div>
-                    <div className="aic-card aic-card-wide">
-                      <span>Rota / modelo</span>
-                      <strong>{leadMeta.route} · {leadMeta.model}</strong>
-                    </div>
-                    {leadMeta.providerMetadata?.grounded && (
-                      <div className="aic-card aic-card-wide">
-                        <span>Busca Google</span>
-                        <strong>Grounding ativo nesta resposta</strong>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {analysis?.resumo && (
-                  <div className="aic-analysis-box">
-                    <span>Analise pos-conversa</span>
-                    <p>{analysis.resumo}</p>
-                  </div>
-                )}
-
-                {funnel?.stages && (
-                  <div className="aic-funnel-box">
-                    <span>Funil local</span>
-                    <div className="aic-funnel-grid">
-                      {Object.entries(funnel.stages).map(([stage, total]) => (
-                        <div key={stage} className="aic-funnel-item">
-                          <strong>{total}</strong>
-                          <span>{stage}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </section>
-            )}
-
             {netError && (
               <div className="aic-msg aic-msg-ai">
                 <span className="aic-msg-mark">IA</span>

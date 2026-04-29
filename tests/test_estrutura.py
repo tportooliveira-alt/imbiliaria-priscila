@@ -66,3 +66,14 @@ def test_busca_natural_alimenta_grade(shared_dir: Path, v3_dir: Path) -> None:
     assert "resultadoBusca?.imoveis" in grid
     assert "normalizarImovelPublico" in grid
     assert "busca-natural:resultado" in busca
+
+
+def test_deploy_tem_agente_24_7(proj_dir: Path) -> None:
+    agente = (proj_dir / "scripts" / "agente_lembretes.py").read_text(encoding="utf-8")
+    service = (proj_dir / "deploy" / "imobiliaria-agente.service").read_text(encoding="utf-8")
+    env = (proj_dir / ".env.exemplo").read_text(encoding="utf-8")
+
+    assert "def executar_ciclo" in agente
+    assert "agenda_repo.lembretes_a_enviar" in agente
+    assert "Restart=always" in service
+    assert "AGENTE_LEMBRETES_INTERVALO_SEGUNDOS" in env

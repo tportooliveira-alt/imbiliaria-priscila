@@ -16,10 +16,13 @@ def test_chat_usa_endpoint_api_chat(shared_dir: Path) -> None:
     assert 'fetch("/api/chat"' in src
 
 
-def test_chat_busca_funil_e_analise(shared_dir: Path) -> None:
+def test_chat_publico_nao_expoe_painel_interno(shared_dir: Path) -> None:
     src = _src(shared_dir)
-    assert 'fetch("/api/funnel")' in src
-    assert 'fetch("/api/analisar-lead"' in src
+    assert 'fetch("/api/funnel")' not in src
+    assert 'fetch("/api/analisar-lead"' not in src
+    assert "Painel da conversa" not in src
+    assert "Rota / modelo" not in src
+    assert "Grounding ativo" not in src
 
 
 def test_chat_envia_post_json(shared_dir: Path) -> None:
@@ -46,12 +49,11 @@ def test_chat_mostra_estado_de_erro(shared_dir: Path) -> None:
     assert "Conexao instavel" in src
 
 
-def test_chat_renderiza_painel_da_conversa(shared_dir: Path) -> None:
+def test_chat_renderiza_atendimento_publico(shared_dir: Path) -> None:
     src = _src(shared_dir)
-    assert "Painel da conversa" in src
-    assert "Analise pos-conversa" in src
-    assert "Funil local" in src
-    assert "Grounding ativo nesta resposta" in src
+    assert "Atendimento Priscila Vasconcelos" in src
+    assert "Abrir chat com IA" in src
+    assert "Digite sua mensagem" in src
 
 
 def test_chat_para_typing_em_sucesso_e_erro(shared_dir: Path) -> None:

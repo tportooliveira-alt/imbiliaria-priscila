@@ -1,0 +1,25 @@
+[Unit]
+Description=Agente 24/7 Imobiliaria Priscila (lembretes e automacoes)
+After=network.target imobiliaria.service
+
+[Service]
+Type=simple
+User=priscila
+Group=priscila
+WorkingDirectory=/var/www/imobiliaria
+EnvironmentFile=/var/www/imobiliaria/.env
+ExecStart=/var/www/imobiliaria/venv/bin/python scripts/agente_lembretes.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Hardening basico
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/var/www/imobiliaria/data /var/www/imobiliaria/logs
+
+[Install]
+WantedBy=multi-user.target

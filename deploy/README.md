@@ -1,6 +1,10 @@
 # Deploy — Hostinger VPS (Ubuntu 22.04)
 
-Guia rapido para deploy em producao na VPS W8 (Hostinger).
+Guia rapido para deploy em producao na VPS Hostinger.
+
+## Decisao de arquitetura
+
+Para este projeto, use VPS. A Hostinger informa que Python e PostgreSQL exigem VPS/root access, e o VPS com Docker/systemd e recomendado para apps Python. No primeiro deploy, manter SQLite em `/var/www/imobiliaria/data/site.db` e mais simples e coerente com o schema atual. Migrar para PostgreSQL deve ser uma etapa propria, com adaptacao de `app/db.py` e testes.
 
 ## 1) Preparar VPS
 
@@ -61,10 +65,14 @@ Copiar `deploy/imobiliaria.service` para `/etc/systemd/system/imobiliaria.servic
 
 ```bash
 sudo cp deploy/imobiliaria.service /etc/systemd/system/
+sudo cp deploy/imobiliaria-agente.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable imobiliaria
+sudo systemctl enable imobiliaria-agente
 sudo systemctl start imobiliaria
+sudo systemctl start imobiliaria-agente
 sudo systemctl status imobiliaria
+sudo systemctl status imobiliaria-agente
 ```
 
 ## 6) Nginx
@@ -115,8 +123,29 @@ bash deploy/deploy.sh
 
 ```bash
 journalctl -u imobiliaria -f          # logs do servico
+journalctl -u imobiliaria-agente -f   # logs dos agentes 24/7
 tail -f /var/log/nginx/access.log     # acessos
 tail -f /var/log/nginx/error.log      # erros
+```
+
+## Agente 24/7
+
+O agente `scripts/agente_lembretes.py` roda em processo separado do site. Ele verifica compromissos da agenda dentro da janela configurada e envia lembretes via Evolution API quando `EVOLUTION_API_URL` e `EVOLUTION_API_KEY` estiverem definidos.
+
+Variaveis:
+
+```env
+AGENTE_LEMBRETES_INTERVALO_SEGUNDOS=900
+AGENTE_LEMBRETES_JANELA_HORAS=24
+AGENTE_LOG_LEVEL=INFO
+```
+
+Comandos uteis:
+
+```bash
+sudo systemctl restart imobiliaria-agente
+sudo systemctl status imobiliaria-agente
+journalctl -u imobiliaria-agente -f
 ```
 
 ## Checklist seguranca antes de publicar
