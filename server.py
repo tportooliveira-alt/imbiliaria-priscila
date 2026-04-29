@@ -19,12 +19,13 @@ from __future__ import annotations
 
 import os
 import time
+from html import escape as html_escape
 from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -63,6 +64,8 @@ class HeadersDeSeguranca(BaseHTTPMiddleware):
         resp.headers.setdefault(
             "Permissions-Policy", "camera=(), microphone=(), geolocation=()"
         )
+        if request.url.path.startswith("/admin") or request.url.path.startswith("/api/admin"):
+            resp.headers.setdefault("X-Robots-Tag", "noindex, nofollow")
         # CSP — permite React/Babel via unpkg + WhatsApp/Google fonts.
         # 'unsafe-inline' e 'unsafe-eval' continuam necessarios enquanto Babel
         # standalone roda no navegador; ao migrar para build esses some.
@@ -86,6 +89,11 @@ app.add_middleware(HeadersDeSeguranca)
 app.include_router(admin_router)
 app.include_router(crm_router)
 app.include_router(publicas_router)
+
+
+def _base_public_url(request: Request) -> str:
+    base = str(request.base_url)
+    return base[:-1] if base.endswith("/") else base
 
 
 @app.on_event("startup")
@@ -153,6 +161,42 @@ def health() -> dict:
         "google_api_key": bool(os.getenv("GOOGLE_API_KEY")),
         "anthropic_api_key": bool(os.getenv("ANTHROPIC_API_KEY")),
     }
+
+
+@app.get("/robots.txt", include_in_schema=False)
+def robots_txt(request: Request) -> PlainTextResponse:
+    base = _base_public_url(request)
+    texto = "\n".join(
+        [
+            "User-agent: *",
+            "Disallow: /admin/",
+            "Disallow: /api/admin/",
+            f"Sitemap: {base}/sitemap.xml",
+            "",
+        ]
+    )
+    return PlainTextResponse(texto, media_type="text/plain; charset=utf-8")
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def sitemap_xml(request: Request) -> PlainTextResponse:
+    base = _base_public_url(request)
+    urls = [
+        f"{base}/",
+        f"{base}/v3-editorial/",
+        f"{base}/v3-editorial/privacidade.html",
+    ]
+
+    linhas = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for url in urls:
+        linhas.append("  <url>")
+        linhas.append(f"    <loc>{html_escape(url, quote=True)}</loc>")
+        linhas.append("  </url>")
+    linhas.append("</urlset>")
+    return PlainTextResponse("\n".join(linhas), media_type="application/xml; charset=utf-8")
 
 
 @app.get("/api/admin/health")
