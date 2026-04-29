@@ -528,6 +528,7 @@ def alerta_busca(payload: AlertaBuscaRequest) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+<<<<<<< HEAD
 # Webhook WhatsApp / Evolution API (W2.1)
 # ─────────────────────────────────────────────────────────────────────────────
 class WebhookWhatsApp(BaseModel):
@@ -674,3 +675,19 @@ def registrar_consentimento_publico(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {"ok": True, "id": consent_id}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Lista de Imóveis para o Site Público
+# ─────────────────────────────────────────────────────────────────────────────
+@router.get("/api/public/imoveis")
+def public_imoveis() -> dict:
+    from app.imoveis import listar_imoveis, listar_imagens
+    imoveis = listar_imoveis(somente_ativos=True)
+    
+    # Preparar as imagens principais
+    for im in imoveis:
+        imgs = listar_imagens(im["id"])
+        capa = next((i for i in imgs if i["tipo"] == "capa"), None) or (imgs[0] if imgs else None)
+        im["imagem_capa"] = capa["arquivo"] if capa else None
+        
+    return {"imoveis": imoveis}

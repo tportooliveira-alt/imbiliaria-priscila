@@ -82,10 +82,54 @@ function App() {
   const [metodoAtivo, setMetodoAtivo] = React.useState(0);
   const [metodoSlide, setMetodoSlide] = React.useState(0);
   const [introOpen, setIntroOpen] = React.useState(() => {
-    // Intro de videos desativada por padrao; usar ?intro=1 para reativar quando quiser.
     const params = new URLSearchParams(window.location.search);
     return params.get("intro") === "1";
   });
+  const [imoveisCarregados, setImoveisCarregados] = React.useState(false);
+
+  React.useEffect(() => {
+    fetch("/api/public/imoveis")
+      .then(r => r.json())
+      .then(data => {
+        if(data && data.imoveis && data.imoveis.length > 0) {
+          const mapeados = data.imoveis.map(im => {
+            const numQuartos = im.quartos || 0;
+            const tags = [];
+            if (im.preco <= 500000) tags.push("Primeira compra");
+            else if (im.preco >= 1000000) tags.push("Alto padrão");
+            if (im.vagas > 0) tags.push(`${im.vagas} vagas`);
+            
+            const t = [];
+            if (im.preco <= 500000) t.push("primeira_casa");
+            if (im.preco > 1000000) t.push("alto_padrao");
+            if (im.preco > 2000000) t.push("luxo");
+            t.push(im.tipo && im.tipo.toLowerCase() === "casa" ? "casa" : "apartamento");
+            
+            return {
+              id: `PV-${im.id.toString().padStart(3, '0')}`,
+              bairro: im.bairro,
+              tipo: im.tipo,
+              titulo: im.titulo || `${im.tipo} · ${im.bairro}`,
+              descricao: im.descricao || `${numQuartos} quartos · ${im.area_util}m²`,
+              preco: im.preco,
+              precoLabel: im.preco >= 1000000 ? `R$ ${(im.preco/1000000).toFixed(2).replace('.', ',')} mi` : `R$ ${(im.preco/1000).toFixed(0)} mil`,
+              quartos: numQuartos,
+              suites: im.suites || 0,
+              vagas: im.vagas || 0,
+              area: im.area_util || 0,
+              img: (im.imagem_capa && !im.imagem_capa.startsWith('http') ? `/api/imagens/${im.imagem_capa}` : im.imagem_capa) || "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=80",
+              tags: tags,
+              temas: t,
+              status: im.destaque ? "Destaque" : "Ativo",
+              iaMatch: 95
+            };
+          });
+          window.IMOVEIS = mapeados;
+          setImoveisCarregados(true);
+        }
+      })
+      .catch(err => console.error("Erro ao carregar do BD:", err));
+  }, []);
 
   const setTema = (tema) => setFilter(f => ({ ...f, tema: f.tema === tema ? "" : tema }));
   const voltarHome = () => { window.location.hash = ""; };
