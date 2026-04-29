@@ -73,6 +73,13 @@ def test_email_normalizado_lowercase(db_temporario):
     assert auth.autenticar("PRISCILA@VDC.COM", "senha-123") is not None
 
 
+def test_script_criar_admin_existe(proj_dir: Path) -> None:
+    src = (proj_dir / "scripts" / "criar_admin.py").read_text(encoding="utf-8")
+    assert "auth.criar_usuario" in src
+    assert "UPDATE usuarios SET senha_hash" in src
+    assert "secrets.token_urlsafe" in src
+
+
 def test_rate_limit_bloqueia_apos_5_tentativas(db_temporario):
     auth, _ = db_temporario
     ip = "192.168.0.10"
