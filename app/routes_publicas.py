@@ -528,7 +528,6 @@ def alerta_busca(payload: AlertaBuscaRequest) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-<<<<<<< HEAD
 # Webhook WhatsApp / Evolution API (W2.1)
 # ─────────────────────────────────────────────────────────────────────────────
 class WebhookWhatsApp(BaseModel):
