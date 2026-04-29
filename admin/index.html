@@ -12,6 +12,17 @@
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel" src="/admin/admin.jsx"></script>
+<script>
+  if (new URLSearchParams(window.location.search).get("reset") === "1") {
+    try {
+      localStorage.removeItem("pv_admin_token");
+      sessionStorage.clear();
+    } catch (err) {
+      /* fallback silencioso */
+    }
+    window.location.replace("/admin/?v=20260429-admin-reset");
+  }
+</script>
+<script type="text/babel" src="/admin/admin.jsx?v=20260429-admin-reset"></script>
 </body>
 </html>

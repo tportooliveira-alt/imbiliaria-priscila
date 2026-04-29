@@ -36,6 +36,8 @@ def test_admin_index_html_existe(proj: Path):
     html = arq.read_text(encoding="utf-8")
     assert "noindex,nofollow" in html  # nao indexavel
     assert "admin.jsx" in html
+    assert "pv_admin_token" in html
+    assert "reset" in html
 
 
 def test_admin_jsx_tem_login_e_crud(proj: Path):
