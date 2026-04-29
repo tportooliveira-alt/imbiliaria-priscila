@@ -82,7 +82,7 @@
 <script type="text/babel" src="../shared/TourMapa.jsx?v=20260427d"></script>
 <script type="text/babel" src="../shared/PaginasDetalhe.jsx?v=20260429-fix-front"></script>
 <script type="text/babel" src="../shared/CalculadoraPoderCompra.jsx"></script>
-<script type="text/babel" src="app.jsx?v=20260429-integracao-front"></script>
+<script type="text/babel" src="app.jsx?v=20260429-admin-link"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
@@ -95,13 +95,13 @@
             return Promise.all(keys.map(function (key) { return caches.delete(key); }));
           }) : Promise.resolve()
         ]).then(function () {
-          window.location.replace('./?v=20260429-integracao-front');
+          window.location.replace('./?v=20260429-admin-link');
         }).catch(function () {
-          window.location.replace('./?v=20260429-integracao-front');
+          window.location.replace('./?v=20260429-admin-link');
         });
         return;
       }
-      navigator.serviceWorker.register('./sw.js?v=20260429-integracao-front').catch(function () { /* offline opcional */ });
+      navigator.serviceWorker.register('./sw.js?v=20260429-admin-link').catch(function () { /* offline opcional */ });
     });
   }
 </script>

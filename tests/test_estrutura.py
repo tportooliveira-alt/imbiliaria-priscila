@@ -68,6 +68,14 @@ def test_busca_natural_alimenta_grade(shared_dir: Path, v3_dir: Path) -> None:
     assert "busca-natural:resultado" in busca
 
 
+def test_v3_tem_link_area_interna(v3_dir: Path) -> None:
+    app = (v3_dir / "app.jsx").read_text(encoding="utf-8")
+    html = (v3_dir / "index.html").read_text(encoding="utf-8")
+    assert "/admin/?reset=1" in app
+    assert "Área interna" in app
+    assert "20260429-admin-link" in html
+
+
 def test_deploy_tem_agente_24_7(proj_dir: Path) -> None:
     agente = (proj_dir / "scripts" / "agente_lembretes.py").read_text(encoding="utf-8")
     service = (proj_dir / "deploy" / "imobiliaria-agente.service").read_text(encoding="utf-8")

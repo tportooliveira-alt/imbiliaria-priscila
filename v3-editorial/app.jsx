@@ -171,6 +171,7 @@ function App() {
             <a href="#priscila">A corretora</a>
             <a href="#metodo">O método</a>
             <a href="#" onClick={(e) => { e.preventDefault(); setAnuncieOpen(true); }}>Anuncie seu imóvel</a>
+            <a href="/admin/?reset=1" rel="nofollow">Área interna</a>
           </div>
           {window.ContadorFavoritosNav ? <window.ContadorFavoritosNav/> : null}
           <button type="button" className="btnH btnH-solid" onClick={() => abrirChat("Oi, quero falar com a Priscila sobre imóveis em Vitória da Conquista.")}>Falar comigo</button>
@@ -453,6 +454,8 @@ function App() {
             <a href="./privacidade.html">Política de privacidade</a>
             <span aria-hidden="true">·</span>
             <a href="#" onClick={(e) => { e.preventDefault(); setAnuncieOpen(true); }}>Anuncie seu imóvel</a>
+            <span aria-hidden="true">·</span>
+            <a href="/admin/?reset=1" rel="nofollow">Área interna</a>
           </div>
         </div>
       </footer>
@@ -476,6 +479,7 @@ function NavSimples({ onAnuncieOpen }) {
         <div className="navH-links">
           <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ""; }}>Início</a>
           <a href="#" onClick={(e) => { e.preventDefault(); onAnuncieOpen(); }}>Anuncie seu imóvel</a>
+          <a href="/admin/?reset=1" rel="nofollow">Área interna</a>
         </div>
         <a href="https://wa.me/5577988193344" target="_blank" rel="noopener" className="btnH btnH-solid">Falar comigo</a>
       </div>
@@ -496,6 +500,8 @@ function FooterSimples({ onAnuncieOpen }) {
           <a href="./privacidade.html">Política de privacidade</a>
           <span aria-hidden="true">·</span>
           <a href="#" onClick={(e) => { e.preventDefault(); onAnuncieOpen(); }}>Anuncie seu imóvel</a>
+          <span aria-hidden="true">·</span>
+          <a href="/admin/?reset=1" rel="nofollow">Área interna</a>
         </div>
       </div>
     </footer>
