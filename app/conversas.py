@@ -68,6 +68,43 @@ def _buscar_email(texto: str) -> str | None:
     return achou.group(0).lower() if achou else None
 
 
+def _perfil_interno(
+    *,
+    texto_contexto: str,
+    lead_stage: str,
+    lead_score: int,
+    rota: str,
+) -> dict:
+    texto = (texto_contexto or "").lower()
+    quer_vender = any(p in texto for p in (
+        "vender", "venda meu", "avaliar meu", "avaliacao do meu", "avaliação do meu",
+        "quanto vale", "anunciar meu", "tenho um imovel", "tenho um imóvel",
+    ))
+    quer_comprar = any(p in texto for p in (
+        "comprar", "financiar", "financiamento", "visita", "proposta", "entrada",
+        "parcela", "quero uma casa", "quero apartamento", "procuro",
+    ))
+    urgencia = "alta" if any(p in texto for p in (
+        "urgente", "essa semana", "este mes", "esse mes", "logo", "ja quero", "já quero",
+    )) else "normal"
+    jornada = "descoberta"
+    if lead_stage in {"quente", "pronto_visita"}:
+        jornada = "interesse_ativo"
+    if lead_stage == "pronto_proposta":
+        jornada = "proposta"
+    return {
+        "visivel_cliente": False,
+        "origem": "chat",
+        "jornada": jornada,
+        "intencao": "vender" if quer_vender else "comprar" if quer_comprar else "tirar_duvida",
+        "urgencia": urgencia,
+        "score_operacional": lead_score,
+        "stage_operacional": lead_stage,
+        "rota_operacional": rota,
+        "proximo_passo": "encaminhar para atendimento humano" if lead_score >= 60 else "continuar qualificacao",
+    }
+
+
 def _upsert_evento(
     nome: str,
     *,
@@ -221,11 +258,14 @@ def _vincular_lead(
     leads_repo.registrar_interacao(
         lead_id,
         tipo="chat",
-        descricao=f"Conversa no site · rota {rota} · stage {lead_stage}",
+        descricao="Conversa no site com IA",
         metadata={
-            "score": lead_score,
-            "stage": lead_stage,
-            "rota": rota,
+            "perfil_interno": _perfil_interno(
+                texto_contexto=texto_contexto,
+                lead_stage=lead_stage,
+                lead_score=lead_score,
+                rota=rota,
+            ),
             "referencia": referencia,
         },
         referencia_id=conversa_id,

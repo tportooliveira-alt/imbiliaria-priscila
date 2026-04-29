@@ -20,7 +20,7 @@ class Rota(str, Enum):
     NEGOCIACAO = "negociacao"     # lead quente, intenção de compra
     VISAO = "visao"               # imagem anexada
     DESCRICAO = "descricao"       # gerar descrição editorial de imóvel
-    FOLLOWUP = "followup"         # cliente frio, lembrete, retomada
+    FOLLOWUP = "followup"         # retomada de conversa e follow-up
 
 
 @dataclass(frozen=True)

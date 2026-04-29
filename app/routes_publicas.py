@@ -300,6 +300,14 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
             tipo="avaliacao",
             descricao=f"Avaliou imovel em {payload.bairro}: faixa {r.valor_minimo:.0f} - {r.valor_maximo:.0f}",
             metadata={
+                "perfil_interno": {
+                    "visivel_cliente": False,
+                    "origem": "avaliacao",
+                    "intencao": "vender",
+                    "jornada": "captacao",
+                    "urgencia": "normal",
+                    "proximo_passo": "avaliar captacao e convidar para conversa",
+                },
                 "bairro": payload.bairro,
                 "area_util": payload.area_util,
                 "valor_central": r.valor_central,
