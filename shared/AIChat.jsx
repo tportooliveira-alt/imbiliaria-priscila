@@ -15,12 +15,22 @@ function AIChat({ variant = "cerulean" }) {
   const [analysis, setAnalysis] = React.useState(null);
   const [funnel, setFunnel] = React.useState(null);
   const [analysisBusy, setAnalysisBusy] = React.useState(false);
-  const [sessionId, setSessionId] = React.useState(() => window.sessionStorage.getItem("pv-chat-session") || "");
+  const [sessionId, setSessionId] = React.useState(() => {
+    try {
+      return window.sessionStorage.getItem("pv-chat-session") || "";
+    } catch (err) {
+      return "";
+    }
+  });
   const bodyRef = React.useRef(null);
 
   React.useEffect(() => {
     if (!sessionId) return;
-    window.sessionStorage.setItem("pv-chat-session", sessionId);
+    try {
+      window.sessionStorage.setItem("pv-chat-session", sessionId);
+    } catch (err) {
+      /* storage pode estar bloqueado em alguns navegadores */
+    }
   }, [sessionId]);
 
   // Scroll to bottom on new message
@@ -130,6 +140,20 @@ function AIChat({ variant = "cerulean" }) {
   };
 
   const sugestoesVisiveis = msgs.length <= 2;
+
+  React.useEffect(() => {
+    const abrirChat = (event) => {
+      const texto = event.detail?.mensagem || event.detail?.texto || "";
+      setOpen(true);
+      setShowTeaser(false);
+      if (texto) {
+        setInput(texto);
+      }
+      setTimeout(() => bodyRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 0);
+    };
+    window.addEventListener("abrir-chat", abrirChat);
+    return () => window.removeEventListener("abrir-chat", abrirChat);
+  }, []);
 
   return (
     <div className={`aic aic-${variant}`}>

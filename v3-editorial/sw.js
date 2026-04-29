@@ -1,15 +1,16 @@
 // Service worker minimalista — cache "stale-while-revalidate" para shell estático.
 // NÃO faz cache de /api/* (sempre rede) — o site precisa de dados frescos pra leads.
-const CACHE_NAME = "pv-shell-v2";
+const CACHE_NAME = "pv-shell-v3";
 const SHELL_URLS = [
   "./",
   "./index.html",
   "../shared/data.jsx",
-  "../shared/PropertyGrid.jsx",
-  "../shared/AIChat.jsx",
+  "../shared/BuscaNatural.jsx?v=20260429-integracao-front",
+  "../shared/PropertyGrid.jsx?v=20260429-integracao-front",
+  "../shared/AIChat.jsx?v=20260429-integracao-front",
   "../shared/AvaliacaoImovel.jsx?v=20260429-fix-front",
   "../shared/PaginasDetalhe.jsx?v=20260429-fix-front",
-  "./app.jsx?v=20260429-fix-front",
+  "./app.jsx?v=20260429-integracao-front",
   "../assets/colors_and_type.css",
 ];
 

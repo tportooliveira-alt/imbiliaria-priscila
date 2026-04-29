@@ -52,3 +52,17 @@ def test_v3_index_carrega_componentes(v3_dir: Path) -> None:
     html = (v3_dir / "index.html").read_text(encoding="utf-8")
     for c in COMPONENTES_SHARED:
         assert c in html, f"index.html não referencia {c}"
+
+
+def test_busca_natural_alimenta_grade(shared_dir: Path, v3_dir: Path) -> None:
+    app = (v3_dir / "app.jsx").read_text(encoding="utf-8")
+    grid = (shared_dir / "PropertyGrid.jsx").read_text(encoding="utf-8")
+    busca = (shared_dir / "BuscaNatural.jsx").read_text(encoding="utf-8")
+
+    assert "aplicarBuscaNatural" in app
+    assert "resultadoBuscaNatural" in app
+    assert "onResultado={aplicarBuscaNatural}" in app
+    assert "resultadoBusca={resultadoBuscaNatural}" in app
+    assert "resultadoBusca?.imoveis" in grid
+    assert "normalizarImovelPublico" in grid
+    assert "busca-natural:resultado" in busca

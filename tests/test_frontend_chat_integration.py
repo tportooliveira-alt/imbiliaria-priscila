@@ -58,3 +58,10 @@ def test_chat_para_typing_em_sucesso_e_erro(shared_dir: Path) -> None:
     src = _src(shared_dir)
     # Deve haver pelo menos 2 setTyping(false): sucesso e catch
     assert src.count("setTyping(false)") >= 2
+
+
+def test_chat_escuta_evento_abrir_chat(shared_dir: Path) -> None:
+    src = _src(shared_dir)
+    assert 'addEventListener("abrir-chat"' in src
+    assert 'setOpen(true)' in src
+    assert 'setInput(texto)' in src

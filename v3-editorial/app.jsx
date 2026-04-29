@@ -74,8 +74,9 @@ const METODO_SLIDES = [
 ];
 
 function App() {
-  const route = window.useHashRoute();
+  const route = window.useHashRoute ? window.useHashRoute() : { tipo: "home" };
   const [filter, setFilter] = React.useState({ bairro: "", tipo: "", faixa: "", tema: "" });
+  const [resultadoBuscaNatural, setResultadoBuscaNatural] = React.useState(null);
   const [transacao, setTransacao] = React.useState("comprar");
   const [anuncieOpen, setAnuncieOpen] = React.useState(false);
   const [metodoAtivo, setMetodoAtivo] = React.useState(0);
@@ -88,6 +89,23 @@ function App() {
 
   const setTema = (tema) => setFilter(f => ({ ...f, tema: f.tema === tema ? "" : tema }));
   const voltarHome = () => { window.location.hash = ""; };
+  const abrirChat = (mensagem) => {
+    window.dispatchEvent(new CustomEvent("abrir-chat", { detail: { mensagem } }));
+  };
+  const aplicarBuscaNatural = (resultado) => {
+    setResultadoBuscaNatural(resultado);
+    if (!resultado) return;
+    const filtros = resultado.filtros || {};
+    setFilter(prev => ({
+      ...prev,
+      bairro: filtros.bairros?.[0]
+        ? window.BAIRROS.find(b => b.id === filtros.bairros[0] || b.nome.toLowerCase() === filtros.bairros[0])?.nome || prev.bairro
+        : prev.bairro,
+      tipo: filtros.tipo ? filtros.tipo.charAt(0).toUpperCase() + filtros.tipo.slice(1) : prev.tipo,
+      faixa: filtros.preco_max && filtros.preco_max <= 500000 ? "até 500" : prev.faixa,
+    }));
+    document.getElementById("imoveis")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   // Páginas de detalhe — só nav + footer; resto da home vira oculto
   if (route.tipo === "imovel") {
@@ -155,7 +173,7 @@ function App() {
             <a href="#" onClick={(e) => { e.preventDefault(); setAnuncieOpen(true); }}>Anuncie seu imóvel</a>
           </div>
           {window.ContadorFavoritosNav ? <window.ContadorFavoritosNav/> : null}
-          <a href="#contato" className="btnH btnH-solid">Falar comigo</a>
+          <button type="button" className="btnH btnH-solid" onClick={() => abrirChat("Oi, quero falar com a Priscila sobre imóveis em Vitória da Conquista.")}>Falar comigo</button>
         </div>
       </nav>
 
@@ -220,7 +238,7 @@ function App() {
             </button>
           </div>
 
-          <BuscaBairros variant="editorial" onFilterChange={(f) => setFilter(prev => ({ ...prev, ...f }))}/>
+          <BuscaBairros variant="editorial" onFilterChange={(f) => { setResultadoBuscaNatural(null); setFilter(prev => ({ ...prev, ...f })); }}/>
 
           <div className="temas-grid">
             {window.TEMAS.map(t => (
@@ -241,10 +259,10 @@ function App() {
       </section>
 
       {/* ═══════ BUSCA NATURAL (IA) ═══════ */}
-      {window.BuscaNatural && <window.BuscaNatural/>}
+      {window.BuscaNatural && <window.BuscaNatural onResultado={aplicarBuscaNatural}/>}
 
       {/* ═══════ IMÓVEIS ═══════ */}
-      <PropertyGrid filter={filter} variant="editorial" subtitle="A IA já cruzou perfil, orçamento e bairro. Estes são os matches."/>
+      <PropertyGrid filter={filter} resultadoBusca={resultadoBuscaNatural} variant="editorial" subtitle="A IA já cruzou perfil, orçamento e bairro. Estes são os matches."/>
 
       {/* ═══════ SIMULADOR DE FINANCIAMENTO ═══════ */}
       <div id="simulador">
@@ -415,11 +433,11 @@ function App() {
           <h2>Vamos começar?</h2>
           <p>Mande seu bairro, sua faixa de preço, ou só um “oi”. A IA prepara as opções, eu falo com você.</p>
           <div className="ctaH-row">
-            <a href="#" className="btnH btnH-solid btnH-big">
+            <a href="https://wa.me/5577988193344" target="_blank" rel="noopener" className="btnH btnH-solid btnH-big">
               <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M13.6 2.4A7.5 7.5 0 001.5 12.3L.5 15.5l3.3-1A7.5 7.5 0 1013.6 2.4z"/></svg>
               WhatsApp · (77) 9 8819-3344
             </a>
-            <a href="#" className="btnH btnH-ghost btnH-big">Iniciar com a IA</a>
+            <button type="button" className="btnH btnH-ghost btnH-big" onClick={() => abrirChat("Oi, quero iniciar com a IA para encontrar um imóvel.")}>Iniciar com a IA</button>
           </div>
         </div>
       </section>
