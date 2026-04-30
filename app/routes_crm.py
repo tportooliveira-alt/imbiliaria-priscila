@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from app import conversas as conversas_repo
 from app import leads as leads_repo
+from app import operacao_ia as operacao_ia_repo
 from app.routes_admin import requer_admin
 
 router = APIRouter(prefix="/api/admin")
@@ -162,6 +163,210 @@ def detalhe_conversa(conversa_id: int, _user=Depends(requer_admin)) -> dict:
     if not out:
         raise HTTPException(status_code=404, detail="conversa nao encontrada")
     return out
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Operacao IA autonoma (agentes + subagentes + fila + aprendizado)
+# ─────────────────────────────────────────────────────────────────────────────
+class IATarefaCreate(BaseModel):
+    mensagem: str = Field(..., min_length=2, max_length=2000)
+    origem: str = Field("web", min_length=2, max_length=40)
+    tipo: str = Field("lead_tracking", min_length=2, max_length=80)
+    agente_chave: str | None = Field(None, pattern="^(procuradora|rastreadora|leads|marketing|orquestrador|corretor)$")
+    prioridade: int = Field(50, ge=1, le=100)
+    lead_id: int | None = None
+    payload_extra: dict = Field(default_factory=dict)
+    max_tentativas: int = Field(3, ge=1, le=10)
+
+
+class IACicloPayload(BaseModel):
+    limite: int = Field(20, ge=1, le=200)
+    origem: str | None = Field(None, max_length=40)
+    agente_chave: str | None = Field(None, pattern="^(procuradora|rastreadora|leads|marketing|orquestrador|corretor)$")
+
+
+class IAFeedbackPayload(BaseModel):
+    correcao: str = Field(..., min_length=3, max_length=2000)
+    nota: int | None = Field(None, ge=1, le=5)
+    reabrir_tarefa: bool = False
+    mentor_email: str | None = Field(None, max_length=200)
+
+
+class IAConhecimentoPayload(BaseModel):
+    conteudo: str = Field(..., min_length=3, max_length=3000)
+    topico: str | None = Field(None, max_length=120)
+    tipo: str = Field("playbook", pattern="^(aprendizado|correcao|playbook)$")
+    agente_chave: str | None = Field(None, pattern="^(procuradora|rastreadora|leads|marketing|orquestrador|corretor)$")
+    subagente_chave: str | None = Field(None, max_length=80)
+    tarefa_id: int | None = None
+    tags: list[str] = Field(default_factory=list)
+    confianca: float = Field(0.8, ge=0, le=1)
+    fonte: str = Field("mentor", max_length=60)
+
+
+class IAInstagramSetupPayload(BaseModel):
+    contato: str | None = Field(None, max_length=30)
+
+
+class IAAutonomoPayload(BaseModel):
+    max_ciclos: int = Field(3, ge=1, le=20)
+    limite_por_ciclo: int = Field(20, ge=1, le=200)
+    origem: str | None = Field(None, max_length=40)
+    agente_chave: str | None = Field(None, pattern="^(procuradora|rastreadora|leads|marketing|orquestrador|corretor)$")
+
+
+@router.post("/operacao-ia/agentes/bootstrap")
+def operacao_ia_bootstrap(_user=Depends(requer_admin)) -> dict:
+    return operacao_ia_repo.bootstrap_agentes_padrao()
+
+
+@router.post("/operacao-ia/instagram/setup")
+def operacao_ia_instagram_setup(payload: IAInstagramSetupPayload, _user=Depends(requer_admin)) -> dict:
+    return operacao_ia_repo.provisionar_instagram_vendas(contato=payload.contato)
+
+
+@router.get("/operacao-ia/agentes")
+def operacao_ia_agentes(apenas_ativos: bool = False, _user=Depends(requer_admin)) -> dict:
+    return {"agentes": operacao_ia_repo.listar_agentes(apenas_ativos=apenas_ativos)}
+
+
+@router.get("/operacao-ia/subagentes")
+def operacao_ia_subagentes(
+    agente_chave: str | None = None,
+    apenas_ativos: bool = True,
+    _user=Depends(requer_admin),
+) -> dict:
+    return {
+        "subagentes": operacao_ia_repo.listar_subagentes(
+            agente_chave=agente_chave,
+            apenas_ativos=apenas_ativos,
+        )
+    }
+
+
+@router.post("/operacao-ia/tarefas", status_code=201)
+def operacao_ia_criar_tarefa(payload: IATarefaCreate, _user=Depends(requer_admin)) -> dict:
+    return operacao_ia_repo.criar_tarefa(
+        origem=payload.origem,
+        tipo=payload.tipo,
+        mensagem=payload.mensagem,
+        agente_chave=payload.agente_chave,
+        prioridade=payload.prioridade,
+        lead_id=payload.lead_id,
+        payload_extra=payload.payload_extra,
+        max_tentativas=payload.max_tentativas,
+    )
+
+
+@router.get("/operacao-ia/tarefas")
+def operacao_ia_listar_tarefas(
+    status: str | None = None,
+    origem: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+    _user=Depends(requer_admin),
+) -> dict:
+    return operacao_ia_repo.listar_tarefas(
+        status=status,
+        origem=origem,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.post("/operacao-ia/ciclo")
+def operacao_ia_ciclo(payload: IACicloPayload, _user=Depends(requer_admin)) -> dict:
+    return operacao_ia_repo.executar_ciclo(
+        limite=payload.limite,
+        origem=payload.origem,
+        agente_chave=payload.agente_chave,
+    )
+
+
+@router.post("/operacao-ia/autonomo/rodar")
+def operacao_ia_autonomo(payload: IAAutonomoPayload, _user=Depends(requer_admin)) -> dict:
+    historico: list[dict] = []
+    total_processadas = 0
+    total_concluidas = 0
+    total_erros = 0
+    for i in range(payload.max_ciclos):
+        ciclo = operacao_ia_repo.executar_ciclo(
+            limite=payload.limite_por_ciclo,
+            origem=payload.origem,
+            agente_chave=payload.agente_chave,
+        )
+        historico.append({"ciclo": i + 1, **ciclo})
+        total_processadas += int(ciclo.get("processadas") or 0)
+        total_concluidas += int(ciclo.get("concluidas") or 0)
+        total_erros += int(ciclo.get("erros") or 0)
+        if int(ciclo.get("processadas") or 0) == 0:
+            break
+    return {
+        "ciclos_executados": len(historico),
+        "processadas": total_processadas,
+        "concluidas": total_concluidas,
+        "erros": total_erros,
+        "historico": historico,
+    }
+
+
+@router.post("/operacao-ia/tarefas/{tarefa_id}/feedback")
+def operacao_ia_feedback(tarefa_id: int, payload: IAFeedbackPayload, _user=Depends(requer_admin)) -> dict:
+    try:
+        return operacao_ia_repo.registrar_feedback(
+            tarefa_id=tarefa_id,
+            correcao=payload.correcao,
+            mentor_email=payload.mentor_email,
+            nota=payload.nota,
+            reabrir_tarefa=payload.reabrir_tarefa,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@router.get("/operacao-ia/conhecimentos")
+def operacao_ia_conhecimentos(
+    agente_chave: str | None = None,
+    topico: str | None = None,
+    apenas_validos: bool = True,
+    limit: int = 50,
+    offset: int = 0,
+    _user=Depends(requer_admin),
+) -> dict:
+    return operacao_ia_repo.listar_conhecimentos(
+        agente_chave=agente_chave,
+        topico=topico,
+        apenas_validos=apenas_validos,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.post("/operacao-ia/conhecimentos", status_code=201)
+def operacao_ia_criar_conhecimento(payload: IAConhecimentoPayload, _user=Depends(requer_admin)) -> dict:
+    return operacao_ia_repo.criar_conhecimento(
+        conteudo=payload.conteudo,
+        topico=payload.topico,
+        tipo=payload.tipo,
+        agente_chave=payload.agente_chave,
+        subagente_chave=payload.subagente_chave,
+        tarefa_id=payload.tarefa_id,
+        tags=payload.tags,
+        confianca=payload.confianca,
+        fonte=payload.fonte,
+    )
+
+
+@router.get("/operacao-ia/relatorio")
+def operacao_ia_relatorio(
+    horas: int = 24,
+    limite_itens: int = 30,
+    _user=Depends(requer_admin),
+) -> dict:
+    return operacao_ia_repo.gerar_relatorio_operacao(
+        horas=horas,
+        limite_itens=limite_itens,
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1118,4 +1323,3 @@ def dashboard_financeiro(
     _admin=Depends(requer_admin),
 ):
     return financeiro_repo.dashboard(ano=ano, mes=mes)
-

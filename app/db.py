@@ -327,6 +327,96 @@ CREATE TABLE IF NOT EXISTS contas (
 );
 CREATE INDEX IF NOT EXISTS idx_contas_vencimento ON contas(vencimento, pago);
 CREATE INDEX IF NOT EXISTS idx_contas_tipo ON contas(tipo, pago);
+
+-- ============================================================
+-- Operacao IA dedicada (procuradora / rastreadora / leads)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS ia_agentes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chave TEXT NOT NULL UNIQUE,               -- procuradora | rastreadora | leads
+    nome TEXT NOT NULL,
+    papel TEXT NOT NULL,
+    canais TEXT NOT NULL DEFAULT '[]',
+    ativo INTEGER NOT NULL DEFAULT 1,
+    configuracao TEXT NOT NULL DEFAULT '{}',
+    ultimo_ciclo_em TEXT,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_ia_agentes_ativo ON ia_agentes(ativo);
+
+CREATE TABLE IF NOT EXISTS ia_subagentes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agente_id INTEGER NOT NULL,
+    chave TEXT NOT NULL,
+    nome TEXT NOT NULL,
+    papel TEXT NOT NULL,
+    ativo INTEGER NOT NULL DEFAULT 1,
+    configuracao TEXT NOT NULL DEFAULT '{}',
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(agente_id, chave),
+    FOREIGN KEY (agente_id) REFERENCES ia_agentes(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_ia_subagentes_agente ON ia_subagentes(agente_id, ativo);
+
+CREATE TABLE IF NOT EXISTS ia_tarefas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agente_id INTEGER,
+    origem TEXT NOT NULL DEFAULT 'web',       -- web | instagram | site | whatsapp
+    tipo TEXT NOT NULL DEFAULT 'lead_tracking',
+    status TEXT NOT NULL DEFAULT 'pendente',  -- pendente | processando | concluida | erro | pausada
+    prioridade INTEGER NOT NULL DEFAULT 50,   -- 1 (alta) .. 100 (baixa)
+    payload TEXT NOT NULL DEFAULT '{}',
+    resultado TEXT NOT NULL DEFAULT '{}',
+    tentativas INTEGER NOT NULL DEFAULT 0,
+    max_tentativas INTEGER NOT NULL DEFAULT 3,
+    ultimo_erro TEXT,
+    lead_id INTEGER,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    concluido_em TEXT,
+    FOREIGN KEY (agente_id) REFERENCES ia_agentes(id) ON DELETE SET NULL,
+    FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ia_tarefas_status ON ia_tarefas(status, prioridade, criado_em);
+CREATE INDEX IF NOT EXISTS idx_ia_tarefas_agente ON ia_tarefas(agente_id, status, criado_em);
+CREATE INDEX IF NOT EXISTS idx_ia_tarefas_origem ON ia_tarefas(origem, status, criado_em);
+
+CREATE TABLE IF NOT EXISTS ia_feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tarefa_id INTEGER NOT NULL,
+    agente_id INTEGER,
+    mentor_email TEXT,
+    nota INTEGER,                             -- 1..5
+    correcao TEXT NOT NULL,
+    reabrir_tarefa INTEGER NOT NULL DEFAULT 0,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tarefa_id) REFERENCES ia_tarefas(id) ON DELETE CASCADE,
+    FOREIGN KEY (agente_id) REFERENCES ia_agentes(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ia_feedback_tarefa ON ia_feedback(tarefa_id, criado_em);
+
+CREATE TABLE IF NOT EXISTS ia_conhecimentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agente_id INTEGER,
+    subagente_id INTEGER,
+    tarefa_id INTEGER,
+    tipo TEXT NOT NULL DEFAULT 'aprendizado', -- aprendizado | correcao | playbook
+    topico TEXT,
+    conteudo TEXT NOT NULL,
+    tags TEXT NOT NULL DEFAULT '[]',
+    confianca REAL NOT NULL DEFAULT 0.5,      -- 0..1
+    fonte TEXT NOT NULL DEFAULT 'operacao_ia',
+    valido INTEGER NOT NULL DEFAULT 1,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (agente_id) REFERENCES ia_agentes(id) ON DELETE SET NULL,
+    FOREIGN KEY (subagente_id) REFERENCES ia_subagentes(id) ON DELETE SET NULL,
+    FOREIGN KEY (tarefa_id) REFERENCES ia_tarefas(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ia_conhecimento_agente ON ia_conhecimentos(agente_id, valido, criado_em);
+CREATE INDEX IF NOT EXISTS idx_ia_conhecimento_topico ON ia_conhecimentos(topico, criado_em);
 """
 
 

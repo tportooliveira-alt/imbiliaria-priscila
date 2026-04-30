@@ -189,6 +189,221 @@ def test_operacao_ia_metricas_e_conversas_retorna_estrutura(cliente):
     assert "eventos" in detalhe
 
 
+def test_operacao_ia_bootstrap_e_subagentes(cliente):
+    h = _login(cliente)
+    r = cliente.post("/api/admin/operacao-ia/agentes/bootstrap", headers=h)
+    assert r.status_code == 200, r.text
+    agentes = r.json()["agentes"]
+    chaves = {a["chave"] for a in agentes}
+    assert {"procuradora", "rastreadora", "leads"}.issubset(chaves)
+
+    r = cliente.get("/api/admin/operacao-ia/subagentes", headers=h)
+    assert r.status_code == 200
+    subs = r.json()["subagentes"]
+    assert len(subs) >= 3
+
+
+def test_operacao_ia_ciclo_salva_tarefa_e_conhecimento(cliente):
+    h = _login(cliente)
+    cliente.post("/api/admin/operacao-ia/agentes/bootstrap", headers=h)
+
+    r = cliente.post(
+        "/api/admin/operacao-ia/tarefas",
+        headers=h,
+        json={
+            "mensagem": "quero terreno no boa vista ate 350 mil",
+            "origem": "instagram",
+            "tipo": "prospeccao",
+            "agente_chave": "procuradora",
+            "prioridade": 5,
+        },
+    )
+    assert r.status_code == 201, r.text
+    tarefa_id = r.json()["id"]
+
+    r = cliente.post(
+        "/api/admin/operacao-ia/ciclo",
+        headers=h,
+        json={"limite": 10, "agente_chave": "procuradora"},
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["processadas"] >= 1
+    item_exec = next(i for i in body["itens"] if i["tarefa_id"] == tarefa_id)
+    assert item_exec["corretor_tarefa_id"] is not None
+
+    r = cliente.get("/api/admin/operacao-ia/tarefas?limit=20", headers=h)
+    assert r.status_code == 200
+    itens = r.json()["items"]
+    t = next(i for i in itens if i["id"] == tarefa_id)
+    assert t["status"] == "concluida"
+    assert "rota" in t["resultado"]
+    assert "supervisao" in t["resultado"]
+
+    r = cliente.get("/api/admin/operacao-ia/conhecimentos?limit=20", headers=h)
+    assert r.status_code == 200
+    assert r.json()["total"] >= 1
+
+
+def test_operacao_ia_feedback_reabre_tarefa(cliente):
+    h = _login(cliente)
+    cliente.post("/api/admin/operacao-ia/agentes/bootstrap", headers=h)
+
+    t = cliente.post(
+        "/api/admin/operacao-ia/tarefas",
+        headers=h,
+        json={
+            "mensagem": "tenho um lote para vender no candeias",
+            "origem": "web",
+            "tipo": "captacao",
+            "agente_chave": "rastreadora",
+        },
+    ).json()
+    tarefa_id = t["id"]
+
+    cliente.post(
+        "/api/admin/operacao-ia/ciclo",
+        headers=h,
+        json={"limite": 5, "agente_chave": "rastreadora"},
+    )
+
+    r = cliente.post(
+        f"/api/admin/operacao-ia/tarefas/{tarefa_id}/feedback",
+        headers=h,
+        json={
+            "correcao": "Focar primeiro em confirmar documentacao e urgencia da venda.",
+            "nota": 4,
+            "reabrir_tarefa": True,
+        },
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["reaberta"] is True
+
+    r = cliente.get("/api/admin/operacao-ia/tarefas?status=pendente&limit=50", headers=h)
+    assert r.status_code == 200
+    assert any(i["id"] == tarefa_id for i in r.json()["items"])
+
+
+def test_operacao_ia_relatorio_retorna_boas_e_ruins(cliente):
+    h = _login(cliente)
+    cliente.post("/api/admin/operacao-ia/agentes/bootstrap", headers=h)
+    cliente.post(
+        "/api/admin/operacao-ia/tarefas",
+        headers=h,
+        json={
+            "mensagem": "procuro casa em boa vista ate 650 mil",
+            "origem": "web",
+            "tipo": "prospeccao",
+            "agente_chave": "leads",
+        },
+    )
+    cliente.post(
+        "/api/admin/operacao-ia/ciclo",
+        headers=h,
+        json={"limite": 3, "agente_chave": "leads"},
+    )
+    r = cliente.get("/api/admin/operacao-ia/relatorio?horas=48&limite_itens=10", headers=h)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    for k in ("janela_horas", "totais", "por_agente", "por_origem", "boas_acoes", "ruins_acoes"):
+        assert k in body
+
+
+def test_operacao_ia_ciclo_tenta_notificar_contato(cliente):
+    h = _login(cliente)
+    cliente.post("/api/admin/operacao-ia/agentes/bootstrap", headers=h)
+    r = cliente.post(
+        "/api/admin/operacao-ia/tarefas",
+        headers=h,
+        json={
+            "mensagem": "sou um possivel lead e quero casa em candeias",
+            "origem": "web",
+            "tipo": "alerta_lead",
+            "agente_chave": "leads",
+            "payload_extra": {
+                "contato": "5577999226268",
+                "mensagem_notificacao": "Lead potencial detectado. Entrar em contato.",
+            },
+        },
+    )
+    assert r.status_code == 201, r.text
+    tarefa_id = r.json()["id"]
+
+    r = cliente.post(
+        "/api/admin/operacao-ia/ciclo",
+        headers=h,
+        json={"limite": 5, "agente_chave": "leads"},
+    )
+    assert r.status_code == 200, r.text
+
+    tarefas = cliente.get("/api/admin/operacao-ia/tarefas?limit=50", headers=h).json()["items"]
+    alvo = next(i for i in tarefas if i["id"] == tarefa_id)
+    notif = alvo["resultado"].get("notificacao") or {}
+    assert notif.get("contato") == "5577999226268"
+
+
+def test_operacao_ia_instagram_setup_e_autonomo(cliente):
+    h = _login(cliente)
+    r = cliente.post(
+        "/api/admin/operacao-ia/instagram/setup",
+        headers=h,
+        json={"contato": "5577999226268"},
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["ok"] is True
+    assert body["agente"] == "marketing"
+    assert len(body["tarefas_criadas"]) >= 1
+    assert len(body["conhecimentos_criados"]) >= 1
+
+    r = cliente.post(
+        "/api/admin/operacao-ia/autonomo/rodar",
+        headers=h,
+        json={
+            "max_ciclos": 2,
+            "limite_por_ciclo": 20,
+            "origem": "instagram",
+            "agente_chave": "marketing",
+        },
+    )
+    assert r.status_code == 200, r.text
+    out = r.json()
+    assert out["ciclos_executados"] >= 1
+    assert isinstance(out["historico"], list)
+
+
+def test_operacao_ia_orquestrador_distribui_subtarefas(cliente):
+    h = _login(cliente)
+    cliente.post("/api/admin/operacao-ia/agentes/bootstrap", headers=h)
+    r = cliente.post(
+        "/api/admin/operacao-ia/tarefas",
+        headers=h,
+        json={
+            "mensagem": "priorizar instagram e web para captar casas e terrenos",
+            "origem": "interno",
+            "tipo": "coordenacao",
+            "agente_chave": "orquestrador",
+            "prioridade": 2,
+            "payload_extra": {"contato": "5577999226268"},
+        },
+    )
+    assert r.status_code == 201, r.text
+    tarefa_id = r.json()["id"]
+
+    r = cliente.post(
+        "/api/admin/operacao-ia/ciclo",
+        headers=h,
+        json={"limite": 5, "agente_chave": "orquestrador"},
+    )
+    assert r.status_code == 200, r.text
+
+    tarefas = cliente.get("/api/admin/operacao-ia/tarefas?limit=100", headers=h).json()["items"]
+    tarefa_orq = next(i for i in tarefas if i["id"] == tarefa_id)
+    assert tarefa_orq["resultado"]["rota"] == "orquestracao"
+    filhos = tarefa_orq["resultado"]["provider_metadata"]["subtarefas"]
+    assert len(filhos) >= 4
+
+
 def test_copilot_lead_retorna_resumo_e_proxima_acao(cliente):
     """C.3: heuristica local de co-pilot do lead."""
     h = _login(cliente)
