@@ -12,6 +12,8 @@ chave*.txt
 api*.txt
 notas.txt
 apis.txt
+SEGREDOS*.txt
+supa base.txt
 
 # ═══════════════════════════════════════════════════════════
 # PYTHON
@@ -27,6 +29,10 @@ env/
 ENV/
 *.egg-info/
 .pytest_cache/
+.tmp-pytest-run/
+.tmp-pytest/
+.tmp-*.pid
+.tmp-*.log
 
 # ═══════════════════════════════════════════════════════════
 # NODE
@@ -40,6 +46,7 @@ package-lock.json.bak
 # EDITORES / SO
 # ═══════════════════════════════════════════════════════════
 .vscode/
+.claude/
 .idea/
 *.swp
 *.swo
