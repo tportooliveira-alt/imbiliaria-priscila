@@ -1035,12 +1035,25 @@ def _executar_tarefa_corretor(tarefa: dict, payload: dict) -> dict:
 def _agendar_tarefa_corretor(*, tarefa_id: int, agente_chave: str, supervisao: dict) -> int | None:
     if agente_chave == "corretor":
         return None
-    if not supervisao.get("flags"):
-        return None
-    msg = (
-        f"Revisar erro/alerta da tarefa {tarefa_id} do agente {agente_chave} "
-        "e consolidar melhoria objetiva no playbook."
-    )
+    flags = supervisao.get("flags") or []
+    sugestoes = supervisao.get("sugestoes") or []
+    if not isinstance(sugestoes, list):
+        sugestoes = [str(sugestoes)]
+
+    if flags:
+        msg = (
+            f"Revisar erro/alerta da tarefa {tarefa_id} do agente {agente_chave} "
+            "e consolidar melhoria objetiva no playbook."
+        )
+    else:
+        msg = (
+            f"Revisar tarefa {tarefa_id} do agente {agente_chave} "
+            "e registrar boas praticas replicaveis no playbook."
+        )
+        sugestoes = sugestoes or [
+            "Consolidar checklist da resposta que funcionou e manter consistencia do proximo passo."
+        ]
+
     t = criar_tarefa(
         origem="interno",
         tipo="correcao_continua",
@@ -1050,7 +1063,7 @@ def _agendar_tarefa_corretor(*, tarefa_id: int, agente_chave: str, supervisao: d
         payload_extra={
             "tarefa_origem_id": tarefa_id,
             "agente_origem": agente_chave,
-            "sugestoes": supervisao.get("sugestoes") or [],
+            "sugestoes": sugestoes,
         },
     )
     return int(t["id"])
