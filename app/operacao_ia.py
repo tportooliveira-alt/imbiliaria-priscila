@@ -8,7 +8,7 @@ Objetivo:
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from app.conversas import registrar_execucao_ia
@@ -804,7 +804,7 @@ def _marcar_erro(tarefa_id: int, *, requeue: bool, erro: str, resultado: dict | 
 def _atualizar_ultimo_ciclo_agente(agente_id: int | None) -> None:
     if not agente_id:
         return
-    agora = datetime.utcnow().isoformat()
+    agora = datetime.now(UTC).isoformat()
     with db_session() as conn:
         conn.execute(
             "UPDATE ia_agentes SET ultimo_ciclo_em = ?, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?",

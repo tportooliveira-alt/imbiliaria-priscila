@@ -9,7 +9,7 @@ Sem DRE complexa. Sem nota fiscal. Tudo em SQLite, escopo Priscila + ate 3 admin
 """
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from app.db import db_session
@@ -273,7 +273,7 @@ def dashboard(*, ano: int | None = None, mes: int | None = None) -> dict:
 
     Se ano/mes nao informado, usa mes corrente.
     """
-    hoje = datetime.utcnow().date()
+    hoje = datetime.now(UTC).date()
     ano = ano or hoje.year
     mes = mes or hoje.month
     inicio_mes = f"{ano:04d}-{mes:02d}-01"

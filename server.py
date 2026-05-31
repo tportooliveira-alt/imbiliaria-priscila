@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import os
 import time
+from contextlib import asynccontextmanager
 from html import escape as html_escape
 from pathlib import Path
 
@@ -45,7 +46,18 @@ setup_logging()
 
 ROOT = Path(__file__).resolve().parent
 
-app = FastAPI(title="Priscila Vasconcelos Imóveis", version="0.2.0")
+
+@asynccontextmanager
+async def _lifespan(_: FastAPI):
+    init_db()
+    email = os.getenv("ADMIN_BOOTSTRAP_EMAIL")
+    senha = os.getenv("ADMIN_BOOTSTRAP_SENHA")
+    if email and senha and not auth.buscar_usuario_por_email(email):
+        auth.criar_usuario(email, senha, role="admin")
+    yield
+
+
+app = FastAPI(title="Priscila Vasconcelos Imóveis", version="0.2.0", lifespan=_lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -94,16 +106,6 @@ app.include_router(publicas_router)
 def _base_public_url(request: Request) -> str:
     base = str(request.base_url)
     return base[:-1] if base.endswith("/") else base
-
-
-@app.on_event("startup")
-def _bootstrap() -> None:
-    init_db()
-    email = os.getenv("ADMIN_BOOTSTRAP_EMAIL")
-    senha = os.getenv("ADMIN_BOOTSTRAP_SENHA")
-    if email and senha and not auth.buscar_usuario_por_email(email):
-        auth.criar_usuario(email, senha, role="admin")
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Schemas

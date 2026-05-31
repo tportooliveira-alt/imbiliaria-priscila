@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Iterable
 
 from app.db import db_session
@@ -149,7 +149,7 @@ def _calcular_temperatura(estagio: str, score: int, interacoes: list[dict]) -> s
                 return "quente"
 
     # interacoes recentes (7 dias)
-    sete_dias_atras = datetime.utcnow() - timedelta(days=7)
+    sete_dias_atras = datetime.now(UTC) - timedelta(days=7)
     recentes = [
         i for i in interacoes
         if _parse_dt(i.get("criado_em")) and _parse_dt(i["criado_em"]) >= sete_dias_atras
@@ -168,7 +168,10 @@ def _parse_dt(s: str | None) -> datetime | None:
     if not s:
         return None
     try:
-        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=UTC)
+        return dt
     except ValueError:
         return None
 
@@ -316,7 +319,7 @@ def dashboard() -> dict:
             ).fetchall()
         }
         # 7 dias
-        sete = (datetime.utcnow() - timedelta(days=7)).isoformat()
+        sete = (datetime.now(UTC) - timedelta(days=7)).replace(tzinfo=None).isoformat()
         novos_7d = conn.execute(
             "SELECT COUNT(*) AS n FROM leads WHERE criado_em >= ?", (sete,),
         ).fetchone()["n"]

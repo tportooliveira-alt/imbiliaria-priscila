@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from datetime import datetime
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -730,14 +730,13 @@ def alertas_matches(_user=Depends(requer_admin)) -> dict:
 @router.post("/alertas/{alerta_id}/marcar-notificado")
 def marcar_alerta_notificado(alerta_id: int, _user=Depends(requer_admin)) -> dict:
     """Incrementa contador apos a Priscila confirmar que enviou ao lead."""
-    from datetime import datetime as _dt
     from app.db import db_session
 
     with db_session() as conn:
         cur = conn.execute(
             "UPDATE alertas_busca SET notificacoes_enviadas = notificacoes_enviadas + 1, "
             "ultima_notificacao = ? WHERE id = ? AND ativa = 1",
-            (_dt.utcnow().isoformat(), alerta_id),
+            (datetime.now(UTC).isoformat(), alerta_id),
         )
         conn.commit()
         if cur.rowcount == 0:
@@ -858,13 +857,12 @@ def notificar_alerta_whatsapp(alerta_id: int, _user=Depends(requer_admin)) -> di
         raise HTTPException(status_code=502, detail=resultado.erro or "falha ao enviar")
 
     # incrementa contador igual ao marcar-notificado
-    from datetime import datetime as _dt
     from app.db import db_session
     with db_session() as conn:
         conn.execute(
             "UPDATE alertas_busca SET notificacoes_enviadas = notificacoes_enviadas + 1, "
             "ultima_notificacao = ? WHERE id = ?",
-            (_dt.utcnow().isoformat(), alerta_id),
+            (datetime.now(UTC).isoformat(), alerta_id),
         )
         conn.commit()
 
