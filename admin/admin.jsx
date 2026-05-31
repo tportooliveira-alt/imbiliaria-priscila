@@ -1,5 +1,6 @@
 // Painel admin — Priscila Vasconcelos Imoveis
 const TOKEN_KEY = "pv_admin_token";
+const URL_CENTRAL_VENDAS = "/v3-editorial/#imoveis";
 const TIPOS_COMODO = [
   ["capa", "Capa"],
   ["sala", "Sala"],
@@ -23,7 +24,11 @@ async function api(path, opts = {}) {
     opts.body = JSON.stringify(opts.body);
   }
   const r = await fetch(path, { ...opts, headers });
-  if (r.status === 401) { clearToken(); window.location.reload(); }
+  if (r.status === 401) {
+    clearToken();
+    window.location.assign(URL_CENTRAL_VENDAS);
+    return null;
+  }
   if (r.status === 204) return null;
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(data.detail || `Erro ${r.status}`);
@@ -1641,7 +1646,10 @@ function App() {
     await recarregar();
   }
 
-  function logout() { clearToken(); setUser(null); }
+  function logout() {
+    clearToken();
+    window.location.assign(URL_CENTRAL_VENDAS);
+  }
 
   if (carregando) return <div className="login-screen"><p>Carregando...</p></div>;
   if (!user) return <Login onLogin={setUser} />;
