@@ -5,13 +5,13 @@ function formatarValor(v) {
 }
 
 const PADROES = [
-  ["simples", "Simples"], ["medio", "Medio"], ["alto", "Alto"], ["luxo", "Luxo"],
+  ["simples", "Simples"], ["medio", "Médio"], ["alto", "Alto"], ["luxo", "Luxo"],
 ];
 const ESTADOS = [
   ["reformado", "Reformado"], ["bom", "Bom"], ["regular", "Regular"], ["precisa_reforma", "Precisa reforma"],
 ];
 const IDADES = [
-  ["novo", "Novo"], ["0_10", "Ate 10 anos"], ["10_20", "10-20 anos"], ["20_mais", "Mais de 20"],
+  ["novo", "Novo"], ["0_10", "Até 10 anos"], ["10_20", "10-20 anos"], ["20_mais", "Mais de 20"],
 ];
 
 function AvaliacaoImovel() {
@@ -50,7 +50,7 @@ function AvaliacaoImovel() {
 
   const passos = [
     {
-      titulo: "Em qual bairro fica o imovel?",
+      titulo: "Em qual bairro fica o imóvel?",
       campo: (
         <select value={dados.bairro} onChange={e => up("bairro", e.target.value)}>
           {bairros.map(b => <option key={b} value={b}>{b.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</option>)}
@@ -58,7 +58,7 @@ function AvaliacaoImovel() {
       ),
     },
     {
-      titulo: "Qual a area util?",
+      titulo: "Qual a área útil?",
       campo: (
         <div>
           <input type="number" min={20} max={2000} value={dados.area_util}
@@ -68,21 +68,21 @@ function AvaliacaoImovel() {
       ),
     },
     {
-      titulo: "Quantos quartos, suites e vagas?",
+      titulo: "Quantos quartos, suítes e vagas?",
       campo: (
         <div className="aval-grid3">
           <label>Quartos<input type="number" min={0} max={10} value={dados.quartos} onChange={e => up("quartos", +e.target.value)} /></label>
-          <label>Suites<input type="number" min={0} max={10} value={dados.suites} onChange={e => up("suites", +e.target.value)} /></label>
+          <label>Suítes<input type="number" min={0} max={10} value={dados.suites} onChange={e => up("suites", +e.target.value)} /></label>
           <label>Vagas<input type="number" min={0} max={10} value={dados.vagas} onChange={e => up("vagas", +e.target.value)} /></label>
         </div>
       ),
     },
     {
-      titulo: "Padrao de acabamento e estado?",
+      titulo: "Padrão de acabamento e estado?",
       campo: (
         <div className="aval-grid2">
           <div>
-            <label>Padrao</label>
+            <label>Padrão</label>
             <div className="aval-chips">
               {PADROES.map(([v, l]) => (
                 <button key={v} type="button" className={dados.padrao === v ? "is-active" : ""}
@@ -103,7 +103,7 @@ function AvaliacaoImovel() {
       ),
     },
     {
-      titulo: "Idade do imovel e area externa?",
+      titulo: "Idade do imóvel e área externa?",
       campo: (
         <div>
           <div className="aval-chips">
@@ -115,7 +115,7 @@ function AvaliacaoImovel() {
           <label className="aval-check">
             <input type="checkbox" checked={dados.tem_area_externa}
               onChange={e => up("tem_area_externa", e.target.checked)} />
-            Tem quintal, varanda gourmet ou area externa
+            Tem quintal, varanda gourmet ou área externa
           </label>
         </div>
       ),
@@ -125,12 +125,12 @@ function AvaliacaoImovel() {
   if (passo === 5 && resultado) {
     return (
       <section className="aval-result">
-        <span className="aval-eyebrow">Avaliacao online</span>
-        <h2>Faixa estimada do seu imovel</h2>
+        <span className="aval-eyebrow">Avaliação online</span>
+        <h2>Faixa estimada do seu imóvel</h2>
         <div className="aval-faixa">
-          <div className="aval-min"><small>Minimo</small><strong>{formatarValor(resultado.valor_minimo)}</strong></div>
+          <div className="aval-min"><small>Mínimo</small><strong>{formatarValor(resultado.valor_minimo)}</strong></div>
           <div className="aval-central"><small>Valor central</small><strong>{formatarValor(resultado.valor_central)}</strong></div>
-          <div className="aval-max"><small>Maximo</small><strong>{formatarValor(resultado.valor_maximo)}</strong></div>
+          <div className="aval-max"><small>Máximo</small><strong>{formatarValor(resultado.valor_maximo)}</strong></div>
         </div>
         <div className="aval-regua" aria-hidden="true">
           <div className="aval-regua-trilho">
@@ -153,22 +153,22 @@ function AvaliacaoImovel() {
         </div>
         {Array.isArray(resultado.fatores) && resultado.fatores.length > 0 && (
           <details className="aval-fatores">
-            <summary>O que pesou nesta avaliacao ({resultado.fatores.length} fatores)</summary>
+            <summary>O que pesou nesta avaliação ({resultado.fatores.length} fatores)</summary>
             <ul>
               {resultado.fatores.map((f, i) => <li key={i}>{f}</li>)}
             </ul>
           </details>
         )}
         <p className="aval-texto">{resultado.texto}</p>
-        <p className="aval-confianca">Confianca da estimativa: <strong>{resultado.confianca}</strong></p>
+        <p className="aval-confianca">Confiança da estimativa: <strong>{resultado.confianca}</strong></p>
         <div className="aval-acoes">
           <button className="btn-secondary" onClick={() => { setResultado(null); setPasso(0); }}>
             Refazer
           </button>
           <button className="aval-cta" onClick={() => window.dispatchEvent(new CustomEvent("abrir-chat", { detail: {
-            mensagem: `Avaliei meu imovel em ${dados.bairro}: faixa ${formatarValor(resultado.valor_minimo)} a ${formatarValor(resultado.valor_maximo)}. Quero conversar sobre vender com a Priscila.`
+            mensagem: `Avaliei meu imóvel em ${dados.bairro}: faixa ${formatarValor(resultado.valor_minimo)} a ${formatarValor(resultado.valor_maximo)}. Quero conversar sobre vender com a Priscila.`
           }}))}>
-            Quero avaliacao presencial
+            Quero avaliação presencial
           </button>
         </div>
       </section>
@@ -179,8 +179,8 @@ function AvaliacaoImovel() {
   return (
     <section className="aval-stepper">
       <header className="aval-head">
-        <span className="aval-eyebrow">Avaliacao gratuita</span>
-        <h2>Quanto vale o seu imovel em VDC?</h2>
+        <span className="aval-eyebrow">Avaliação gratuita</span>
+        <h2>Quanto vale o seu imóvel em VDC?</h2>
         <div className="aval-progress">
           {passos.map((_, i) => (
             <span key={i} className={i <= passo ? "is-active" : ""} />
@@ -197,10 +197,10 @@ function AvaliacaoImovel() {
       <div className="aval-nav">
         {passo > 0 && <button className="btn-secondary" onClick={() => setPasso(passo - 1)}>Voltar</button>}
         {passo < passos.length - 1 ? (
-          <button className="aval-cta" onClick={() => setPasso(passo + 1)}>Proximo</button>
+          <button className="aval-cta" onClick={() => setPasso(passo + 1)}>Próximo</button>
         ) : (
           <button className="aval-cta" onClick={avaliar} disabled={carregando}>
-            {carregando ? "Avaliando..." : "Ver avaliacao"}
+            {carregando ? "Avaliando..." : "Ver avaliação"}
           </button>
         )}
       </div>

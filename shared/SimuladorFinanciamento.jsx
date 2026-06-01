@@ -126,16 +126,16 @@ function SimuladorFinanciamento() {
           <span className="sim-eyebrow">Simulador real · taxas de abril/2026</span>
           <h2>Quanto fica a parcela do seu sonho?</h2>
           <p>
-            Calculo com as taxas <strong>reais</strong> dos principais bancos
-            (Caixa, Banco do Brasil, Itau, Bradesco, Santander). Em 30 segundos
-            voce ve o comparativo completo.
+            Cálculo com as taxas <strong>reais</strong> dos principais bancos
+            (Caixa, Banco do Brasil, Itaú, Bradesco, Santander). Em 30 segundos
+            você vê o comparativo completo.
           </p>
         </header>
 
         <form className="sim-form sim-form-gate" onSubmit={iniciarPesquisa}>
           <div className="sim-row">
             <div className="sim-field">
-              <label>Tipo do imovel</label>
+              <label>Tipo do imóvel</label>
               <select value={tipoImovel} onChange={e => setTipoImovel(e.target.value)}>
                 {TIPOS_IMOVEL.map(t => <option key={t.v} value={t.v}>{t.l}</option>)}
               </select>
@@ -178,12 +178,12 @@ function SimuladorFinanciamento() {
 
           <button className="sim-cta sim-cta-grande" type="submit"
             disabled={!podeSimular || carregando}>
-            {carregando ? "Carregando taxas..." : "Ver minha simulacao real"}
+            {carregando ? "Carregando taxas..." : "Ver minha simulação real"}
           </button>
           {erro && <p className="sim-erro">{erro}</p>}
           <p className="sim-privacidade">
             Seus dados ficam apenas com a Priscila Vasconcelos (CRECI/BA 29.231).
-            Nao compartilhamos com terceiros.
+            Não compartilhamos com terceiros.
           </p>
         </form>
       </section>
