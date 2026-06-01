@@ -40,7 +40,7 @@ python3.12 -m venv venv
 
 ## 4) Configurar `.env` de producao
 
-Copiar `.env.example` para `.env` e definir:
+Copiar `.env.exemplo` para `.env` e definir:
 
 ```env
 JWT_SECRET=<gerar com: python -c "import secrets; print(secrets.token_urlsafe(64))">
@@ -50,6 +50,8 @@ SITE_DB_PATH=/var/www/imobiliaria/data/site.db
 DOCS_DIR=/var/www/imobiliaria/data/docs
 CORS_ORIGINS=https://vasconcelosimoveis.com.br
 WATERMARK_ATIVO=1
+# Opcional: valide webhooks do Evolution em producao
+# EVOLUTION_WEBHOOK_TOKEN=<segredo-webhook>
 # IMPORTANTE: NAO definir DEV_OPEN_ADMIN em producao
 ```
 
@@ -118,6 +120,21 @@ Ou usar `deploy/deploy.sh`:
 ```bash
 bash deploy/deploy.sh
 ```
+
+### GitHub push -> deploy automatico
+
+Se voce quiser o mesmo fluxo de "so dar `git push`", o repo ja pode usar o workflow
+`.github/workflows/deploy-vps.yml`.
+
+No GitHub, configure estes secrets do repositório:
+
+- `VPS_HOST` = IP ou dominio da VPS
+- `VPS_USER` = usuario SSH da VPS
+- `VPS_SSH_KEY` = chave privada SSH
+- `VPS_PORT` = opcional, padrao `22`
+- `VPS_APP_DIR` = opcional, padrao `/var/www/imobiliaria`
+
+Depois disso, cada push na branch `main` executa `bash deploy/deploy.sh` dentro da VPS.
 
 ## 10) Logs e monitoramento
 

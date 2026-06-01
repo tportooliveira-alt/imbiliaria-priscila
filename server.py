@@ -47,6 +47,16 @@ setup_logging()
 ROOT = Path(__file__).resolve().parent
 
 
+def _cors_origins() -> list[str]:
+    configuradas = [
+        origem.strip()
+        for origem in os.getenv("CORS_ORIGINS", "").split(",")
+        if origem.strip()
+    ]
+    locais = ["http://localhost:8000", "http://127.0.0.1:8000"]
+    return list(dict.fromkeys(locais + configuradas))
+
+
 @asynccontextmanager
 async def _lifespan(_: FastAPI):
     init_db()
@@ -61,7 +71,7 @@ app = FastAPI(title="Priscila Vasconcelos Imóveis", version="0.2.0", lifespan=_
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8000", "http://127.0.0.1:8000"],
+    allow_origins=_cors_origins(),
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
