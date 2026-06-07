@@ -41,7 +41,11 @@ def _montar_contexto_carteira() -> str:
         if not total:
             return ""
 
-        linhas = [f"Carteira ativa: {total} imoveis cadastrados."]
+        linhas = [
+            f"CARTEIRA COMPLETA E REAL — estes sao os UNICOS {total} imovel(is) que EXISTEM. "
+            f"Voce SO pode oferecer imoveis desta lista. Se o cliente pedir bairro/tipo que NAO "
+            f"esta aqui, diga que no momento nao tem e que vai verificar com a Priscila. NUNCA invente imovel."
+        ]
         if por_bairro:
             linhas.append("Distribuicao por bairro:")
             for r in por_bairro:
@@ -57,6 +61,17 @@ def _montar_contexto_carteira() -> str:
                     f"  - {r['titulo']} ({r['bairro']}, {r['quartos']}q, {r['area_util']}m2) - {p_fmt}"
                 )
         return "\n".join(linhas)
+    except Exception:
+        return ""
+
+
+def _ler_dados_financeiros() -> str:
+    """Le a ficha de dados financeiros atualizavel (fonte de verdade)."""
+    try:
+        import os
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        with open(os.path.join(base, "data", "dados_financeiros.md"), encoding="utf-8") as f:
+            return f.read().strip()
     except Exception:
         return ""
 from app.router import Rota, classificar
@@ -128,7 +143,8 @@ def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem:
     """Pipeline completo: classifica → cascata Gemini → Claude → fallback."""
     cls = classificar(mensagem, tem_imagem=tem_imagem)
     lead = qualify_lead(mensagem, history=historico)
-    contexto = _montar_contexto_carteira()
+    _partes = [p for p in (_montar_contexto_carteira(), _ler_dados_financeiros()) if p]
+    contexto = "\n\n".join(_partes)
     system = system_prompt(cls.rota, contexto=contexto or None)
 
     resp = _cascata(cls.rota, system, mensagem, historico)

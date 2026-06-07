@@ -77,7 +77,7 @@ function PropertyCard({ imovel, variant }) {
     const linha3 = `${card.bairro} · ${card.quartos} quartos · ${card.area} m²`;
     const linha4 = `Código: ${card.codigo || card.id}`;
     const txt = `${linha1}\n\n${linha2}\n${linha3}\n${linha4}\n\nQueria saber mais.`;
-    const url = `https://wa.me/5577988193344?text=${encodeURIComponent(txt)}`;
+    const url = `https://wa.me/5577999395511?text=${encodeURIComponent(txt)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
   return (

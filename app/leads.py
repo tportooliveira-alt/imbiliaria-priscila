@@ -252,7 +252,7 @@ def detalhar(lead_id: int) -> dict | None:
 
 
 def atualizar(lead_id: int, **campos) -> bool:
-    permitidos = {"nome", "telefone", "email", "estagio", "observacoes", "responsavel_id"}
+    permitidos = {"nome", "telefone", "email", "estagio", "observacoes", "responsavel_id", "score", "temperatura"}
     sets = {k: v for k, v in campos.items() if k in permitidos and v is not None}
     if not sets:
         return False

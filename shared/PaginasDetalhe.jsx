@@ -120,7 +120,7 @@ function ImovelDetalhe({ codigo, onVoltar }) {
   }
 
   const txtWhats = `Oi Priscila, vi o imóvel ${imovel.codigo} (${imovel.titulo}) no site. Quero saber mais.`;
-  const linkWhats = `https://wa.me/5577988193344?text=${encodeURIComponent(txtWhats)}`;
+  const linkWhats = `https://wa.me/5577999395511?text=${encodeURIComponent(txtWhats)}`;
   const panoramaUrl = imovel.panorama_url || PANORAMA_FALLBACK_POR_CODIGO[imovel.codigo] || "";
 
   const Tour360Comp = window.Tour360;
@@ -325,7 +325,7 @@ function BairroDetalhe({ slug, onVoltar }) {
       ) : (
         <div className="detalhe-vazio">
           <p>No momento não há imóveis ativos em {bairro.nome}.</p>
-          <p>Quer que a Priscila te avise quando aparecer? <a href="https://wa.me/5577988193344" target="_blank" rel="noopener">Mande um WhatsApp.</a></p>
+          <p>Quer que a Priscila te avise quando aparecer? <a href="https://wa.me/5577999395511" target="_blank" rel="noopener">Mande um WhatsApp.</a></p>
         </div>
       )}
 

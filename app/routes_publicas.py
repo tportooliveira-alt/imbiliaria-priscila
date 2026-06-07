@@ -589,10 +589,45 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
         metadata={"mensagem_id": key.get("id")},
     )
 
+    # ─── Qualificacao em segundo plano (mesmo sem responder o cliente) ────
+    # Roda o qualify_lead (le bairro/orcamento/prazo no conteudo) e grava
+    # score + temperatura no lead, sem enviar nenhuma mensagem.
+    try:
+        from app.lead import qualify_lead
+        _det = leads_repo.detalhar(lead_id) or {}
+        _hist: list[dict] = []
+        for _it in reversed((_det.get("interacoes") or [])[:6]):
+            _t = _it.get("tipo") or ""
+            if _t == "whatsapp_recebido":
+                _hist.append({"role": "user", "content": _it.get("descricao") or ""})
+            elif _t == "whatsapp_enviado":
+                _hist.append({"role": "assistant", "content": _it.get("descricao") or ""})
+        _snap = qualify_lead(str(texto), history=_hist[-5:] or None)
+        _temp = {
+            "frio": "frio", "morno": "morno", "quente": "quente",
+            "pronto_visita": "quente", "pronto_proposta": "quente",
+        }.get(_snap.stage, "frio")
+        leads_repo.atualizar(lead_id, score=int(_snap.score), temperatura=_temp)
+        # lead quente -> escala dossie pro Paperclip (painel) automaticamente
+        if _temp == "quente":
+            try:
+                from app import paperclip_bridge
+                paperclip_bridge.escalar_se_quente(lead_id)
+            except Exception:
+                pass
+    except Exception:
+        pass  # qualificacao nunca pode quebrar a captura do lead
+
     # ─── W2.3: auto-resposta IA opcional ──────────────────────────────────
     import os as _os
     if _os.getenv("WHATSAPP_AUTO_REPLY") != "1":
         return {"ok": True, "lead_id": lead_id, "auto_reply": False}
+
+    # MODO TESTE: se WHATSAPP_TEST_NUMBER estiver setado, so responde a esse numero
+    # (valida ao vivo sem responder cliente real). Compara pelos ultimos 8 digitos.
+    _test = "".join(c for c in _os.getenv("WHATSAPP_TEST_NUMBER", "") if c.isdigit())
+    if _test and remote[-8:] != _test[-8:]:
+        return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": "modo_teste_outro_numero"}
 
     from app import dispatcher, whatsapp as wa
     if not wa.disponivel():

@@ -45,7 +45,7 @@ function AnuncieImovel({ onClose }) {
       (form.quartos ? `Quartos: ${form.quartos}\n` : "") +
       (form.valor_pretendido ? `Valor pretendido: R$ ${form.valor_pretendido}\n` : "") +
       (form.observacoes ? `\n${form.observacoes}\n` : "");
-    window.open(`https://wa.me/5577988193344?text=${encodeURIComponent(txt)}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/5577999395511?text=${encodeURIComponent(txt)}`, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -130,7 +130,7 @@ function AnuncieImovel({ onClose }) {
             <div className="anuncie-ok-icon">✓</div>
             <h2>Recebido!</h2>
             <p>A Priscila te chama em até <strong>24h</strong>. Se quiser adiantar, manda mensagem direto:</p>
-            <a className="anuncie-whats" href="https://wa.me/5577988193344" target="_blank" rel="noopener">WhatsApp · (77) 9 8819-3344</a>
+            <a className="anuncie-whats" href="https://wa.me/5577999395511" target="_blank" rel="noopener">WhatsApp · (77) 9 8819-3344</a>
             <button className="anuncie-fechar" onClick={onClose}>Fechar</button>
           </div>
         )}

@@ -135,7 +135,7 @@ function ComparadorDrawer() {
     if (imoveis.length === 0) return;
     const linhas = imoveis.map(i => `• ${i.codigo} — ${i.titulo} (${i.precoLabel})`).join("\n");
     const txt = `Oi Priscila! Tô comparando estes imóveis e queria sua opinião:\n\n${linhas}\n\nQual você indicaria?`;
-    window.open(`https://wa.me/5577988193344?text=${encodeURIComponent(txt)}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/5577999395511?text=${encodeURIComponent(txt)}`, "_blank", "noopener,noreferrer");
   };
 
   const linhas = [

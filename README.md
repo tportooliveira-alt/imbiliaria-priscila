@@ -1,57 +1,158 @@
-# Site Priscila Vasconcelos — Imóveis com IA
+# Imobiliária Priscila Vasconcelos — Site + IA de captação de leads
 
-Site editorial + IA híbrida (Gemini + Claude) pra captação e qualificação de leads imobiliários em Vitória da Conquista — BA.
+Plataforma de captação e **qualificação automática de leads imobiliários** para a corretora
+**Priscila Vasconcelos** (CRECI/BA 29.231), em Vitória da Conquista — BA.
 
-## Estrutura
+O sistema atende o cliente no **site** e no **WhatsApp**, qualifica o interesse (perfil, orçamento,
+prazo) e entrega o lead **"mastigado"** para a Priscila fechar — funcionando como um SDR
+(pré-vendas) que trabalha 24/7.
+
+> **Domínio:** https://pvscelosimobiliaria.com · **Stack:** FastAPI + nginx + SQLite · **IA:** Claude (+ Gemini opcional)
+
+---
+
+## Como funciona (visão geral)
 
 ```
-site-imobiliaria/
-├── v3-editorial/         # Site (HTML/CSS/JS estático)
-│   ├── index.html        # Página principal
-│   └── assets/
-│       ├── abertura.mp4  # Vídeo de Priscila falando
-│       ├── predios.mp4   # Vídeo dos prédios (abre primeiro)
-│       ├── priscila-new-hero.jpeg
-│       └── priscila-sobre.jpg
-│
-├── server.py             # (a ser adicionado) Backend Python com roteamento Gemini + Claude
-├── .env.exemplo          # (a ser adicionado) Modelo de variáveis — copia pra .env
-├── requirements.txt      # (a ser adicionado) Dependências Python
-└── .gitignore            # Protege .env, chaves, node_modules, etc.
+Cliente (site / WhatsApp)
+        │
+        ▼
+  Motor de IA do site (FastAPI)  ──►  classifica a intenção (6 rotas)
+        │                              responde como "Ana", a assistente da Priscila
+        ▼
+  Qualificação do lead (score BANT)  ──►  grava perfil + temperatura no CRM
+        │
+        ▼
+  Lead QUENTE  ──►  dossiê automático no painel + alerta  ──►  Priscila fecha
 ```
 
-## Como rodar (local — em desenvolvimento)
+- **Ana** é a persona da IA: corretora-assistente, calorosa e honesta. Ela **só oferece imóveis
+  reais do banco** (nunca inventa), qualifica com a metodologia **BANT** (Necessidade, Orçamento,
+  Prazo, Decisão) em **estágios** (entender → mostrar imóvel → qualificar → próximo passo) e faz o
+  **handoff** para a Priscila no momento certo.
 
-Em construção. Próximo passo: adicionar `server.py` + `.env`.
+---
 
-## Stack planejada
+## Arquitetura
 
-| Camada | Tecnologia |
+### 1. Motor de IA do site (`app/`) — o que conversa com o cliente
+- **`app/router.py`** — classifica a mensagem em 6 rotas: `TRIAGEM`, `INFO_VDC`, `NEGOCIACAO`,
+  `DESCRICAO`, `FOLLOWUP`, `VISAO`.
+- **`app/dispatcher.py`** — orquestra a resposta: monta o contexto (carteira real de imóveis +
+  ficha financeira), chama o LLM em **cascata com failover** (Gemini → Claude → fallback estático)
+  e devolve resposta + qualificação.
+- **`app/prompts.py`** — a **persona da Ana** (voz, postura, regra anti-invenção, BANT, estágios,
+  handoff) e os prompts por rota.
+- **`app/lead.py`** — **qualificação/score do lead** (0–100): sinais de comprador
+  (bairro, orçamento, prazo, telefone), **vendedor**, permuta, intenção e engajamento → estágio
+  (frio/morno/quente/pronto_visita/pronto_proposta).
+- **`app/clients.py`** — clientes LLM (Claude, Gemini) com fallback gracioso.
+- **`data/dados_financeiros.md`** — ficha de **dados financeiros reais** (taxas 2026, ITBI, MCMV,
+  Pró-Cotista, SFH) injetada no contexto — é a fonte de verdade dos números (atualizável).
+
+### 2. Imóveis e CRM (`app/`)
+- **`app/imoveis.py`** — CRUD de imóveis + imagens (otimização automática para webp em 3 tamanhos).
+- **`app/leads.py`** / **`app/routes_crm.py`** — leads, interações, funil.
+- **`app/routes_admin.py`** — painel administrativo (login, cadastro de imóveis, upload de fotos,
+  geração de descrição por IA, ordenação de imagens).
+- **`app/routes_publicas.py`** — endpoints públicos: `/api/chat`, simuladores, avaliação,
+  **webhook do WhatsApp** (`/api/whatsapp/webhook`), consentimento LGPD.
+- Banco: **SQLite** em `data/site.db` (NÃO versionado).
+
+### 3. Integração WhatsApp
+- **Evolution API** (Docker) como gateway do WhatsApp da Priscila.
+- O webhook recebe a mensagem → cria/qualifica o lead → (se `WHATSAPP_AUTO_REPLY=1`) a Ana
+  responde automaticamente. Suporta **modo teste** (`WHATSAPP_TEST_NUMBER`) que só responde a um
+  número específico, para validar ao vivo sem atingir clientes reais.
+- Lead quente → **ponte** (`app/paperclip_bridge.py`) cria um dossiê no painel de gestão.
+
+### 4. Front-end (`v3-editorial/`, `shared/`)
+- Site editorial em React via Babel-standalone (sem build).
+- O catálogo é lido **do banco** em tempo real (`/api/imoveis`) — todo imóvel cadastrado no admin
+  aparece no site automaticamente.
+
+---
+
+## Estrutura de pastas
+
+```
+imobiliaria/
+├── server.py              # app FastAPI (monta rotas, /api/chat, bootstrap)
+├── app/                   # motor de IA, CRM, rotas, qualificação
+│   ├── router.py  dispatcher.py  prompts.py  lead.py  clients.py
+│   ├── imoveis.py  leads.py  auth.py  db.py
+│   ├── routes_publicas.py  routes_admin.py  routes_crm.py
+│   └── paperclip_bridge.py
+├── data/                  # SQLite + dados_financeiros.md   (NÃO versionado)
+├── admin/                 # painel (admin.jsx, admin.css, calculadora-ads.html)
+├── v3-editorial/          # site público (index.html, app.jsx)
+├── shared/                # componentes JSX compartilhados + data.jsx
+├── assets/                # mídia e fotos de imóveis (fotos NÃO versionadas)
+├── scripts/               # automações (ex.: agente de lembretes)
+├── docs/                  # documentação operacional
+├── deploy/                # unit systemd
+├── requirements.txt  .env.exemplo  .gitignore
+```
+
+---
+
+## Rodando localmente
+
+```bash
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+cp .env.exemplo .env          # edite as chaves (veja abaixo)
+uvicorn server:app --reload --port 8001
+```
+
+### Variáveis de ambiente (`.env`) — veja `.env.exemplo`
+| Variável | Para quê |
 |---|---|
-| Front | HTML/CSS/JS estático (já feito) |
-| Backend | FastAPI (Python) |
-| IA triagem | Gemini Flash |
-| IA pesquisa BR | Gemini Pro + Search |
-| IA negociação | Claude Sonnet 4.6 |
-| IA follow-up | Claude Haiku 4.5 |
-| WhatsApp | Meta Cloud API (oficial) |
-| Hospedagem | VPS Hostinger |
-| Domínio | priscilavasconcelos.com.br |
+| `ANTHROPIC_API_KEY` | IA (Claude) — obrigatória |
+| `GOOGLE_API_KEY` | Gemini (opcional; sem ela, cai no Claude por failover) |
+| `EVOLUTION_API_URL` / `EVOLUTION_API_KEY` / `EVOLUTION_INSTANCIA` | gateway WhatsApp |
+| `WHATSAPP_AUTO_REPLY` | `1` liga a resposta automática (padrão: desligado) |
+| `WHATSAPP_TEST_NUMBER` | se setado, só responde a esse número (modo teste seguro) |
 
-## Roadmap
+> **Nunca** comite o `.env` — o `.gitignore` já protege `.env`, chaves, banco e fotos.
 
-- [x] Site editorial v3 funcional
-- [x] Vídeos de abertura encadeados (prédios → Priscila)
-- [ ] Backend `server.py` com roteamento IA
-- [ ] Chat real plugado no `aic` do site
-- [ ] 8–15 imóveis reais cadastrados
-- [ ] WhatsApp Cloud API conectada
-- [ ] Régua de follow-up no n8n
-- [ ] Voice agent ElevenLabs PT-BR
-- [ ] Likely-to-Sell BR (scraper + scorer)
-- [ ] Mortgage IA (simulador Caixa)
+---
 
-## Segurança
+## Produção (VPS)
 
-- `.env` com chaves NUNCA é commitado (protegido pelo `.gitignore`)
-- Chaves de API ficam só no PC local até subir pra VPS
+- **systemd:** `imobiliaria.service` (uvicorn em `127.0.0.1:8001`) + `imobiliaria-agente.service`
+  (lembretes/automações). Unit em `deploy/`.
+- **nginx** como reverse proxy + SSL (Let's Encrypt). `/` → site; `/api/*` → backend;
+  `/admin/` → painel.
+- Reiniciar: `systemctl restart imobiliaria.service`.
+
+---
+
+## Cadastro de imóveis (admin)
+
+1. Acesse `/admin/` e faça login.
+2. **Novo imóvel** → preencha título, bairro, tipo e **preço** (obrigatórios) + quartos/área/etc.
+3. Suba as fotos (otimização automática). Há **geração de descrição por IA**.
+4. Salvar → o imóvel entra no site e na **carteira da Ana** automaticamente.
+
+---
+
+## Segurança & LGPD
+
+- Segredos (`.env`, chaves, `*.pem`) e dados pessoais (`data/`, banco com leads, fotos) **não são
+  versionados**.
+- A IA **nunca inventa** imóvel, preço ou dado — só usa o que existe no banco/fichas.
+- Consentimento LGPD registrado no contato; a Ana se identifica como assistente da Priscila.
+
+---
+
+## Status
+
+- [x] Site editorial no ar, lendo imóveis do banco
+- [x] Motor de IA (Ana) com anti-invenção, BANT e estágios de conversa
+- [x] Qualificação de lead (comprador + vendedor + permuta + intenção)
+- [x] WhatsApp conectado (Evolution) + qualificação automática
+- [x] Ponte lead-quente → dossiê para a Priscila
+- [ ] Resposta automática do WhatsApp em produção (em validação — modo teste)
+- [ ] Meta Lead Ads (anúncios → lead direto no funil) — desenho em `docs/META-LEAD-ADS.md`
+- [ ] Modernização visual do site (próxima fase)

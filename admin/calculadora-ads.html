@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Escala: Meta & Google Ads para Corretores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #faf8f5; color: #292524; }
+        input[type="number"] { -moz-appearance: textfield; }
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container { height: 50vh; }
+        }
+    </style>
+</head>
+<body class="antialiased pb-12">
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+
+    <header class="mb-10 border-b border-stone-200 pb-6">
+        <h1 class="text-3xl md:text-4xl font-bold text-stone-800 mb-2">Simulador de Escala de Ads para Imóveis</h1>
+        <p class="text-stone-600 text-lg max-w-3xl">Descubra quanto pagar por dia, analise sua margem, e entenda quando aplicar aumentos (positivos) ou reduções (negativos) nas suas campanhas de Meta e Google Ads.</p>
+    </header>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-stone-100 p-6 md:p-8 mb-8">
+        <h2 class="text-xl font-semibold mb-6 text-stone-800 border-b border-stone-100 pb-2">1. Seus Dados Atuais (Orçamento Diário)</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <div class="space-y-6 lg:col-span-2">
+                <div class="bg-stone-50 p-5 rounded-xl border border-stone-200">
+                    <div class="flex items-center mb-4">
+                        <span class="text-2xl mr-2">🎯</span>
+                        <h3 class="text-lg font-medium">Meta (CPL Alvo)</h3>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-stone-700 mb-1">Qual o Custo Por Lead (CPL) ideal que você deseja pagar? (R$)</label>
+                        <input type="number" id="cplAlvo" value="15" class="w-full sm:w-1/2 p-3 border border-stone-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition-colors bg-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50/50 p-5 rounded-xl border border-blue-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-bl-lg">META ADS</div>
+                        <div class="space-y-4 mt-2">
+                            <div>
+                                <label class="block text-sm font-medium text-stone-700 mb-1">Orçamento Diário (R$)</label>
+                                <input type="number" id="budgetMeta" value="100" class="w-full p-2 border border-stone-300 rounded-lg focus:ring-blue-500 bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-stone-700 mb-1">CPL Atual (R$)</label>
+                                <input type="number" id="cplMeta" value="12" class="w-full p-2 border border-stone-300 rounded-lg focus:ring-blue-500 bg-white">
+                            </div>
+                            <div id="statusMeta" class="mt-3 text-sm font-semibold p-2 rounded bg-stone-100">Calculando...</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-red-50/50 p-5 rounded-xl border border-red-100 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded-bl-lg">GOOGLE ADS</div>
+                        <div class="space-y-4 mt-2">
+                            <div>
+                                <label class="block text-sm font-medium text-stone-700 mb-1">Orçamento Diário (R$)</label>
+                                <input type="number" id="budgetGoogle" value="150" class="w-full p-2 border border-stone-300 rounded-lg focus:ring-red-500 bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-stone-700 mb-1">CPL Atual (R$)</label>
+                                <input type="number" id="cplGoogle" value="20" class="w-full p-2 border border-stone-300 rounded-lg focus:ring-red-500 bg-white">
+                            </div>
+                            <div id="statusGoogle" class="mt-3 text-sm font-semibold p-2 rounded bg-stone-100">Calculando...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 rounded-xl p-6 border border-amber-200 flex flex-col justify-center">
+                <h3 class="text-sm uppercase tracking-wider text-amber-800 font-bold mb-4 text-center">Resultados Diários</h3>
+
+                <div class="space-y-6 text-center">
+                    <div>
+                        <p class="text-stone-500 text-sm">Investimento Total/Dia</p>
+                        <p class="text-3xl font-bold text-stone-800" id="resTotalBudget">R$ 0</p>
+                    </div>
+                    <div>
+                        <p class="text-stone-500 text-sm">Leads Estimados/Dia</p>
+                        <p class="text-4xl font-bold text-amber-600" id="resTotalLeads">0</p>
+                    </div>
+                    <div class="pt-4 border-t border-amber-200/50">
+                        <p class="text-stone-500 text-sm">CPL Médio Combinado</p>
+                        <p class="text-xl font-semibold text-stone-800" id="resMediaCpl">R$ 0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-stone-100 p-6 md:p-8 mb-8">
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold text-stone-800">2. Projeção de Escala (7 Dias)</h2>
+            <p class="text-stone-600 text-sm mt-1">Como seu orçamento e captação de leads se comportarão se aplicarmos a regra de ouro: <b>Aumentar em 20%</b> campanhas com CPL abaixo do alvo (Positivo) e <b>Reduzir em 15%</b> campanhas com CPL acima do alvo (Negativo).</p>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="projectionChart"></canvas>
+        </div>
+    </div>
+
+    <div class="bg-stone-800 text-stone-100 rounded-2xl shadow-sm p-6 md:p-8">
+        <h2 class="text-2xl font-semibold mb-6 text-white border-b border-stone-700 pb-3 flex items-center">
+            <span class="mr-3 text-amber-400">📊</span> O que é um Gráfico Bem Planejado?
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-stone-700 p-5 rounded-xl">
+                <div class="text-2xl mb-2">📈</div>
+                <h3 class="font-bold text-lg mb-2 text-white">Correlação Clara</h3>
+                <p class="text-sm text-stone-300">Um bom gráfico mostra a relação entre esforço (Orçamento/Barras) e resultado (Leads/Linha). Se as barras sobem mas a linha cai, há um problema de saturação.</p>
+            </div>
+
+            <div class="bg-stone-700 p-5 rounded-xl">
+                <div class="text-2xl mb-2">⚖️</div>
+                <h3 class="font-bold text-lg mb-2 text-white">Margem de Escala</h3>
+                <p class="text-sm text-stone-300">A "margem gráfica" é a distância entre seu CPL atual e seu limite de lucro. Um gráfico bem planejado revela se você tem espaço para investir mais sem quebrar seu ROI.</p>
+            </div>
+
+            <div class="bg-stone-700 p-5 rounded-xl">
+                <div class="text-2xl mb-2">🚦</div>
+                <h3 class="font-bold text-lg mb-2 text-white">Ação Orientada</h3>
+                <p class="text-sm text-stone-300">Ele define regras visuais. CPL > Alvo (Vermelho/Negativo) = Reduzir 15% ou pausar. CPL < Alvo (Verde/Positivo) = Aumentar 20% a cada 24/48h.</p>
+            </div>
+
+            <div class="bg-stone-700 p-5 rounded-xl">
+                <div class="text-2xl mb-2">⏱️</div>
+                <h3 class="font-bold text-lg mb-2 text-white">Janela de Tempo</h3>
+                <p class="text-sm text-stone-300">Nunca analisa um único dia. Plataformas têm flutuações. Um gráfico estratégico olha tendências de 3, 7 ou 14 dias para tomar decisões de aumento financeiro.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let projectionChart = null;
+
+    const inputs = {
+        cplAlvo: document.getElementById('cplAlvo'),
+        budgetMeta: document.getElementById('budgetMeta'),
+        cplMeta: document.getElementById('cplMeta'),
+        budgetGoogle: document.getElementById('budgetGoogle'),
+        cplGoogle: document.getElementById('cplGoogle')
+    };
+
+    const outputs = {
+        totalBudget: document.getElementById('resTotalBudget'),
+        totalLeads: document.getElementById('resTotalLeads'),
+        mediaCpl: document.getElementById('resMediaCpl'),
+        statusMeta: document.getElementById('statusMeta'),
+        statusGoogle: document.getElementById('statusGoogle')
+    };
+
+    function updateApp() {
+        const alvo = parseFloat(inputs.cplAlvo.value) || 0;
+        const bMeta = parseFloat(inputs.budgetMeta.value) || 0;
+        const cMeta = parseFloat(inputs.cplMeta.value) || 0;
+        const bGoogle = parseFloat(inputs.budgetGoogle.value) || 0;
+        const cGoogle = parseFloat(inputs.cplGoogle.value) || 0;
+
+        let leadsMeta = cMeta > 0 ? bMeta / cMeta : 0;
+        let leadsGoogle = cGoogle > 0 ? bGoogle / cGoogle : 0;
+
+        let totalB = bMeta + bGoogle;
+        let totalL = leadsMeta + leadsGoogle;
+        let mediaC = totalL > 0 ? totalB / totalL : 0;
+
+        outputs.totalBudget.innerText = `R$ ${totalB.toFixed(2)}`;
+        outputs.totalLeads.innerText = Math.floor(totalL);
+        outputs.mediaCpl.innerText = `R$ ${mediaC.toFixed(2)}`;
+
+        const statusStyleBase = "mt-3 text-sm font-semibold p-2 rounded ";
+
+        if (cMeta <= alvo && cMeta > 0) {
+            outputs.statusMeta.className = statusStyleBase + "bg-emerald-100 text-emerald-800 border border-emerald-200";
+            outputs.statusMeta.innerHTML = `✅ CPL Positivo. <b>Escalar (+20%)</b>`;
+        } else if (cMeta > alvo) {
+            outputs.statusMeta.className = statusStyleBase + "bg-red-100 text-red-800 border border-red-200";
+            outputs.statusMeta.innerHTML = `⚠️ CPL Negativo. <b>Reduzir (-15%)</b>`;
+        } else {
+            outputs.statusMeta.className = statusStyleBase + "bg-stone-100";
+            outputs.statusMeta.innerText = "Sem dados";
+        }
+
+        if (cGoogle <= alvo && cGoogle > 0) {
+            outputs.statusGoogle.className = statusStyleBase + "bg-emerald-100 text-emerald-800 border border-emerald-200";
+            outputs.statusGoogle.innerHTML = `✅ CPL Positivo. <b>Escalar (+20%)</b>`;
+        } else if (cGoogle > alvo) {
+            outputs.statusGoogle.className = statusStyleBase + "bg-red-100 text-red-800 border border-red-200";
+            outputs.statusGoogle.innerHTML = `⚠️ CPL Negativo. <b>Reduzir (-15%)</b>`;
+        } else {
+            outputs.statusGoogle.className = statusStyleBase + "bg-stone-100";
+            outputs.statusGoogle.innerText = "Sem dados";
+        }
+
+        generateChartData(alvo, bMeta, cMeta, bGoogle, cGoogle);
+    }
+
+    function generateChartData(alvo, bMeta, cMeta, bGoogle, cGoogle) {
+        let labels = [];
+        let dataBudgetMeta = [];
+        let dataBudgetGoogle = [];
+        let dataTotalLeads = [];
+
+        let curBMeta = bMeta;
+        let curBGoogle = bGoogle;
+
+        for (let i = 1; i <= 7; i++) {
+            labels.push(`Dia ${i}`);
+
+            dataBudgetMeta.push(curBMeta);
+            dataBudgetGoogle.push(curBGoogle);
+
+            let lMeta = cMeta > 0 ? curBMeta / cMeta : 0;
+            let lGoogle = cGoogle > 0 ? curBGoogle / cGoogle : 0;
+            dataTotalLeads.push(Math.floor(lMeta + lGoogle));
+
+            if (cMeta > 0) {
+                if (cMeta <= alvo) curBMeta = curBMeta * 1.20;
+                else curBMeta = curBMeta * 0.85;
+            }
+            if (cGoogle > 0) {
+                if (cGoogle <= alvo) curBGoogle = curBGoogle * 1.20;
+                else curBGoogle = curBGoogle * 0.85;
+            }
+        }
+
+        renderChart(labels, dataBudgetMeta, dataBudgetGoogle, dataTotalLeads);
+    }
+
+    function renderChart(labels, budgetMeta, budgetGoogle, leads) {
+        const ctx = document.getElementById('projectionChart').getContext('2d');
+
+        if (projectionChart) {
+            projectionChart.destroy();
+        }
+
+        projectionChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        type: 'line',
+                        label: 'Total de Leads (Volume)',
+                        data: leads,
+                        borderColor: '#d97706',
+                        backgroundColor: '#d97706',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        yAxisID: 'y1',
+                        pointBackgroundColor: '#fff',
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Orçamento Meta (R$)',
+                        data: budgetMeta,
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Orçamento Google (R$)',
+                        data: budgetGoogle,
+                        backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                        yAxisID: 'y'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.dataset.type === 'line') {
+                                    label += context.parsed.y + ' leads';
+                                } else {
+                                    label += 'R$ ' + context.parsed.y.toFixed(2);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'Orçamento (R$)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Volume de Leads'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    Object.values(inputs).forEach(input => {
+        input.addEventListener('input', updateApp);
+    });
+
+    updateApp();
+</script>
+
+</body>
+</html>

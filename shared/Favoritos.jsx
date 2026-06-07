@@ -119,7 +119,7 @@ function PaginaFavoritos({ onVoltar }) {
     if (imoveis.length === 0) return;
     const linhas = imoveis.map(i => `• ${i.codigo} — ${i.titulo} (${i.precoLabel})`).join("\n");
     const txt = `Oi Priscila! Selecionei estes imóveis no seu site, queria conversar sobre eles:\n\n${linhas}\n\nPode me passar mais detalhes?`;
-    window.open(`https://wa.me/5577988193344?text=${encodeURIComponent(txt)}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/5577999395511?text=${encodeURIComponent(txt)}`, "_blank", "noopener,noreferrer");
   };
 
   return (

@@ -47,7 +47,7 @@ function CalculadoraPoderCompra() {
   const txtWhats = result.ok
     ? `Oi Priscila, fiz a calculadora de poder de compra no site. Renda R$ ${renda.toLocaleString("pt-BR")}, entrada R$ ${entrada.toLocaleString("pt-BR")}, posso comprar ate ${fmt(result.imovelMax)}. Quero ver opcoes.`
     : `Oi Priscila, fiz a calculadora no site mas o resultado nao deu. Quero conversar sobre as opcoes pra mim.`;
-  const linkWhats = `https://wa.me/5577988193344?text=${encodeURIComponent(txtWhats)}`;
+  const linkWhats = `https://wa.me/5577999395511?text=${encodeURIComponent(txtWhats)}`;
 
   return (
     <section className="cpc-wrap" id="poder-compra">

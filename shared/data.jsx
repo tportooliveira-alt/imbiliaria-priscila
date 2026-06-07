@@ -243,3 +243,46 @@ const TICKER_ITEMS = [
 ];
 
 Object.assign(window, { BAIRROS, IMOVEIS, DEPOIMENTOS, IA_CAPACIDADES, IA_CHAT_INTRO, IA_CHAT_SUGESTOES, aiChatResponse, TICKER_ITEMS, TEMAS });
+
+// ─── Imóveis REAIS do banco (cadastrados no admin) — substituem os de demonstração ───
+(function carregarImoveisReais() {
+  function _label(p) {
+    p = Number(p || 0);
+    return p >= 1000000
+      ? "R$ " + (p / 1000000).toFixed(2).replace(".", ",") + " mi"
+      : "R$ " + Math.round(p / 1000) + " mil";
+  }
+  function _tags(c) {
+    try { return Array.isArray(c) ? c : JSON.parse(c || "[]"); } catch (e) { return []; }
+  }
+  function _map(im) {
+    var imgs = (im.imagens || []).map(function (f) { return "/assets/" + f.arquivo + "/1200.webp"; });
+    var tipo = im.tipo ? im.tipo.charAt(0).toUpperCase() + im.tipo.slice(1) : "Imóvel";
+    return {
+      id: im.slug || im.id,
+      codigo: im.slug,
+      bairro: im.bairro,
+      tipo: tipo,
+      titulo: im.titulo,
+      descricao: im.descricao,
+      preco: Number(im.preco || 0),
+      precoLabel: _label(im.preco),
+      quartos: im.quartos || 0, suites: im.suites || 0, vagas: im.vagas || 0,
+      area: im.area_util || 0,
+      img: imgs[0] || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80",
+      galeria: imgs,
+      tags: _tags(im.caracteristicas),
+      status: im.destaque ? "Destaque" : "Disponível",
+      iaMatch: 90,
+    };
+  }
+  fetch("/api/imoveis")
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.items && d.items.length) {
+        window.IMOVEIS = d.items.map(_map);
+        window.dispatchEvent(new CustomEvent("imoveis:ready"));
+      }
+    })
+    .catch(function () { /* mantém os de demonstração se a API falhar */ });
+})();

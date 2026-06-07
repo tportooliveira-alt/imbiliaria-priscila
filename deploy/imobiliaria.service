@@ -10,7 +10,7 @@ WorkingDirectory=/var/www/imobiliaria
 EnvironmentFile=/var/www/imobiliaria/.env
 ExecStart=/var/www/imobiliaria/venv/bin/uvicorn server:app \
   --host 127.0.0.1 \
-  --port 8000 \
+  --port 8001 \
   --workers 2 \
   --proxy-headers \
   --forwarded-allow-ips="127.0.0.1"

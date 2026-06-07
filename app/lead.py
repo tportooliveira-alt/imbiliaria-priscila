@@ -24,6 +24,20 @@ Bairro_TOKENS = {
 PRAZO_TOKENS = {
     "este mes", "esse mes", "ainda esse ano", "ate", "até", "urgente", "logo", "sem pressa", "proximo ano"
 }
+# Vendedor/proprietario: lead valioso (imovel pra captar) — nao pode cair como frio.
+SELLER_TOKENS = {
+    "quero vender", "vou vender", "vender minha", "vender meu", "vender a", "vender o",
+    "colocar a venda", "colocar à venda", "por a venda", "pôr à venda", "anunciar meu",
+    "anunciar minha", "avaliar meu imovel", "avaliar meu imóvel", "avaliar minha casa",
+    "sou proprietario", "sou proprietária", "imovel pra vender", "imóvel pra vender",
+}
+PERMUTA_TOKENS = {"permuta", "permutar", "trocar por", "troca por", "como parte do pagamento", "dou meu"}
+# Sinal de intencao alta / proximo passo (urgencia de fechar).
+INTENT_TOKENS = {
+    "agendar", "marcar visita", "quero visitar", "quero ver o imovel", "quero ver o imóvel",
+    "fazer proposta", "quero fechar", "fechar negocio", "fechar negócio", "comprar agora",
+    "fechar agora", "pode marcar", "quero agendar", "posso visitar",
+}
 
 
 @dataclass(frozen=True)
@@ -61,6 +75,18 @@ def qualify_lead(message: str, history: list[dict] | None = None) -> LeadSnapsho
     has_budget = _has_any_token(text, ORCAMENTO_TOKENS)
     has_neighborhood = _has_any_token(text, Bairro_TOKENS)
     has_timeline = _has_any_token(text, PRAZO_TOKENS)
+    is_rental = _has_any_token(text, {"alug", "locar", "locação", "locacao", "arrend"})
+
+    # Sinais de vendedor/permuta/intencao SO no que o CLIENTE disse (nao no texto da Ana),
+    # pra a resposta da assistente nao disparar falso positivo.
+    user_text = " ".join(
+        [h.get("content", "") for h in (history or []) if (h.get("role") or "user") == "user"]
+        + [message]
+    ).lower()
+    user_turns = sum(1 for h in (history or []) if (h.get("role") or "") == "user") + 1
+    is_seller = _has_any_token(user_text, SELLER_TOKENS)
+    is_permuta = _has_any_token(user_text, PERMUTA_TOKENS)
+    has_intent = _has_any_token(user_text, INTENT_TOKENS)
 
     score = 0
     if has_neighborhood:
@@ -71,6 +97,22 @@ def qualify_lead(message: str, history: list[dict] | None = None) -> LeadSnapsho
         score += 20
     if has_phone:
         score += 35
+    # Locacao tem funil proprio: intencao clara de aluguel conta como interesse,
+    # pra o lead de locacao nao cair em frio/0 so por nao citar orcamento de compra.
+    if is_rental and score < 40:
+        score += 20
+    # Vendedor = imovel pra captar (lead valioso): garante pelo menos "quente".
+    if is_seller:
+        score += 40
+    # Permuta = cliente engajado (vende E compra).
+    if is_permuta:
+        score += 35
+    # Intencao alta (quer visita/proposta/fechar) sobe a temperatura.
+    if has_intent:
+        score += 20
+    # Engajamento: quem volta a conversar demonstra mais interesse.
+    if user_turns >= 3:
+        score += 10
     score = min(100, score)
 
     if score >= 80:
@@ -86,12 +128,27 @@ def qualify_lead(message: str, history: list[dict] | None = None) -> LeadSnapsho
 
     asked_phone = ("telefone" in text) or ("whatsapp" in text) or ("numero" in text)
 
-    if not has_neighborhood:
+    if is_seller:
+        if not has_neighborhood:
+            next_question = "Em qual bairro fica o imovel que voce quer vender?"
+        elif not has_budget:
+            next_question = "Quanto voce espera pelo imovel? Posso te dar uma referencia de mercado."
+        elif not has_phone:
+            next_question = "Pra Priscila avaliar e te passar um valor, qual o melhor numero pra falar com voce?"
+        else:
+            next_question = "Perfeito. Posso pedir pra Priscila te ligar e agendar a avaliacao?"
+    elif not has_neighborhood:
         next_question = "Qual bairro de Vitoria da Conquista voce prefere?"
     elif not has_budget:
-        next_question = "Qual faixa de investimento fica confortavel para voce?"
+        next_question = (
+            "Qual valor de aluguel cabe no seu orcamento?" if is_rental
+            else "Qual faixa de investimento fica confortavel para voce?"
+        )
     elif not has_timeline:
-        next_question = "Voce pretende comprar em qual prazo?"
+        next_question = (
+            "Pra quando voce precisa mudar?" if is_rental
+            else "Voce pretende comprar em qual prazo?"
+        )
     elif not has_phone:
         next_question = (
             "Se quiser, te envio as melhores opcoes no WhatsApp com mapa e pontos fortes. "
@@ -111,6 +168,9 @@ def qualify_lead(message: str, history: list[dict] | None = None) -> LeadSnapsho
             "orcamento": has_budget,
             "prazo": has_timeline,
             "telefone": has_phone,
+            "vendedor": is_seller,
+            "permuta": is_permuta,
+            "intencao": has_intent,
         },
     )
 

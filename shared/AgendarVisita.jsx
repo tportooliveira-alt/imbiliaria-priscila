@@ -102,7 +102,7 @@ function AgendarVisita({ codigo, titulo, bairro, precoLabel, onClose }) {
     `Nome: ${nome || "(preencher)"}\n` +
     `Data preferida: ${dataPt} · ${turnoLabel}` +
     (obs ? `\nObs: ${obs}` : "");
-  const linkWhats = `https://wa.me/5577988193344?text=${encodeURIComponent(txtWhats)}`;
+  const linkWhats = `https://wa.me/5577999395511?text=${encodeURIComponent(txtWhats)}`;
 
   return (
     <div className="agvi-overlay" onClick={onClose}>

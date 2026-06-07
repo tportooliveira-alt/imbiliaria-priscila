@@ -87,6 +87,14 @@ function App() {
     return params.get("intro") === "1";
   });
 
+  // Re-renderiza quando os imóveis reais do banco terminam de carregar (substituem a demonstração)
+  const [, _bumpImoveis] = React.useState(0);
+  React.useEffect(() => {
+    const _h = () => _bumpImoveis((v) => v + 1);
+    window.addEventListener("imoveis:ready", _h);
+    return () => window.removeEventListener("imoveis:ready", _h);
+  }, []);
+
   const setTema = (tema) => setFilter(f => ({ ...f, tema: f.tema === tema ? "" : tema }));
   const voltarHome = () => { window.location.hash = ""; };
   const abrirChat = (mensagem) => {
@@ -434,7 +442,7 @@ function App() {
           <h2>Vamos começar?</h2>
           <p>Mande seu bairro, sua faixa de preço, ou só um “oi”. A IA prepara as opções, eu falo com você.</p>
           <div className="ctaH-row">
-            <a href="https://wa.me/5577988193344" target="_blank" rel="noopener" className="btnH btnH-solid btnH-big">
+            <a href="https://wa.me/5577999395511" target="_blank" rel="noopener" className="btnH btnH-solid btnH-big">
               <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor"><path d="M13.6 2.4A7.5 7.5 0 001.5 12.3L.5 15.5l3.3-1A7.5 7.5 0 1013.6 2.4z"/></svg>
               WhatsApp · (77) 9 8819-3344
             </a>
@@ -481,7 +489,7 @@ function NavSimples({ onAnuncieOpen }) {
           <a href="#" onClick={(e) => { e.preventDefault(); onAnuncieOpen(); }}>Anuncie seu imóvel</a>
           <a href="/admin/?reset=1" rel="nofollow">Área interna</a>
         </div>
-        <a href="https://wa.me/5577988193344" target="_blank" rel="noopener" className="btnH btnH-solid">Falar comigo</a>
+        <a href="https://wa.me/5577999395511" target="_blank" rel="noopener" className="btnH btnH-solid">Falar comigo</a>
       </div>
     </nav>
   );
