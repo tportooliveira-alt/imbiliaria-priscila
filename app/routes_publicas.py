@@ -562,9 +562,18 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
     if from_me:
         return {"ignorado": True, "motivo": "fromMe=true"}
 
-    remote = (key.get("remoteJid") or "").split("@")[0]
+    _jid = key.get("remoteJid") or ""
+    # Ignora GRUPOS, broadcast/status e newsletters — nao sao leads de cliente
+    # (evita capturar ruido e, no auto-reply, evita responder em grupo/concorrente).
+    if ("@g.us" in _jid) or ("broadcast" in _jid) or ("@newsletter" in _jid):
+        return {"ignorado": True, "motivo": "grupo/broadcast ignorado"}
+    remote = _jid.split("@")[0]
     if not remote:
         return {"ignorado": True, "motivo": "sem remoteJid"}
+    # Numero que nao parece telefone real (ex.: LID/grupo com 18 digitos) — ignora.
+    _so_digitos = "".join(c for c in remote if c.isdigit())
+    if len(_so_digitos) < 10 or len(_so_digitos) > 15:
+        return {"ignorado": True, "motivo": "remetente nao e telefone (lid/grupo)"}
 
     # extrai texto (varios formatos do whatsapp)
     msg_content = msg.get("message") or {}
@@ -633,6 +642,26 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
     if not wa.disponivel():
         return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": "evolution_indisponivel"}
 
+    # ── FREIOS DE SEGURANCA (Evolution e nao-oficial: evitar cara de robo / ban) ──
+    _txt = str(texto).lower()
+    # 1) OPT-OUT: se a pessoa pede pra parar, respeita e NAO responde mais.
+    if any(p in _txt for p in ("parar", "pare", "para de", "nao quero", "não quero",
+                               "descadastr", "sair da lista", "me tira", "para com isso", "chega")):
+        return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": "opt_out_respeitado"}
+    # 2) TETO DIARIO (warm-up): nao passar de N auto-respostas por dia (env WHATSAPP_DAILY_CAP).
+    try:
+        from app.db import db_session as _dbs
+        _cap = int(_os.getenv("WHATSAPP_DAILY_CAP", "30"))
+        with _dbs() as _c:
+            _row = _c.execute(
+                "SELECT COUNT(*) AS n FROM lead_interacoes "
+                "WHERE tipo='whatsapp_enviado' AND date(criado_em)=date('now','localtime')"
+            ).fetchone()
+        if _row and _row["n"] >= _cap:
+            return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": f"teto_diario_{_cap}"}
+    except Exception:
+        pass
+
     # historico das ultimas 5 interacoes do tipo whatsapp_*
     detalhe = leads_repo.detalhar(lead_id) or {}
     historico_raw = (detalhe.get("interacoes") or [])[:6]
@@ -653,6 +682,16 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
 
     if not texto_ia:
         return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": "ia_vazia"}
+
+    # 3) ATRASO HUMANO: espera alguns segundos antes de enviar (parecer digitacao, nao robo
+    #    instantaneo). Configuravel por WHATSAPP_DELAY_MIN/MAX (segundos).
+    try:
+        import random as _rnd, time as _tm
+        _dmin = float(_os.getenv("WHATSAPP_DELAY_MIN", "4"))
+        _dmax = float(_os.getenv("WHATSAPP_DELAY_MAX", "12"))
+        _tm.sleep(_rnd.uniform(_dmin, max(_dmin, _dmax)))
+    except Exception:
+        pass
 
     envio = wa.enviar_mensagem(remote, texto_ia)
     if envio.enviado:

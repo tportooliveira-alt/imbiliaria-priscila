@@ -64,6 +64,9 @@ Cliente (site / WhatsApp)
 - O webhook recebe a mensagem → cria/qualifica o lead → (se `WHATSAPP_AUTO_REPLY=1`) a Ana
   responde automaticamente. Suporta **modo teste** (`WHATSAPP_TEST_NUMBER`) que só responde a um
   número específico, para validar ao vivo sem atingir clientes reais.
+- **Modo seguro (Evolution não-oficial)** — para não arriscar banimento do número: só responde a
+  quem escreve primeiro (nunca cold), **ignora grupos/listas**, respeita **opt-out** ("pare"), tem
+  **teto diário** de envios (warm-up) e **atraso humano** antes de enviar (simula digitação).
 - Lead quente → **ponte** (`app/paperclip_bridge.py`) cria um dossiê no painel de gestão.
 
 ### 4. Front-end (`v3-editorial/`, `shared/`)
@@ -113,6 +116,8 @@ uvicorn server:app --reload --port 8001
 | `EVOLUTION_API_URL` / `EVOLUTION_API_KEY` / `EVOLUTION_INSTANCIA` | gateway WhatsApp |
 | `WHATSAPP_AUTO_REPLY` | `1` liga a resposta automática (padrão: desligado) |
 | `WHATSAPP_TEST_NUMBER` | se setado, só responde a esse número (modo teste seguro) |
+| `WHATSAPP_DAILY_CAP` | máximo de auto-respostas por dia (warm-up; padrão 30) |
+| `WHATSAPP_DELAY_MIN` / `WHATSAPP_DELAY_MAX` | atraso (s) antes de enviar — simula digitação |
 
 > **Nunca** comite o `.env` — o `.gitignore` já protege `.env`, chaves, banco e fotos.
 
@@ -153,6 +158,7 @@ uvicorn server:app --reload --port 8001
 - [x] Qualificação de lead (comprador + vendedor + permuta + intenção)
 - [x] WhatsApp conectado (Evolution) + qualificação automática
 - [x] Ponte lead-quente → dossiê para a Priscila
-- [ ] Resposta automática do WhatsApp em produção (em validação — modo teste)
+- [x] Resposta automática do WhatsApp com **freios de segurança** (modo seguro Evolution)
+- [ ] Resposta automática em produção para todos (hoje em modo teste — falta liberar)
 - [ ] Meta Lead Ads (anúncios → lead direto no funil) — desenho em `docs/META-LEAD-ADS.md`
 - [ ] Modernização visual do site (próxima fase)
