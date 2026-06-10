@@ -577,12 +577,23 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
 
     # extrai texto (varios formatos do whatsapp)
     msg_content = msg.get("message") or {}
+    _eh_audio = bool(msg_content.get("audioMessage") or msg_content.get("pttMessage"))
     texto = (
         msg_content.get("conversation")
         or (msg_content.get("extendedTextMessage") or {}).get("text")
         or (msg_content.get("imageMessage") or {}).get("caption")
-        or "[midia recebida]"
     )
+    if not texto:
+        if _eh_audio:
+            # tenta transcrever (se houver servico configurado); senao marca como [audio]
+            # pra responder com jeito, SEM confabular que "recebeu imagem".
+            try:
+                from app import whatsapp as _wa_t
+                texto = (getattr(_wa_t, "transcrever_audio", lambda *_: None)(msg)) or "[audio]"
+            except Exception:
+                texto = "[audio]"
+        else:
+            texto = "[midia recebida]"
 
     push_name = msg.get("pushName") or None
 
@@ -662,9 +673,22 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
     except Exception:
         pass
 
-    # historico das ultimas 5 interacoes do tipo whatsapp_*
+    # historico SO da conversa RECENTE (janela de horas) — evita vazar conversa de
+    # dias atras pro contexto. Bug real: cliente novo "tinha orcamento" de uma
+    # conversa velha. So consideramos interacoes dentro de WHATSAPP_HISTORY_HOURS.
     detalhe = leads_repo.detalhar(lead_id) or {}
-    historico_raw = (detalhe.get("interacoes") or [])[:6]
+    import datetime as _dt2
+    _janela_h = float(_os.getenv("WHATSAPP_HISTORY_HOURS", "48"))
+    _corte = _dt2.datetime.now() - _dt2.timedelta(hours=_janela_h)
+    def _recente(_it):
+        try:
+            return _dt2.datetime.fromisoformat(str(_it.get("criado_em") or "")) >= _corte
+        except Exception:
+            return False  # sem timestamp valido -> nao arrisca vazar conversa antiga
+    historico_raw = [
+        it for it in (detalhe.get("interacoes") or [])
+        if it.get("tipo") in ("whatsapp_recebido", "whatsapp_enviado") and _recente(it)
+    ][:6]
     historico: list[dict] = []
     # ordem cronologica (mais antiga primeiro), excluindo a mensagem atual
     for it in reversed(historico_raw):
@@ -674,11 +698,26 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
         elif tipo == "whatsapp_enviado":
             historico.append({"role": "assistant", "content": it.get("descricao") or ""})
 
-    try:
-        resposta = dispatcher.responder(str(texto), historico=historico[-5:] or None)
-        texto_ia = (resposta.get("resposta") or "").strip()
-    except Exception as exc:  # IA indisponivel nao pode quebrar webhook
-        return {"ok": True, "lead_id": lead_id, "auto_reply": False, "erro_ia": str(exc)[:200]}
+    _nome = push_name or (detalhe.get("nome") if detalhe else None)
+    if str(texto).strip() == "[audio]":
+        # Ana ainda nao "ouve" audio (falta servico de transcricao) — responde com jeito,
+        # SEM inventar, e pede texto / oferece a Priscila. Nada de confabular "imagem".
+        _pn = (str(_nome).split()[0] if _nome else "")
+        _ola = f"Oi, {_pn}! " if _pn else "Oi! "
+        texto_ia = (
+            _ola + "Recebi seu áudio aqui 🎧 Pra eu já te adiantar por aqui, você consegue me "
+            "mandar por escrito? Se preferir falar mesmo, sem problema — já aviso a Priscila pra "
+            "te ouvir e retornar 😊"
+        )
+        resposta = {"modelo": "regra-audio", "rota": "audio"}
+    else:
+        try:
+            resposta = dispatcher.responder(
+                str(texto), historico=historico[-5:] or None, nome_cliente=_nome
+            )
+            texto_ia = (resposta.get("resposta") or "").strip()
+        except Exception as exc:  # IA indisponivel nao pode quebrar webhook
+            return {"ok": True, "lead_id": lead_id, "auto_reply": False, "erro_ia": str(exc)[:200]}
 
     if not texto_ia:
         return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": "ia_vazia"}
@@ -693,7 +732,19 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
     except Exception:
         pass
 
-    envio = wa.enviar_mensagem(remote, texto_ia)
+    # Responde por VOZ so quando: o cliente mandou AUDIO **e** ja demonstrou interesse
+    # (score >= morno). Caso contrario, entende o audio mas responde por TEXTO (mais barato).
+    envio = None
+    _por_voz = False
+    _score = resposta.get("lead_score") or 0
+    _min_voz = int(_os.getenv("WHATSAPP_VOZ_SCORE_MIN", "20"))  # 20 = morno
+    if _eh_audio and _score >= _min_voz:
+        _audio_voz = wa.gerar_voz(texto_ia)
+        if _audio_voz:
+            envio = wa.enviar_audio(remote, _audio_voz)
+            _por_voz = bool(envio and envio.enviado)
+    if envio is None or not envio.enviado:
+        envio = wa.enviar_mensagem(remote, texto_ia)
     if envio.enviado:
         leads_repo.registrar_interacao(
             lead_id,
@@ -702,6 +753,7 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
             metadata={
                 "mensagem_id": envio.mensagem_id,
                 "auto_reply": True,
+                "voz": _por_voz,
                 "modelo": resposta.get("modelo"),
                 "rota": resposta.get("rota"),
             },

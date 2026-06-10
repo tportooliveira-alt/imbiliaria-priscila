@@ -74,6 +74,24 @@ def _ler_dados_financeiros() -> str:
             return f.read().strip()
     except Exception:
         return ""
+
+
+def _contexto_momento(nome_cliente: str | None = None) -> str:
+    """Injeta o periodo do dia (pro cumprimento certo) e o nome do cliente, se conhecido."""
+    import datetime as _dt
+    h = (_dt.datetime.utcnow().hour - 3) % 24  # Vitoria da Conquista = UTC-3
+    if 5 <= h < 12:
+        periodo = "manha — cumprimente com 'Bom dia'"
+    elif 12 <= h < 18:
+        periodo = "tarde — cumprimente com 'Boa tarde'"
+    else:
+        periodo = "noite — cumprimente com 'Boa noite'"
+    linhas = [f"MOMENTO: agora e de {periodo}."]
+    if nome_cliente and str(nome_cliente).strip():
+        linhas.append(
+            f"NOME DO CLIENTE: '{str(nome_cliente).strip()}' — chame a pessoa pelo nome, com naturalidade."
+        )
+    return "\n".join(linhas)
 from app.router import Rota, classificar
 
 
@@ -139,11 +157,12 @@ def _cascata(rota: Rota, system: str, mensagem: str, historico: list[dict] | Non
     return ClienteFallback().gerar(system, mensagem, historico)
 
 
-def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem: bool = False) -> dict:
+def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem: bool = False,
+              nome_cliente: str | None = None) -> dict:
     """Pipeline completo: classifica → cascata Gemini → Claude → fallback."""
     cls = classificar(mensagem, tem_imagem=tem_imagem)
     lead = qualify_lead(mensagem, history=historico)
-    _partes = [p for p in (_montar_contexto_carteira(), _ler_dados_financeiros()) if p]
+    _partes = [p for p in (_contexto_momento(nome_cliente), _montar_contexto_carteira(), _ler_dados_financeiros()) if p]
     contexto = "\n\n".join(_partes)
     system = system_prompt(cls.rota, contexto=contexto or None)
 

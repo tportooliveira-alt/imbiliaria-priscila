@@ -118,3 +118,110 @@ def enviar_mensagem(telefone: str, texto: str, *, timeout: float = 8.0) -> Respo
         return RespostaEnvio(
             enviado=False, fallback=False, erro=f"falha de rede: {exc}"
         )
+
+
+def transcrever_audio(msg: dict) -> str | None:
+    """Baixa o audio do WhatsApp (Evolution) e transcreve via Groq Whisper.
+
+    Retorna o texto transcrito, ou None se nao houver chave/servico ou der erro
+    (o webhook entao trata o audio com jeito, sem quebrar).
+    """
+    groq = os.getenv("GROQ_API_KEY", "").strip()
+    cfg = _config()
+    if not groq or not cfg:
+        return None
+    base, key, instancia = cfg
+    try:
+        import base64 as _b64
+        import requests as _rq
+
+        # 1) baixa o audio em base64 no Evolution
+        body = _json.dumps({"message": {"key": (msg or {}).get("key", {})}}).encode()
+        req = urllib.request.Request(
+            f"{base}/chat/getBase64FromMediaMessage/{instancia}",
+            data=body,
+            method="POST",
+            headers={"Content-Type": "application/json", "apikey": key},
+        )
+        with urllib.request.urlopen(req, timeout=25) as r:
+            data = _json.load(r)
+        b64 = data.get("base64") or data.get("media") or ""
+        if not b64:
+            return None
+        audio = _b64.b64decode(b64)
+
+        # 2) transcreve no Groq Whisper (API compativel com OpenAI)
+        resp = _rq.post(
+            "https://api.groq.com/openai/v1/audio/transcriptions",
+            headers={"Authorization": f"Bearer {groq}"},
+            files={"file": ("audio.ogg", audio, "audio/ogg")},
+            data={"model": "whisper-large-v3-turbo", "language": "pt",
+                  "response_format": "text"},
+            timeout=60,
+        )
+        if resp.status_code == 200:
+            txt = (resp.text or "").strip()
+            return txt or None
+        return None
+    except Exception:
+        return None
+
+
+def gerar_voz(texto: str) -> bytes | None:
+    """Gera audio (voz da Ana) a partir do texto, via ElevenLabs. None se falhar."""
+    el = os.getenv("ELEVENLABS_API_KEY", "").strip()
+    voz = os.getenv("ELEVENLABS_VOICE_ID", "").strip()
+    if not el or not voz or not (texto or "").strip():
+        return None
+    try:
+        import requests as _rq
+        modelo = os.getenv("ELEVENLABS_MODEL", "eleven_turbo_v2_5")
+        payload = {
+            "text": texto.strip()[:1500],
+            "model_id": modelo,
+            "language_code": "pt",  # trava portugues -> evita misturar ingles
+            "voice_settings": {
+                "stability": 0.6,        # mais estavel = nao engole nem fica estranho
+                "similarity_boost": 0.85,
+                "style": 0.0,
+                "use_speaker_boost": True,
+            },
+        }
+        r = _rq.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{voz}",
+            headers={"xi-api-key": el, "Content-Type": "application/json"},
+            json=payload,
+            timeout=90,
+        )
+        return r.content if (r.status_code == 200 and r.content) else None
+    except Exception:
+        return None
+
+
+def enviar_audio(telefone: str, audio: bytes, *, timeout: float = 40.0) -> RespostaEnvio:
+    """Envia um audio (voz) pelo WhatsApp via Evolution (sendWhatsAppAudio)."""
+    cfg = _config()
+    if not cfg:
+        return RespostaEnvio(enviado=False, fallback=True, erro="evolution nao configurado")
+    base, key, instancia = cfg
+    numero = _normalizar_telefone(telefone)
+    if not telefone_valido(numero):
+        return RespostaEnvio(enviado=False, fallback=False, erro="numero invalido")
+    try:
+        import base64 as _b64
+        b64 = _b64.b64encode(audio).decode()
+        body = _json.dumps({"number": numero, "audio": b64}).encode()
+        req = urllib.request.Request(
+            f"{base}/message/sendWhatsAppAudio/{instancia}",
+            data=body, method="POST",
+            headers={"Content-Type": "application/json", "apikey": key},
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            d = _json.load(r)
+        mid = (d.get("key") or {}).get("id") if isinstance(d, dict) else None
+        return RespostaEnvio(enviado=True, fallback=False, mensagem_id=mid)
+    except urllib.error.HTTPError as exc:
+        return RespostaEnvio(enviado=False, fallback=False,
+                             erro=f"HTTP {exc.code}: {exc.read().decode()[:120]}")
+    except Exception as exc:
+        return RespostaEnvio(enviado=False, fallback=False, erro=str(exc)[:120])
