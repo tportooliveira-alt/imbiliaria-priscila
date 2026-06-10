@@ -333,13 +333,112 @@ def simular(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Taxas referenciais por banco (atualizadas manualmente em 04/2026)
+# Taxas por banco — FONTE UNICA em data/taxas.json (edite la, sem mexer no codigo).
+# Atualize conforme o mercado. O fallback abaixo (ja atualizado) vale se faltar o arquivo.
 # ─────────────────────────────────────────────────────────────────────────────
-TAXAS_BANCOS = {
-    "caixa_sbpe": {"nome": "Caixa SBPE", "taxa_anual": 11.49, "lt_max": 0.80},
-    "caixa_pro_cotista": {"nome": "Caixa Pro-Cotista (FGTS)", "taxa_anual": 9.49, "lt_max": 0.80},
+_TAXAS_FALLBACK = {
+    "caixa_pro_cotista": {"nome": "Caixa Pro-Cotista (FGTS)", "taxa_anual": 8.66, "lt_max": 0.80},
+    "caixa_sbpe": {"nome": "Caixa SBPE", "taxa_anual": 11.19, "lt_max": 0.80},
     "bb_sbpe": {"nome": "Banco do Brasil", "taxa_anual": 11.79, "lt_max": 0.80},
     "itau": {"nome": "Itau", "taxa_anual": 11.99, "lt_max": 0.80},
     "bradesco": {"nome": "Bradesco", "taxa_anual": 12.20, "lt_max": 0.80},
     "santander": {"nome": "Santander", "taxa_anual": 11.89, "lt_max": 0.80},
 }
+
+
+def _carregar_taxas_json() -> dict:
+    import json as _json
+    import os as _os
+    try:
+        base = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+        with open(_os.path.join(base, "data", "taxas.json"), encoding="utf-8") as f:
+            return _json.load(f)
+    except Exception:
+        return {}
+
+
+def carregar_taxas() -> dict:
+    """Dict {chave: {nome, taxa_anual, lt_max}} — da fonte unica data/taxas.json."""
+    return _carregar_taxas_json().get("bancos") or _TAXAS_FALLBACK
+
+
+def taxa_pro_cotista() -> float:
+    """Taxa anual do Pro-Cotista (a menor/mais usada). Leitura fresca da fonte unica."""
+    return float(carregar_taxas().get("caixa_pro_cotista", {}).get("taxa_anual", 8.66))
+
+
+def taxas_atualizado_em() -> str:
+    return str(_carregar_taxas_json().get("atualizado_em", "?"))
+
+
+TAXAS_BANCOS = carregar_taxas()
+
+
+def recomendar_financiamento(valor_imovel: float, renda: float | None = None,
+                             tem_fgts: bool = False, servidor_publico: bool = False) -> dict:
+    """Escolhe a modalidade MAIS BARATA que o cliente se encaixa, pelo perfil:
+    renda (faixa MCMV), FGTS (Pro-Cotista), servidor publico (taxa especial),
+    valor do imovel (SFH ate R$2,25mi / SFI acima). Lista alternativas e a VALIDADE
+    das taxas (data + aviso se desatualizada — taxa no Brasil muda toda hora)."""
+    d = _carregar_taxas_json()
+    mods = d.get("modalidades", {})
+    bancos = d.get("bancos_sbpe") or {}
+    sfh = float(d.get("sfh_teto", 2250000))
+    elegiveis: list[dict] = []
+
+    def _mk(chave, m):
+        return {"chave": chave, "nome": m["nome"], "taxa_anual": m["taxa_anual"],
+                "lt_max": m.get("lt_max", 0.80), "obs": m.get("obs", "")}
+
+    if valor_imovel > sfh:
+        # Acima do teto do SFH -> SFI (unica via comum)
+        if mods.get("sfi"):
+            elegiveis.append(_mk("sfi", mods["sfi"]))
+    else:
+        # MCMV: faixa correspondente a renda, se o imovel couber no teto da faixa
+        if renda is not None:
+            faixas = sorted([m for k, m in mods.items() if k.startswith("mcmv")],
+                            key=lambda x: x.get("ordem", 99))
+            for m in faixas:
+                if renda <= m.get("renda_max", 0):
+                    if valor_imovel <= m.get("imovel_max", 0):
+                        elegiveis.append(_mk("mcmv", m))
+                    break
+        # Servidor publico: taxa especial
+        sv = mods.get("caixa_servidor")
+        if sv and servidor_publico and valor_imovel <= sv.get("imovel_max", sfh):
+            elegiveis.append(_mk("servidor", sv))
+        # Pro-Cotista: FGTS + imovel ate o teto
+        pc = mods.get("pro_cotista")
+        if pc and tem_fgts and valor_imovel <= pc.get("imovel_max", 0):
+            elegiveis.append(_mk("pro_cotista", pc))
+        # SBPE: qualquer perfil, melhor banco
+        if bancos:
+            melhor = min(bancos.values(), key=lambda b: b["taxa_anual"])
+            elegiveis.append({"chave": "sbpe", "nome": melhor["nome"],
+                              "taxa_anual": melhor["taxa_anual"],
+                              "lt_max": melhor.get("lt_max", 0.80),
+                              "obs": "SBPE — qualquer perfil"})
+
+    # Validade das taxas (Brasil muda toda hora -> avisar se velha)
+    import datetime as _dt
+    atual = str(d.get("atualizado_em", ""))
+    desatualizada = False
+    try:
+        desatualizada = (_dt.date.today() - _dt.date.fromisoformat(atual)).days > 30
+    except Exception:
+        pass
+
+    if not elegiveis:
+        return {"recomendada": None, "alternativas": [],
+                "motivo": "perfil sem modalidade comum (avaliar caso a caso)",
+                "atualizado_em": atual, "desatualizada": desatualizada}
+
+    elegiveis.sort(key=lambda x: x["taxa_anual"])  # mais barata primeiro
+    return {
+        "recomendada": elegiveis[0],
+        "alternativas": elegiveis[1:],
+        "entrada_min": float(d.get("entrada_minima_padrao", 0.20)),
+        "atualizado_em": atual,
+        "desatualizada": desatualizada,
+    }

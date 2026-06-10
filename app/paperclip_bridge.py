@@ -23,6 +23,94 @@ def _ja_escalado(interacoes) -> bool:
     return any((i.get("tipo") == "escalado_paperclip") for i in (interacoes or []))
 
 
+def _simulacao_financeira(conversa: str) -> str:
+    """Extrai (sem inventar) os numeros de financiamento da conversa e simula a parcela.
+    Retorna '' se nao for caso de financiamento ou faltar dado. Nunca lanca."""
+    if not (conversa or "").strip():
+        return ""
+    try:
+        from app.clients import ClienteClaude
+        cli = ClienteClaude("claude-haiku-4-5")
+        if not cli.available():
+            return ""
+        system = (
+            "Voce le uma conversa de atendimento imobiliario e extrai SO os numeros que o "
+            "CLIENTE realmente disse, para simular financiamento. Responda APENAS um JSON: "
+            '{"financiamento": true|false, "valor_imovel": numero|null, "entrada": numero|null, '
+            '"renda_mensal": numero|null, "prazo_anos": numero|null, "usa_fgts": true|false|null, '
+            '"servidor_publico": true|false|null}. '
+            "financiamento=true so se o cliente fala em financiar/parcelar (nao a vista). "
+            "Use null quando o cliente NAO disse o numero. NUNCA invente."
+        )
+        resp = cli.gerar(system, conversa[:4000])
+        if resp.fallback or not resp.texto:
+            return ""
+        import json
+        import re
+        m = re.search(r"\{.*\}", resp.texto, re.DOTALL)
+        if not m:
+            return ""
+        d = json.loads(m.group(0))
+        if not d.get("financiamento"):
+            return ""
+        valor = d.get("valor_imovel")
+        if not valor:
+            return ""
+        valor = float(valor)
+        tem_entrada = d.get("entrada") is not None
+        entrada = float(d.get("entrada") or round(valor * 0.2))
+        prazo = int(float(d.get("prazo_anos") or 30) * 12)
+        renda = d.get("renda_mensal")
+        renda = float(renda) if renda else None
+        usa_fgts = bool(d.get("usa_fgts"))
+        servidor = bool(d.get("servidor_publico"))
+        from app import financiamento as fin
+        recom = fin.recomendar_financiamento(valor, renda, usa_fgts, servidor)
+        rc = recom.get("recomendada")
+        if not rc:
+            return ""
+        taxa = float(rc["taxa_anual"])
+        r = fin.simular(
+            valor_imovel=valor, entrada=entrada, prazo_meses=prazo,
+            taxa_anual=taxa, renda_mensal=renda,
+        )
+
+        def _m(v):
+            return f"R$ {v:,.0f}".replace(",", ".")
+
+        alts = ", ".join(
+            f"{a['nome']} ({a['taxa_anual']}%)" for a in recom.get("alternativas", [])
+        )
+        linhas = [
+            "",
+            f"**\U0001F4B0 Simulacao ESTIMATIVA (taxas de {recom.get('atualizado_em', '?')}):**",
+            f"- Melhor opcao p/ o perfil: **{rc['nome']} — {taxa:.2f}% a.a.** (SAC)"
+            + (f" · outras: {alts}" if alts else ""),
+            f"- Imovel {_m(valor)} · entrada {_m(entrada)}"
+            + ("" if tem_entrada else " (estimada 20%)")
+            + f" · financia {_m(r.valor_financiado)} em {prazo // 12} anos",
+            f"- **1ª parcela ~{_m(r.parcela_inicial_com_seguros)}** (com seguros), caindo ate ~{_m(r.parcela_final_com_seguros)}",
+            f"- Renda minima sugerida (30%): ~{_m(r.renda_minima)}",
+        ]
+        if renda:
+            ok = renda >= r.renda_minima
+            linhas.append(
+                f"- Cliente informou renda {_m(renda)} → "
+                + ("✅ renda compativel na simulacao" if ok
+                   else "⚠️ pode NAO fechar a 30% (ver prazo maior, mais entrada ou co-titular)")
+            )
+        linhas.append(
+            "- _Estimativa — taxa e aprovacao finais dependem da analise do banco._"
+        )
+        if recom.get("desatualizada"):
+            linhas.append(
+                f"- ⚠️ Taxas de {recom.get('atualizado_em')} — podem ter mudado, confirmar com o banco."
+            )
+        return "\n".join(linhas)
+    except Exception:
+        return ""
+
+
 def _montar_dossie(det: dict) -> str:
     nome = det.get("nome") or "Lead"
     tel = det.get("telefone") or ""
@@ -40,12 +128,14 @@ def _montar_dossie(det: dict) -> str:
         elif t == "chat":
             linhas.append(f"- (site): {txt}")
     conversa = "\n".join(linhas[-8:]) or "(sem mensagens registradas)"
+    simulacao = _simulacao_financeira(conversa)
     return (
         "**Cliente quente captado** — qualificado automaticamente pela Ana (atendimento IA).\n\n"
         f"**Cliente:** {nome} · {tel}\n"
         f"**Score:** {score} · **Temperatura:** {temp} \U0001F525\n\n"
         "**Conversa (resumo):**\n"
-        f"{conversa}\n\n"
+        f"{conversa}\n"
+        f"{simulacao}\n\n"
         "**Próximo passo:** Priscila retornar, propor visita ou enviar opções de imóveis."
     )
 
