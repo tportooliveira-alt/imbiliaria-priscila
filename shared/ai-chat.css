@@ -28,6 +28,7 @@
   cursor: pointer;
   animation: aicTeaserIn .6s cubic-bezier(.2,.8,.2,1);
   max-width: 260px;
+  width: max-content;
   border: 1px solid var(--cinza-2);
 }
 @keyframes aicTeaserIn {
