@@ -327,6 +327,19 @@ CREATE TABLE IF NOT EXISTS contas (
 );
 CREATE INDEX IF NOT EXISTS idx_contas_vencimento ON contas(vencimento, pago);
 CREATE INDEX IF NOT EXISTS idx_contas_tipo ON contas(tipo, pago);
+
+CREATE TABLE IF NOT EXISTS depoimentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,                        -- nome do cliente real (consentido)
+    texto TEXT NOT NULL,
+    estrelas INTEGER NOT NULL DEFAULT 5,       -- 1..5
+    contexto TEXT,                             -- ex.: "Compra em Candeias", "Venda Boa Vista"
+    foto_url TEXT,
+    ativo INTEGER NOT NULL DEFAULT 1,
+    ordem INTEGER NOT NULL DEFAULT 0,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_depoimentos_ativo ON depoimentos(ativo, ordem);
 """
 
 

@@ -266,6 +266,15 @@ def panorama() -> dict:
     return {"construido": construido, "terreno": terreno}
 
 
+@router.get("/api/depoimentos")
+def depoimentos_publicos() -> dict:
+    """Depoimentos REAIS ativos (prova social) para o site."""
+    from app import depoimentos as depoimentos_repo
+    itens = depoimentos_repo.listar(somente_ativos=True)
+    media = round(sum(d["estrelas"] for d in itens) / len(itens), 1) if itens else 0
+    return {"depoimentos": itens, "total": len(itens), "media": media}
+
+
 @router.post("/api/avaliar-imovel")
 def avaliar(payload: AvaliacaoRequest) -> dict:
     try:

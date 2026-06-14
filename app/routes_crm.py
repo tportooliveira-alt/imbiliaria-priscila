@@ -1119,3 +1119,42 @@ def dashboard_financeiro(
 ):
     return financeiro_repo.dashboard(ano=ano, mes=mes)
 
+
+
+# ─── Depoimentos (prova social) ──────────────────────────────────────────────
+from app import depoimentos as depoimentos_repo  # noqa: E402
+
+
+class DepoimentoPayload(BaseModel):
+    nome: str = Field(..., min_length=2, max_length=120)
+    texto: str = Field(..., min_length=3, max_length=1000)
+    estrelas: int = Field(5, ge=1, le=5)
+    contexto: str | None = Field(None, max_length=120)
+    foto_url: str | None = Field(None, max_length=300)
+    ativo: bool = True
+    ordem: int = 0
+
+
+@router.get("/depoimentos")
+def depoimentos_listar(_user=Depends(requer_admin)) -> list:
+    return depoimentos_repo.listar(somente_ativos=False)
+
+
+@router.post("/depoimentos", status_code=201)
+def depoimentos_criar(payload: DepoimentoPayload, _user=Depends(requer_admin)) -> dict:
+    novo = depoimentos_repo.criar(**payload.model_dump())
+    return {"ok": True, "id": novo}
+
+
+@router.put("/depoimentos/{dep_id}")
+def depoimentos_atualizar(dep_id: int, dados: dict, _user=Depends(requer_admin)) -> dict:
+    res = depoimentos_repo.atualizar(dep_id, dados)
+    if res is None:
+        raise HTTPException(status_code=404, detail="depoimento nao encontrado")
+    return res
+
+
+@router.delete("/depoimentos/{dep_id}", status_code=204)
+def depoimentos_remover(dep_id: int, _user=Depends(requer_admin)) -> None:
+    if not depoimentos_repo.remover(dep_id):
+        raise HTTPException(status_code=404, detail="depoimento nao encontrado")
