@@ -84,6 +84,7 @@ footer img{height:58px;mix-blend-mode:screen;margin:0 auto 12px}
 .chat-foot button{border:none;background:var(--grad);color:#fff;width:40px;border-radius:50%;cursor:pointer}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
+<script src="/assets/analytics.js" defer></script>
 </head>
 <body>
 <header><div class="wrap nav">
@@ -238,6 +239,7 @@ function enviarLead(){
      document.getElementById('capture').classList.remove('show');
      document.getElementById('result').classList.add('show');
      document.getElementById('okmsg').classList.add('show');
+     try{window.track&&window.track('lead_anunciar',{bairro:(d&&d.bairro)||''});}catch(e){}
      document.getElementById('result').scrollIntoView({behavior:'smooth',block:'center'});
    }).catch(()=>{alert('Tive um problema. Me chama no WhatsApp que faço a avaliação pra você!');})
    .finally(()=>{btn.textContent='Ver minha avaliação →';btn.disabled=false;});

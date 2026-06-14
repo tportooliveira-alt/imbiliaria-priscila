@@ -266,6 +266,17 @@ def panorama() -> dict:
     return {"construido": construido, "terreno": terreno}
 
 
+@router.get("/api/config")
+def config_publica() -> dict:
+    """IDs de rastreamento (pixel/analytics) pro front. Vazio = tracking desligado."""
+    import os as _os
+    return {
+        "meta_pixel_id": _os.getenv("META_PIXEL_ID", "").strip(),
+        "ga4_id": _os.getenv("GA4_ID", "").strip(),
+        "whatsapp": "5577999395511",
+    }
+
+
 @router.get("/api/depoimentos")
 def depoimentos_publicos() -> dict:
     """Depoimentos REAIS ativos (prova social) para o site."""
