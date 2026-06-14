@@ -29,6 +29,8 @@ img{max-width:100%;display:block}
 .btn{display:inline-flex;align-items:center;gap:.5rem;border:none;cursor:pointer;font-family:'Inter';font-weight:600;font-size:.95rem;padding:.85rem 1.4rem;border-radius:999px;transition:.22s;white-space:nowrap}
 .btn-primary{background:var(--grad);color:#fff;box-shadow:var(--shadow)}
 .btn-primary:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.btn-gold{background:var(--grad-gold);color:#fff;box-shadow:0 6px 18px rgba(201,148,58,.34)}
+.btn-gold:hover{transform:translateY(-2px);filter:brightness(1.04)}
 .btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
 .btn-ghost:hover{border-color:var(--peri);color:var(--peri)}
 .btn-wa{background:#25D366;color:#fff}
@@ -276,7 +278,7 @@ footer a{color:#cdd9f0}footer a:hover{color:#fff}
     <div class="searchbox">
       <span style="font-size:1.3rem" aria-hidden="true">🔎</span>
       <input id="heroSearch" aria-label="Descreva o imóvel que você procura" placeholder="Ex.: apartamento 3 quartos em Candeias com varanda..." onkeydown="if(event.key==='Enter')askHero()" />
-      <button class="btn btn-primary" onclick="askHero()">Buscar imóvel</button>
+      <button class="btn btn-gold" onclick="askHero()">Buscar imóvel</button>
     </div>
     <div class="chip-row" role="group" aria-label="Sugestões de busca">
       <button class="qchip" onclick="quickHero('Quero uma casa de alto padrão no Boa Vista')">🏠 Casa no Boa Vista</button>
