@@ -41,6 +41,12 @@
 - Resposta automática do WhatsApp (teste → produção) e Meta Lead Ads → funil.
 
 ## 🖥️ Setup "dois lados" PC↔VPS (decidido 14/06 — montar guia após a pesquisa de Claude Code+MCP)
+> **OBJETIVO do Thiago:** dar ao Claude **acesso direto aos arquivos/projetos dos DOIS lados** (PC + VPS),
+> pra ele **não precisar mais alimentar tudo na mão** (print, copy-paste). Ele fala, o Claude age na fonte.
+> Por isso quer **todos os métodos possíveis** + a **pasta do projeto clonada no PC** dele.
+> **Fontes a conectar (3):** (1) **pasta local no PC** (git clone + MCP filesystem), (2) **VPS** (já tem acesso direto
+> nesta sessão; via git/SSH-MCP), (3) **Google Drive** (Thiago guarda arquivos lá → conector Google Drive do app do
+> Claude). Guia deve mostrar como ligar cada uma no Cowork/Code via MCP/conectores.
 - **PC do Thiago:** Windows, com o **app do Claude** instalado. Ele tem dois modos no mesmo app:
   **`</> Code`** (mexe no código/repo) e **Cowork (Ctrl+2)** — modo agente para tarefas, com aba **Rotinas**
   (automações). O Thiago usa muito o **Cowork**. Guia deve cobrir: Code p/ editar o projeto + Cowork+Rotinas+MCP
