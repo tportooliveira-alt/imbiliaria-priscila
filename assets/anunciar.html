@@ -161,6 +161,16 @@ footer img{height:58px;mix-blend-mode:screen;margin:0 auto 12px}
         <div class="field"><label for="cTel">WhatsApp</label><input id="cTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(77) 9 ____-____"/></div>
       </div>
       <div class="field"><label for="cValor">Valor pretendido (opcional)</label><input id="cValor" type="number" inputmode="numeric" placeholder="Quanto você gostaria?"/></div>
+      <div class="field"><label for="cPrazo">Pretende vender em quanto tempo?</label>
+        <select id="cPrazo">
+          <option value="">Prefiro não dizer</option>
+          <option value="ja">Já quero vender</option>
+          <option value="3_meses">Nos próximos 3 meses</option>
+          <option value="6_meses">Em até 6 meses</option>
+          <option value="12_meses">Em até 1 ano</option>
+          <option value="pesquisando">Só pesquisando o preço</option>
+        </select>
+      </div>
       <button class="btn btn-gold" style="margin-top:16px;width:100%" onclick="enviarLead()" id="btnLead">Ver minha avaliação →</button>
     </div>
     <div class="okmsg" id="okmsg">✅ Pronto! Sua avaliação está aí em cima. A Priscila vai te chamar no WhatsApp com a avaliação completa. Obrigada pela confiança! 💙</div>
@@ -216,7 +226,8 @@ function avaliar(){
 function enviarLead(){
   const nome=val('cNome').trim(),tel=val('cTel').trim();
   if(nome.length<2||tel.length<8){alert('Preciso do seu nome e WhatsApp pra te mostrar a avaliação 😊');return;}
-  const body=Object.assign({}, LAST||montarBody(), {nome:nome, contato:tel});
+  const prazo=val('cPrazo');
+  const body=Object.assign({}, LAST||montarBody(), {nome:nome, contato:tel}, prazo?{prazo_venda:prazo}:{});
   const btn=document.getElementById('btnLead');btn.textContent='Calculando...';btn.disabled=true;
   fetch('/api/avaliar-imovel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
    .then(r=>r.json()).then(d=>{

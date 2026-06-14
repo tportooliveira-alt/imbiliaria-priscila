@@ -242,6 +242,7 @@ class AvaliacaoRequest(BaseModel):
     area_terreno: float | None = Field(None, gt=0, le=100_000)
     nome: str | None = Field(None, max_length=120)
     contato: str | None = Field(None, max_length=120)
+    prazo_venda: Literal["ja", "3_meses", "6_meses", "12_meses", "pesquisando"] | None = None
 
 
 @router.get("/api/avaliacao/bairros")
@@ -320,6 +321,15 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
 
     # Vira lead automaticamente (vendedor) se houver contato
     if payload.nome or payload.contato:
+        # Qualificador de PRAZO (BANT): vira urgencia + score do lead
+        _PRAZO = {
+            "ja": ("já quer vender", "alta", 78),
+            "3_meses": ("vender em ~3 meses", "alta", 72),
+            "6_meses": ("vender em ~6 meses", "normal", 62),
+            "12_meses": ("vender em ~1 ano", "baixa", 55),
+            "pesquisando": ("só pesquisando preço", "baixa", 45),
+        }
+        _plabel, _urg, _score = _PRAZO.get(payload.prazo_venda or "", (None, "normal", 60))
         lead_id = leads_repo.upsert_lead(
             nome=payload.nome,
             telefone=payload.contato,
@@ -330,16 +340,17 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
         leads_repo.registrar_interacao(
             lead_id,
             tipo="avaliacao",
-            descricao=f"Avaliou imovel em {payload.bairro}: faixa {r.valor_minimo:.0f} - {r.valor_maximo:.0f}",
+            descricao=f"Avaliou imovel em {payload.bairro}: faixa {r.valor_minimo:.0f} - {r.valor_maximo:.0f}" + (f" · {_plabel}" if _plabel else ""),
             metadata={
                 "perfil_interno": {
                     "visivel_cliente": False,
                     "origem": "avaliacao",
                     "intencao": "vender",
                     "jornada": "captacao",
-                    "urgencia": "normal",
+                    "urgencia": _urg,
                     "proximo_passo": "avaliar captacao e convidar para conversa",
                 },
+                "prazo_venda": payload.prazo_venda,
                 "bairro": payload.bairro,
                 "area_util": payload.area_util,
                 "valor_central": r.valor_central,
@@ -355,7 +366,7 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
             payload={
                 "avaliacao_id": av_id,
                 "bairro": payload.bairro,
-                "score_estimado": 60,
+                "score_estimado": _score,
             },
             idempotency_key=f"lead.qualificado:avaliacao:{av_id}:{lead_id}",
         )
