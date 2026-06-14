@@ -1295,6 +1295,19 @@ function Agenda() {
     } catch (err) { alert("Erro: " + err.message); }
   }
 
+  // Link "Adicionar ao Google Agenda" — sem credencial, abre o Google preenchido
+  function gcalLink(it) {
+    const f = (d) => new Date(d).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    const fim = it.fim || new Date(new Date(it.inicio).getTime() + 3600000).toISOString();
+    const p = new URLSearchParams({
+      action: "TEMPLATE",
+      text: it.titulo || "Compromisso",
+      dates: f(it.inicio) + "/" + f(fim),
+      details: (it.observacoes || "") + (it.lead_id ? (" · Lead #" + it.lead_id) : "") + "\nPriscila Vasconcelos Imóveis",
+    });
+    return "https://calendar.google.com/calendar/render?" + p.toString();
+  }
+
   if (carregando) return <p>Carregando agenda…</p>;
 
   return (
@@ -1361,6 +1374,7 @@ function Agenda() {
                   </td>
                   <td>{it.lead_id || "—"}</td>
                   <td>
+                    <a className="btn-mini" href={gcalLink(it)} target="_blank" rel="noopener" title="Adicionar ao Google Agenda" style={{marginRight: 6, textDecoration: "none"}}>📅 Google</a>
                     <button className="btn-mini danger" onClick={() => remover(it.id)}>✕</button>
                   </td>
                 </tr>

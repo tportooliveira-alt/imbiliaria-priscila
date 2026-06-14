@@ -42,6 +42,10 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 - [ ] 🟢 **DEGRAU 2**: Método Evolutivo p/ casas de alto padrão (CUB/BA R-8 + depreciação Ross-Heidecke + fator de comercialização) — crava casa de alto padrão
 - [x] ~~Calibração com 1.016 anúncios OLX (±0,1%)~~ (feito) · [x] ~~skill de teste~~ (feito)
 
+## 📅 Google Agenda (integração)
+- [x] ~~**Nível 1**: botão "📅 Google" em cada compromisso do admin~~ ✅ abre o Google Agenda preenchido (sem credencial)
+- [ ] 🟡 **Nível 2 (auto-sync)**: criar/editar eventos direto na agenda da Priscila via Google Calendar API — exige **OAuth/credencial do Google do Thiago** (ou conector Google Calendar no Cowork). Decidir conta + autorizar.
+
 ## 🤖 Ana / WhatsApp / IA
 - [ ] 🟡 **Resposta automática do WhatsApp**: validar em modo teste → produção
 - [ ] 🟡 **Meta Lead Ads** → lead direto no funil
