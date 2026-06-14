@@ -405,7 +405,11 @@ footer a{color:#cdd9f0}footer a:hover{color:#fff}
           <button class="segbtn on" data-sis="SAC" onclick="setSis('SAC')">SAC (parcela cai)</button>
           <button class="segbtn" data-sis="PRICE" onclick="setSis('PRICE')">Price (fixa)</button>
         </div>
-        <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="simular()" id="sBtn">Simular e comparar bancos →</button>
+        <div class="srow" style="margin-top:10px">
+          <div><label>Seu nome</label><input id="sNome" autocomplete="name" placeholder="Como te chamo?"/></div>
+          <div><label>Seu WhatsApp</label><input id="sTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(77) 9 ____-____"/></div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="simular()" id="sBtn">Ver parcela e comparar bancos →</button>
       </div>
       <div class="simres" id="simres">
         <div class="muted" style="text-align:center;padding:34px 14px">Preencha ao lado e veja a <b>parcela</b> e a <b>comparação entre os bancos</b> — do mais barato ao mais caro.</div>
@@ -504,7 +508,9 @@ function simular(){
   const valor=+document.getElementById('sVal').value, entPct=+document.getElementById('sEnt').value,
         anos=+document.getElementById('sPrazo').value||30, renda=+document.getElementById('sRenda').value||null;
   if(!valor){alert('Informe o valor do imóvel.');return;}
-  const body={valor_imovel:valor,entrada:Math.round(valor*entPct/100),prazo_meses:anos*12,taxa_anual:11.19,sistema:SIS,renda_mensal:renda};
+  const nome=(document.getElementById('sNome').value||'').trim(), tel=(document.getElementById('sTel').value||'').trim();
+  if(nome.length<2||tel.length<8){alert('Deixe seu nome e WhatsApp pra ver a parcela e a comparação 😊');return;}
+  const body={valor_imovel:valor,entrada:Math.round(valor*entPct/100),prazo_meses:anos*12,taxa_anual:11.19,sistema:SIS,renda_mensal:renda,nome:nome,contato:tel};
   const b=document.getElementById('sBtn');b.textContent='Calculando…';b.disabled=true;
   fetch('/api/simular-financiamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
    .then(r=>r.json()).then(d=>{
@@ -527,6 +533,6 @@ function simular(){
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=20260614d").catch(function(){});});}</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=20260614e").catch(function(){});});}</script>
 </body>
 </html>

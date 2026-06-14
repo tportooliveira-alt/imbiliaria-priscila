@@ -153,16 +153,16 @@ footer img{height:58px;mix-blend-mode:screen;margin:0 auto 12px}
     </div>
 
     <div class="capture" id="capture">
-      <div style="font-family:'Inter';font-weight:700;font-size:1.1rem;margin-bottom:.3rem">Quero a avaliação completa da Priscila</div>
-      <p style="color:var(--muted);font-size:.9rem;margin-bottom:.5rem">Grátis e sem compromisso. Ela te chama no WhatsApp.</p>
+      <div style="font-family:'Inter';font-weight:700;font-size:1.1rem;margin-bottom:.3rem">Quase lá! Veja sua avaliação 👇</div>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:.5rem">Deixe seu nome e WhatsApp para ver o resultado. Grátis e sem compromisso — a Priscila te chama com a avaliação completa.</p>
       <div class="grid2">
         <div class="field"><label for="cNome">Seu nome</label><input id="cNome" autocomplete="name" placeholder="Como te chamo?"/></div>
         <div class="field"><label for="cTel">WhatsApp</label><input id="cTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(77) 9 ____-____"/></div>
       </div>
       <div class="field"><label for="cValor">Valor pretendido (opcional)</label><input id="cValor" type="number" inputmode="numeric" placeholder="Quanto você gostaria?"/></div>
-      <button class="btn btn-primary" style="margin-top:16px;width:100%" onclick="enviarLead()" id="btnLead">Quero anunciar com a Priscila →</button>
+      <button class="btn btn-primary" style="margin-top:16px;width:100%" onclick="enviarLead()" id="btnLead">Ver minha avaliação →</button>
     </div>
-    <div class="okmsg" id="okmsg">✅ Recebido! A Priscila vai te chamar no WhatsApp pra fazer a avaliação completa e combinar tudo. Obrigada pela confiança! 💙</div>
+    <div class="okmsg" id="okmsg">✅ Pronto! Sua avaliação está aí em cima. A Priscila vai te chamar no WhatsApp com a avaliação completa. Obrigada pela confiança! 💙</div>
   </div>
 </div></section>
 
@@ -191,46 +191,44 @@ fetch('/api/avaliacao/bairros').then(r=>r.json()).then(d=>{
 }).catch(()=>{document.getElementById('bairro').innerHTML='<option>Candeias</option><option>Boa Vista</option>';});
 
 function val(id){return document.getElementById(id).value;}
-function avaliar(){
+function montarBody(){
   const area=parseFloat(val('area'));
-  if(!area){alert('Me diz a área (m²) do imóvel 😊');return;}
   const elv=document.getElementById('elevador'),anr=document.getElementById('andar');
-  const body={bairro:val('bairro'),area_util:area,quartos:+val('quartos')||0,suites:+val('suites')||0,
+  return {bairro:val('bairro'),area_util:area,quartos:+val('quartos')||0,suites:+val('suites')||0,
     vagas:+val('vagas')||0,padrao:val('padrao'),estado:val('estado'),idade:val('idade'),
     tem_area_externa:document.getElementById('externa').checked,
     tipo:val('tipo').toLowerCase(),mobilia:val('mobilia'),lazer:val('lazer'),vista:val('vista'),
     banheiros:+val('banheiros')||0,elevador:elv?elv.checked:false,andar_alto:anr?anr.checked:false,
     area_terreno:parseFloat(val('terreno'))||null};
-  const btn=document.getElementById('btnAval');btn.textContent='Calculando...';btn.disabled=true;
+}
+// "Ver quanto vale" -> NÃO mostra o valor ainda; abre o portão (nome+WhatsApp) pra gerar lead.
+function avaliar(){
+  const area=parseFloat(val('area'));
+  if(!area){alert('Me diz a área (m²) do imóvel 😊');return;}
+  LAST=montarBody();
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('okmsg').classList.remove('show');
+  document.getElementById('capture').classList.add('show');
+  document.getElementById('capture').scrollIntoView({behavior:'smooth',block:'center'});
+}
+// Captura o lead E só então mostra o resultado da avaliação.
+function enviarLead(){
+  const nome=val('cNome').trim(),tel=val('cTel').trim();
+  if(nome.length<2||tel.length<8){alert('Preciso do seu nome e WhatsApp pra te mostrar a avaliação 😊');return;}
+  const body=Object.assign({}, LAST||montarBody(), {nome:nome, contato:tel});
+  const btn=document.getElementById('btnLead');btn.textContent='Calculando...';btn.disabled=true;
   fetch('/api/avaliar-imovel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
    .then(r=>r.json()).then(d=>{
-     LAST=body;
      document.getElementById('faixa').textContent=fmt(d.valor_minimo)+' a '+fmt(d.valor_maximo);
      document.getElementById('central').textContent='Valor central estimado: '+fmt(d.valor_central)+' · confiança '+(d.confianca||'média');
      document.getElementById('aluguel').innerHTML = d.aluguel_estimado ? ('🏠 <b>Potencial de aluguel:</b> '+fmt(d.aluguel_estimado)+'/mês <span style="opacity:.7">(~'+d.aluguel_yield_pct+'% a.m.)</span>') : '';
      document.getElementById('txt').textContent=d.texto||'';
-     document.getElementById('result').classList.add('show');
-     document.getElementById('capture').classList.add('show');
-     document.getElementById('capture').scrollIntoView({behavior:'smooth',block:'center'});
-   }).catch(()=>{alert('Tive um problema na avaliação. Me chama no WhatsApp que faço pra você!');})
-   .finally(()=>{btn.textContent='Recalcular →';btn.disabled=false;});
-}
-function enviarLead(){
-  const nome=val('cNome').trim(),tel=val('cTel').trim();
-  if(nome.length<2||tel.length<8){alert('Preciso do seu nome e WhatsApp pra Priscila te chamar 😊');return;}
-  const body={nome,telefone:tel,bairro:val('bairro'),tipo:val('tipo'),area:parseFloat(val('area'))||null,
-    quartos:+val('quartos')||null,valor_pretendido:parseFloat(val('cValor'))||null,
-    observacoes:'Veio da página Anuncie (fez avaliação online).'};
-  const btn=document.getElementById('btnLead');btn.textContent='Enviando...';btn.disabled=true;
-  fetch('/api/lead-vendedor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-   .then(r=>{if(!r.ok)throw 0;return r.json()}).then(()=>{
      document.getElementById('capture').classList.remove('show');
+     document.getElementById('result').classList.add('show');
      document.getElementById('okmsg').classList.add('show');
-     document.getElementById('okmsg').scrollIntoView({behavior:'smooth',block:'center'});
-   }).catch(()=>{
-     const msg=encodeURIComponent(`Olá Priscila! Quero anunciar meu ${val('tipo')} em ${val('bairro')} (${val('area')}m²). Meu nome é ${nome}.`);
-     window.open(`https://wa.me/${WA}?text=${msg}`,'_blank');
-   }).finally(()=>{btn.textContent='Quero anunciar com a Priscila →';btn.disabled=false;});
+     document.getElementById('result').scrollIntoView({behavior:'smooth',block:'center'});
+   }).catch(()=>{alert('Tive um problema. Me chama no WhatsApp que faço a avaliação pra você!');})
+   .finally(()=>{btn.textContent='Ver minha avaliação →';btn.disabled=false;});
 }
 
 // chat Ana

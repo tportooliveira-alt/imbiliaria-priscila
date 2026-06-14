@@ -128,7 +128,9 @@ footer img{height:54px;mix-blend-mode:screen;margin:0 auto 10px}
         <div><label>Área (m²)</label><input id="cArea" type="number" inputmode="numeric" value="80"/></div>
         <div><label>Padrão</label><select id="cPadrao"><option value="simples">Simples</option><option value="medio" selected>Médio</option><option value="alto">Alto</option><option value="luxo">Luxo</option></select></div>
         <div><label>Estado</label><select id="cEstado"><option value="reformado">Reformado</option><option value="bom" selected>Bom</option><option value="regular">Regular</option><option value="precisa_reforma">Precisa reforma</option></select></div>
-        <button class="btn btn-gold full" onclick="calcular()" id="cBtn" style="margin-top:12px">Ver estimativa →</button>
+        <div class="full"><label>Seu nome</label><input id="cNome" autocomplete="name" placeholder="Como te chamo?"/></div>
+        <div class="full"><label>Seu WhatsApp</label><input id="cTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(77) 9 ____-____"/></div>
+        <button class="btn btn-gold full" onclick="calcular()" id="cBtn" style="margin-top:12px">Ver minha estimativa →</button>
       </div>
     </div>
     <div class="res">
@@ -180,8 +182,10 @@ function renderChart(){
 function calcular(){
   const area=parseFloat(document.getElementById('cArea').value);
   if(!area){alert('Informe a área (m²).');return;}
+  const nome=(document.getElementById('cNome').value||'').trim(), tel=(document.getElementById('cTel').value||'').trim();
+  if(nome.length<2||tel.length<8){alert('Deixe seu nome e WhatsApp pra ver a estimativa 😊');return;}
   const body={bairro:document.getElementById('cBairro').value,tipo:document.getElementById('cTipo').value,
-    area_util:area,padrao:document.getElementById('cPadrao').value,estado:document.getElementById('cEstado').value,idade:'0_10',quartos:2,vagas:1};
+    area_util:area,padrao:document.getElementById('cPadrao').value,estado:document.getElementById('cEstado').value,idade:'0_10',quartos:2,vagas:1,nome:nome,contato:tel};
   const b=document.getElementById('cBtn');b.textContent='Calculando…';b.disabled=true;
   fetch('/api/avaliar-imovel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
    .then(r=>r.json()).then(d=>{
