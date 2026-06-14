@@ -29,7 +29,9 @@ def eh_priscila(remote: str) -> bool:
     r = _digitos(remote)
     if not alvo or not r:
         return False
-    return r == alvo or r[-11:] == alvo[-11:]  # tolera DDI/variações nos últimos 11 dígitos
+    # WhatsApp BR varia o "9" extra do celular -> compara os ÚLTIMOS 8 dígitos (parte única do número),
+    # igual o gate de auto-reply. Evita falha por 5577999823787 (cadastrado) vs 557799823787 (recebido).
+    return r == alvo or r[-8:] == alvo[-8:]
 
 
 NOME = "João"        # assistente de AGENDA — IA masculina (distinta da Ana, que atende cliente)
