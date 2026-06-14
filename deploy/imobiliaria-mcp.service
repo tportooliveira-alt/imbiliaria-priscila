@@ -1,0 +1,12 @@
+# Servidor MCP da imobiliária (localhost:8765). Instalar só ao decidir expor.
+# cp deploy/imobiliaria-mcp.service /etc/systemd/system/ && systemctl enable --now imobiliaria-mcp
+[Unit]
+Description=MCP server imobiliaria (FastMCP)
+After=network.target
+[Service]
+WorkingDirectory=/var/www/imobiliaria
+ExecStart=/var/www/imobiliaria/venv/bin/python -m app.mcp_server
+Restart=on-failure
+User=root
+[Install]
+WantedBy=multi-user.target
