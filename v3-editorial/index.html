@@ -35,10 +35,10 @@ img{max-width:100%;display:block}
 
 /* header */
 header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(251,252,254,.78);border-bottom:1px solid var(--line)}
-.nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+.nav{display:flex;align-items:center;justify-content:space-between;height:84px}
 .brand{display:flex;align-items:center;gap:.6rem;font-family:'Inter';font-weight:700;font-size:1.05rem}
-.brand img{height:54px;mix-blend-mode:multiply}
-.sectortabs{position:sticky;top:68px;z-index:49;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 6px 16px -12px rgba(15,35,64,.18)}
+.brand img{height:70px;mix-blend-mode:multiply}
+.sectortabs{position:sticky;top:84px;z-index:49;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 6px 16px -12px rgba(15,35,64,.18)}
 .sectortabs .wrap{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .stab{flex:0 0 auto;padding:13px 16px;font-family:'Inter';font-weight:600;font-size:.9rem;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;transition:.18s}
 .stab:hover,.stab.on{color:var(--navy);border-bottom-color:var(--gold)}
@@ -77,10 +77,16 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rg
 .cta-row{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:46px;align-items:center}
 .hero-media{position:relative}
-.hero-logo{display:block;height:104px;margin:0 auto 16px;mix-blend-mode:multiply}
-@media(max-width:900px){.hero-logo{height:84px;margin-bottom:10px}}
-.hm-card{position:relative;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);aspect-ratio:4/3}
-.hm-card img{width:100%;height:100%;object-fit:cover}
+.hero-logo{display:block;height:210px;margin:0 auto 18px;mix-blend-mode:multiply}
+@media(max-width:900px){.hero-logo{height:150px;margin-bottom:10px}}
+.hm-card{position:relative;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);aspect-ratio:3/4;max-width:520px;margin:0 auto}
+.hm-card>img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.hm-logo-chip{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.93);border-radius:12px;padding:7px 12px;box-shadow:0 6px 18px -8px rgba(0,0,0,.3);backdrop-filter:blur(4px)}
+.hm-logo-chip img{height:34px;display:block}
+.hm-ov{position:absolute;left:0;right:0;bottom:0;padding:74px 24px 24px;background:linear-gradient(transparent,rgba(15,35,64,.15) 26%,rgba(15,35,64,.92));color:#fff}
+.hm-ov .nm{font-family:'Playfair Display',serif;font-weight:700;font-size:1.6rem;line-height:1.08}
+.hm-ov .cr{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);margin:.3rem 0 .55rem;font-weight:700}
+.hm-ov .tg{font-size:.98rem;opacity:.96;line-height:1.35}
 .hm-card .hm-tag{position:absolute;left:16px;top:16px;background:rgba(255,255,255,.92);color:var(--navy);font-family:'Inter';font-weight:700;font-size:.82rem;padding:.45rem .9rem;border-radius:999px;backdrop-filter:blur(4px)}
 .hm-chat{position:absolute;left:-14px;bottom:-18px;max-width:74%;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:18px;border-bottom-left-radius:5px;padding:13px 15px;font-size:.9rem;animation:fade .6s .3s both}
 .hm-chat .who{font-family:'Inter';font-weight:600;color:var(--peri);font-size:.78rem;display:block;margin-bottom:.25rem}
@@ -288,15 +294,20 @@ footer a{color:#cdd9f0}footer a:hover{color:#fff}
     </div><!-- /inner -->
     <div class="hero-media reveal">
       <img class="hero-logo" src="/assets/logo-branco-creci.jpeg" alt="Priscila Vasconcelos · Corretora de Imóveis · CRECI/BA 29.231"/>
-      <div class="hm-card"><img src="/assets/priscila-tech.jpg" alt="Priscila Vasconcelos, corretora de imóveis"/></div>
-      <div class="hm-chat"><span class="who">✦ Ana</span>Já separei 3 imóveis que combinam com você 😍 quer ver?</div>
+      <div class="hm-card">
+        <img src="/assets/priscila-tech.jpg" alt="Priscila Vasconcelos, corretora de imóveis"/>
+        <div class="hm-ov">
+          <div class="nm">Priscila Vasconcelos</div>
+          <div class="cr">Corretora de Imóveis · CRECI/BA 29.231</div>
+          <div class="tg">Atendimento de verdade, do primeiro "oi" à chave.</div>
+        </div>
+      </div>
     </div>
    </div><!-- /hero-grid -->
     <div class="trust">
       <div class="t">🏅 <span><b>CRECI/BA</b> 29.231</span></div>
       <div class="t">⚡ <span>Atendimento <b>em minutos</b></span></div>
       <div class="t">📍 <span>Especialista em <b>Vitória da Conquista</b></span></div>
-      <div class="t">🤖 <span>Atendida por <b>IA + gente de verdade</b></span></div>
     </div>
   </div>
 </section>
@@ -316,7 +327,7 @@ footer a{color:#cdd9f0}footer a:hover{color:#fff}
   <div class="wrap">
     <span class="eyebrow reveal">Simples assim</span>
     <h2 class="h2 reveal">Como funciona</h2>
-    <p class="lead reveal">Da primeira conversa às chaves — fácil, rápido e com gente de verdade.</p>
+    <p class="lead reveal">Da primeira conversa às chaves — fácil, rápido e com a Priscila do seu lado.</p>
     <div class="steps reveal">
       <div class="step"><span>1</span><h4>Descreva</h4><p>Conte pra Ana o que procura, do seu jeito — por texto ou voz.</p></div>
       <div class="step"><span>2</span><h4>A Ana filtra</h4><p>A IA acha os imóveis que combinam e já simula o financiamento.</p></div>
@@ -454,7 +465,7 @@ const API='/api/chat';
 let history=[];
 
 // ---- imóveis reais ----
-function fmt(v){return 'R$ '+Number(v).toLocaleString('pt-BR');}
+function fmt(v){return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
 fetch('/api/imoveis').then(r=>r.json()).then(d=>{
   const el=document.getElementById('bento'); el.innerHTML='';
   d.items.forEach(it=>{
@@ -533,6 +544,6 @@ function simular(){
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=20260614e").catch(function(){});});}</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=20260614g").catch(function(){});});}</script>
 </body>
 </html>
