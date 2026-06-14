@@ -6,12 +6,12 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 ---
 
 ## 🔄 Rodando agora (background — não precisa fazer nada)
-- [ ] **Pesquisa: Claude Code + MCP + automação** (task `wtobcawvh`) → vira o guia de setup
+- [x] ~~**Pesquisa: Claude Code + MCP + automação**~~ ✅ pronta (25/25 confirmadas) → virou `SETUP-DOIS-LADOS.md`
 - [ ] **Pesquisa: 360° + vídeo + depoimentos na conversão** (task `wscezwr75`) → vira melhorias do site
 - _Resultado de cada uma será empurrado aqui no chat quando terminar._
 
 ## 🖥️ Setup "dois lados" + acesso direto (o objetivo: Claude lê/age sozinho, sem alimentar na mão)
-- [ ] 🔴 **`docs/SETUP-DOIS-LADOS.md`** — guia passo a passo (montar APÓS a pesquisa de MCP)
+- [x] ~~**`docs/SETUP-DOIS-LADOS.md`** — guia passo a passo~~ ✅ montado (rascunho pronto pra executar junto)
 - [ ] 🔴 **Clonar a pasta no PC** (Windows): `git clone` do repo → projeto salvo no seu computador
 - [ ] 🔴 **Conectar Google Drive** ao app do Claude (ainda NÃO está conectado nesta sessão)
 - [ ] 🟡 Confirmar/usar conectores já disponíveis: Box, Microsoft 365, Slack, monday, Gamma, Metaview (precisam de login)
