@@ -44,7 +44,10 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 
 ## 📅 Google Agenda (integração)
 - [x] ~~**Nível 1**: botão "📅 Google" em cada compromisso do admin~~ ✅ abre o Google Agenda preenchido (sem credencial)
-- [ ] 🟡 **Nível 2 (auto-sync)**: criar/editar eventos direto na agenda da Priscila via Google Calendar API — exige **OAuth/credencial do Google do Thiago** (ou conector Google Calendar no Cowork). Decidir conta + autorizar.
+- [ ] 🟡 **Nível 2 (auto-sync) — ESCOLHIDO: conector Google Calendar no Cowork.** Thiago conecta o Google Calendar
+  no app (Configurações → Conectores → Google Calendar → autorizar com a conta da Priscila/dele). Depois, no **Cowork**,
+  é só pedir ("marca visita amanhã 15h com o lead X") que o Claude cria/edita o evento. ⚠️ Este conector NÃO aparece
+  na sessão da VPS (headless) — as ações de calendário rodam no **app do Thiago**, onde o conector está logado.
 
 ## 🤖 Ana / WhatsApp / IA
 - [ ] 🟡 **Resposta automática do WhatsApp**: validar em modo teste → produção
