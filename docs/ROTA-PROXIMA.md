@@ -41,7 +41,10 @@
 - Resposta automática do WhatsApp (teste → produção) e Meta Lead Ads → funil.
 
 ## 🖥️ Setup "dois lados" PC↔VPS (decidido 14/06 — montar guia após a pesquisa de Claude Code+MCP)
-- **PC do Thiago:** Windows, com o **Claude Code desktop app** já instalado (ele chama de "cowork"). É o lado local.
+- **PC do Thiago:** Windows, com o **app do Claude** instalado. Ele tem dois modos no mesmo app:
+  **`</> Code`** (mexe no código/repo) e **Cowork (Ctrl+2)** — modo agente para tarefas, com aba **Rotinas**
+  (automações). O Thiago usa muito o **Cowork**. Guia deve cobrir: Code p/ editar o projeto + Cowork+Rotinas+MCP
+  p/ automatizar tarefas. (Confirmado por print 14/06: botão "Cowork Ctrl+2" ao lado de "</> Code".)
 - **Ponte escolhida:** **git** (edita no PC → push → VPS puxa → reinicia). Nada de SSH/rede.
 - **VPS:** Claude Code CLI (sessão atual) + `deploy.sh` (a criar) que faz `git pull` + `scripts/build_home.py` + restart.
 - **Automação/MCP:** conectar servidores MCP no Claude Code desktop pra automatizar tarefas (GitHub, arquivos, banco…).
