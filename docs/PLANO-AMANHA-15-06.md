@@ -12,7 +12,7 @@
       e **palavras negativas** (negative keywords) a excluir — uma lista por imóvel ativo.
 
 ## B) 📸 Instagram — integração + conteúdo + seguidores
-- [ ] **Integração** do Instagram (publicar/agendar) — avaliar via conector/Meta Graph API; o que dá pra automatizar.
+- [ ] **Integração** do Instagram (publicar/agendar) — avaliar via conector/Meta Graph API; o que dá pra automatizar. **Ver `docs/INTEGRACOES-INSTAGRAM-METAADS.md`** (material do Thiago: Upload-Post p/ IG; Graph API na VPS p/ Meta Ads = Método 2, nosso caso).
 - [ ] **Carrosséis**: modelos prontos (por imóvel, por bairro, "quanto vale seu imóvel") — conteúdo salvável/compartilhável
       (a pesquisa de leads mostrou que **saves/shares > curtidas** em 2026).
 - [ ] **Notícias diárias relevantes** do mercado imobiliário / VDC — uma **Rotina** que traz o assunto do dia pra postar.
