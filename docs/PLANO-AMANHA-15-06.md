@@ -1,4 +1,4 @@
-# 🗓️ PLANO DE AMANHÃ — 15/06/2026 (combinado com o Thiago na madrugada)
+# 🗓️ PLANO DE AMANHÃ — 15/06/2026 (combinado na madrugada · **todos os horários = Brasília, UTC-3**)
 
 Âncora durável (no git) do que vamos atacar dia 15/06. Pra retomar: *"continua o plano de amanhã"*.
 > O lembrete agendado é só da sessão (pode não disparar). **Este arquivo é a garantia.**

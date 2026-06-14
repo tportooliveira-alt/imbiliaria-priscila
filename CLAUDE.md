@@ -33,6 +33,10 @@ se chama **Ana**. Dono/dev: **Thiago** (esposo/sócio); Priscila é a corretora 
    admin; não recrie imóvel a partir de anúncio colado (gera duplicado).
 6. **Mudanças de rede/infra** (iptables, MTU, firewall) exigem **autorização direta do dono**.
 7. **Segredos nunca no git** (`.env`, chaves, `data/`, fotos) — já no `.gitignore`. Não comite.
+8. **⏰ FUSO HORÁRIO = Brasília (BRT, UTC-3). CRÍTICO p/ reuniões/agenda.** Os timestamps das mensagens chegam em
+   **UTC**; a hora do Thiago é **UTC − 3h** (ex.: 05:58 UTC = **02:58 em Brasília**). SEMPRE converter antes de
+   falar/agendar horário. Ao criar lembrete/cron e o runtime estiver em UTC, somar 3h ao horário-Brasília desejado
+   (ex.: reunião 9h Brasília = **12:00 UTC**). Nunca marcar reunião no relógio errado.
 
 ## Arquitetura (mapa rápido)
 - **Conversa com cliente** = motor do site (rápido, barato). Fluxo:
