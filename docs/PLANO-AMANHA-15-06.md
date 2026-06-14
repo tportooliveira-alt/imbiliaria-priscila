@@ -18,6 +18,13 @@
 - [ ] **Notícias diárias relevantes** do mercado imobiliário / VDC — uma **Rotina** que traz o assunto do dia pra postar.
 - [ ] **Crescer seguidores da Priscila**: o que fazer (frequência, formatos, conteúdo local, CTA) — plano prático.
 
+## D) 🤝 Cowork ↔ Claude Code (VPS) — agente que conversa comigo + WhatsApp
+- [ ] **WhatsApp de lembrete JÁ FUNCIONA** (Evolution API configurada, `whatsapp.disponivel()=True`; endpoint
+      `/agenda/lembretes/enviar` + botão admin "📱 Enviar lembretes 24h"). Falta só **validar e tirar do modo teste**
+      (`WHATSAPP_TEST_NUMBER`/cap) → produção. Combinar: lembrete automático de visita pro lead.
+- [ ] **Expor o backend da VPS como servidor MCP** pra o agente do Cowork AGIR no sistema (mandar WhatsApp, marcar
+      agenda, deploy) conversando comigo. Sai da pesquisa "nobres integrações". É o que o Thiago quer: Cowork ↔ VPS.
+
 ## C) 🌐 Ações pro site (cada melhoria)
 - [ ] Lista priorizada de melhorias por página (ligado ao `PENDENCIAS.md`): pixels/rastreamento (🔴), depoimentos/vídeo
       (sai da pesquisa de 360°), padronização final de botões, etc.
