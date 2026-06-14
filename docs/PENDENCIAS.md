@@ -64,6 +64,15 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 - [x] ~~Salvar o **MÉTODO de estudo**~~ ✅ `docs/METODO-ESTUDO.md` (pipeline de pesquisa verificada)
 - [ ] 🟡 **Criar algo com o método** (combinado p/ retomar): skill/rotina "pesquisa-priscila" + base `docs/estudos/` + cruzar com agent-browser
 
+## 🆕 Decisões 15/06 (capturadas, fazer com o Thiago)
+- [ ] 🔴 **Corrigir oferta: avaliação grátis ≠ LAUDO.** Online (calculadora) = GRÁTIS (ímã de lead). **Laudo de
+  avaliação = serviço PAGO da Priscila** (profissional CRECI). Site hoje diz "avaliação final GRATUITA feita pela
+  Priscila" (`anunciar.html` ~l.153 + textos de captura/okmsg) → MUDAR. Ana NÃO pode prometer laudo grátis.
+  Definir: visita presencial p/ captar é grátis? preço do laudo?
+- [ ] 🟡 **Campanha de marketing do Instagram da Priscila** — criar: linha editorial (guia de bairros, "quanto vale
+  seu imóvel", dicas de VDC, bastidores da Priscila), carrosséis salváveis, calendário de posts, rotina de notícias
+  diárias, e plano de captação de vendedores via Insta. Base: `PESQUISA-LEADS-2026.md` (saves/shares > curtidas).
+
 ## 🚀 Lançamento oficial
 - [ ] 🔴 **Remover `noindex`** do `server.py` quando a Priscila aprovar (hoje o site está soft-launch, fora do Google)
 - [ ] 🟡 Trocar a **senha temporária** do admin (`233024`) por uma definitiva
