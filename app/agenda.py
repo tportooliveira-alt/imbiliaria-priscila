@@ -6,7 +6,7 @@ from typing import Iterable
 
 from app.db import db_session
 
-TIPOS_VALIDOS = {"visita", "reuniao", "captacao", "followup", "bloqueio"}
+TIPOS_VALIDOS = {"visita", "reuniao", "captacao", "followup", "bloqueio", "pessoal", "outro"}
 STATUS_VALIDOS = {"agendado", "confirmado", "cancelado", "realizado"}
 
 

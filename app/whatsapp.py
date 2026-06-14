@@ -167,10 +167,11 @@ def transcrever_audio(msg: dict) -> str | None:
         return None
 
 
-def gerar_voz(texto: str, voice_id: str | None = None) -> bytes | None:
+def gerar_voz(texto: str, voice_id: str | None = None, stability: float = 0.6) -> bytes | None:
     """Gera audio a partir do texto, via ElevenLabs. None se falhar.
 
     voice_id: voz especifica (ex.: a do Joao). Sem isso, usa a voz padrao (Ana).
+    stability: 0..1, maior = mais calmo/estavel (Joao usa ~0.85).
     """
     el = os.getenv("ELEVENLABS_API_KEY", "").strip()
     voz = (voice_id or os.getenv("ELEVENLABS_VOICE_ID", "")).strip()
@@ -184,7 +185,7 @@ def gerar_voz(texto: str, voice_id: str | None = None) -> bytes | None:
             "model_id": modelo,
             "language_code": "pt",  # trava portugues -> evita misturar ingles
             "voice_settings": {
-                "stability": 0.6,        # mais estavel = nao engole nem fica estranho
+                "stability": stability,  # maior = mais calmo/estavel (Joao usa 0.85)
                 "similarity_boost": 0.85,
                 "style": 0.0,
                 "use_speaker_boost": True,

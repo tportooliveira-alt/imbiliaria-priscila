@@ -680,12 +680,13 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
                 import os as _os
                 from app import whatsapp as _wa
                 if _wa.disponivel():
+                    # 1) confirmação ESCRITA sempre (registro pra ela ler)
+                    _wa.enviar_mensagem(remote, res["mensagem"])
+                    # 2) + ÁUDIO (voz do João, Renato calmo) quando der
                     _voz = _os.getenv("ELEVENLABS_VOICE_ID_JOAO", "").strip()
-                    _audio = _wa.gerar_voz(res.get("fala") or res["mensagem"], voice_id=_voz) if _voz else None
+                    _audio = _wa.gerar_voz(res.get("fala") or res["mensagem"], voice_id=_voz, stability=0.85) if _voz else None
                     if _audio:
-                        _wa.enviar_audio(remote, _audio)       # João responde em ÁUDIO (voz masculina)
-                    else:
-                        _wa.enviar_mensagem(remote, res["mensagem"])  # reserva: texto
+                        _wa.enviar_audio(remote, _audio)
             except Exception:
                 pass
             return {"secretaria": True, "ok": res.get("ok"), "detalhe": res.get("mensagem")}
