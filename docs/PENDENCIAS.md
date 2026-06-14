@@ -22,7 +22,7 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 
 ## 📈 Leads & Ads (do `docs/PESQUISA-LEADS-2026.md` + `ROTA-PROXIMA.md`)
 - [ ] 🔴 **Rastreamento/pixels** (Meta Pixel + Google Tag) com conversões nomeadas: `calculadora_concluida`, `lead_anunciar`, `clique_whatsapp`, `agendar_visita` — **pré-requisito de qualquer anúncio**
-- [ ] 🟡 **1 pergunta qualificadora** na calculadora gateada ("morar ou investir?" / "vende em quanto tempo?") + ligar ao BANT da Ana
+- [x] ~~**1 pergunta qualificadora** na avaliação ("vende em quanto tempo?")~~ ✅ feita → vira urgência (alta/normal/baixa) + score (45-78) no lead (BANT)
 - [ ] 🟡 **1º teste Meta Ads** (criativo local, geo 5-10 km p/ vendedor, orçamento pequeno)
 - [ ] 🟢 **Instagram orgânico**: posts salváveis (guia de bairros, "m² no seu bairro" — usar nossos dados)
 - [ ] 🟢 **Google Ads** (só se houver volume de busca local; keywords transacionais)
