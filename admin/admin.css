@@ -406,3 +406,22 @@ table.tab,
 .financeiro-shell .card-stat small { display: block; margin-top: 4px; font-size: 11px; color: #666; }
 .financeiro-shell .card-stat.alerta { background: #fff5f0; border-color: #d97a4a; }
 .financeiro-shell .tabela tr.vencida { background: #fff0e6; }
+
+/* ─── Financeiro: dashboard com gráficos (jun/2026) ─────────────────── */
+.financeiro-shell .fin-headline { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.financeiro-shell .fin-hero { background: #16284B; color: #fff; border-radius: 12px; padding: 18px 20px; box-shadow: 0 6px 18px rgba(22,40,75,.18); }
+.financeiro-shell .fin-hero.gold { background: linear-gradient(120deg,#16284B,#24477e); border: 1px solid rgba(201,148,58,.4); }
+.financeiro-shell .fin-hero span { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+.financeiro-shell .fin-hero strong { display: block; margin: 6px 0 2px; font: 700 1.9rem/1.05 var(--ff-display, sans-serif); }
+.financeiro-shell .fin-hero.gold strong { color: #e8c178; }
+.financeiro-shell .fin-hero small { font-size: 12px; opacity: .85; }
+.financeiro-shell .fin-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+.financeiro-shell .chart-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px; }
+.financeiro-shell .chart-box.wide { grid-column: 1 / -1; }
+.financeiro-shell .chart-box h3 { margin: 0 0 10px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #16284B; }
+.financeiro-shell .chart-area { position: relative; height: 280px; }
+.financeiro-shell .chart-box.wide .chart-area { height: 320px; }
+.financeiro-shell .fin-empty { color: #888; font-size: 13px; line-height: 1.6; text-align: center; padding: 48px 12px; }
+@media (max-width: 760px) {
+  .financeiro-shell .fin-headline, .financeiro-shell .fin-charts { grid-template-columns: 1fr; }
+}

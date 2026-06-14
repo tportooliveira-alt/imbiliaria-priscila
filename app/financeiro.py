@@ -328,6 +328,64 @@ def dashboard(*, ano: int | None = None, mes: int | None = None) -> dict:
             (hoje.isoformat(),),
         ).fetchone()
 
+        # ── Serie de 12 meses: fluxo de caixa REAL (entradas x saidas x saldo) ──
+        MESES_PT = ["", "jan", "fev", "mar", "abr", "mai", "jun",
+                    "jul", "ago", "set", "out", "nov", "dez"]
+        meses12 = []
+        yy, mm = ano, mes
+        for _ in range(12):
+            meses12.append((yy, mm))
+            mm -= 1
+            if mm == 0:
+                mm, yy = 12, yy - 1
+        meses12.reverse()
+        serie = []
+        acumulado = 0.0
+        for (y, m) in meses12:
+            ini = f"{y:04d}-{m:02d}-01"
+            fim = f"{y + 1:04d}-01-01" if m == 12 else f"{y:04d}-{m + 1:02d}-01"
+            ent_com = conn.execute(
+                "SELECT COALESCE(SUM(valor_comissao),0) FROM comissoes "
+                "WHERE status='recebido' AND data_recebimento >= ? AND data_recebimento < ?",
+                (ini, fim)).fetchone()[0]
+            ent_con = conn.execute(
+                "SELECT COALESCE(SUM(valor),0) FROM contas "
+                "WHERE tipo='receber' AND pago=1 AND data_pagamento >= ? AND data_pagamento < ?",
+                (ini, fim)).fetchone()[0]
+            sai_con = conn.execute(
+                "SELECT COALESCE(SUM(valor),0) FROM contas "
+                "WHERE tipo='pagar' AND pago=1 AND data_pagamento >= ? AND data_pagamento < ?",
+                (ini, fim)).fetchone()[0]
+            entradas = float(ent_com or 0) + float(ent_con or 0)
+            saidas = float(sai_con or 0)
+            acumulado += entradas - saidas
+            serie.append({
+                "ano": y, "mes": m, "label": f"{MESES_PT[m]}/{str(y)[2:]}",
+                "entradas": entradas, "saidas": saidas,
+                "saldo": entradas - saidas, "acumulado": acumulado,
+            })
+
+        ini_ano, fim_ano = f"{ano:04d}-01-01", f"{ano + 1:04d}-01-01"
+        # Comissoes por status (ano)
+        com_status_rows = conn.execute(
+            "SELECT status, COUNT(*) qtd, COALESCE(SUM(valor_comissao),0) total "
+            "FROM comissoes WHERE data_venda >= ? AND data_venda < ? GROUP BY status",
+            (ini_ano, fim_ano)).fetchall()
+        comissoes_status = [
+            {"status": r["status"], "qtd": int(r["qtd"]), "total": float(r["total"] or 0)}
+            for r in com_status_rows]
+        # Despesas por categoria (contas a pagar quitadas no ano)
+        desp_rows = conn.execute(
+            "SELECT COALESCE(categoria,'geral') categoria, COALESCE(SUM(valor),0) total "
+            "FROM contas WHERE tipo='pagar' AND pago=1 AND data_pagamento >= ? AND data_pagamento < ? "
+            "GROUP BY categoria ORDER BY total DESC",
+            (ini_ano, fim_ano)).fetchall()
+        despesas_categoria = [
+            {"categoria": r["categoria"], "total": float(r["total"] or 0)} for r in desp_rows]
+        # Pipeline REAL: carteira de imoveis ativos (VGV) e comissao potencial a 6%
+        pipe = conn.execute(
+            "SELECT COUNT(*) qtd, COALESCE(SUM(preco),0) vgv FROM imoveis WHERE ativo = 1").fetchone()
+
     vendas = float(com_total["vendas"] or 0)
     comissoes = float(com_total["comissoes"] or 0)
     meta_v = float(meta_row["meta_vendas"] or 0)
@@ -353,5 +411,13 @@ def dashboard(*, ano: int | None = None, mes: int | None = None) -> dict:
             "a_receber_total": float(contas_receber["total"] or 0),
             "a_receber_qtd": int(contas_receber["qtd"] or 0),
             "vencidas_qtd": int(vencidas["qtd"] or 0),
+        },
+        "serie": serie,
+        "comissoes_status": comissoes_status,
+        "despesas_categoria": despesas_categoria,
+        "pipeline": {
+            "imoveis_ativos": int(pipe["qtd"] or 0),
+            "vgv": float(pipe["vgv"] or 0),
+            "comissao_potencial": float(pipe["vgv"] or 0) * 0.06,
         },
     }

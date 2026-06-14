@@ -1402,6 +1402,39 @@ function Financeiro() {
 
   const fmt = (n) => Number(n || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+  const cxFluxo = React.useRef(null), cxStatus = React.useRef(null), cxDesp = React.useRef(null);
+  const chartsRef = React.useRef({});
+  React.useEffect(() => {
+    const Chart = window.Chart;
+    if (secao !== "dashboard" || !dash || !Chart) return;
+    const kill = () => { Object.values(chartsRef.current).forEach(c => { try { c.destroy(); } catch (e) {} }); chartsRef.current = {}; };
+    kill();
+    const navy = "#16284B", gold = "#c9943a", green = "#1e8e5a", red = "#c0392b", peri = "#5C7CB8";
+    const brl = (v) => "R$ " + (Math.abs(v) >= 1000 ? (v / 1000).toFixed(0) + "k" : Math.round(v));
+    const legend = { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } };
+    if (cxFluxo.current) chartsRef.current.fluxo = new Chart(cxFluxo.current, {
+      data: { labels: dash.serie.map(s => s.label), datasets: [
+        { type: "bar", label: "Entradas", data: dash.serie.map(s => s.entradas), backgroundColor: green, borderRadius: 4, order: 2 },
+        { type: "bar", label: "Saídas", data: dash.serie.map(s => s.saidas), backgroundColor: red, borderRadius: 4, order: 2 },
+        { type: "line", label: "Saldo acumulado", data: dash.serie.map(s => s.acumulado), borderColor: navy, borderWidth: 2, tension: .3, pointRadius: 2, order: 1 },
+      ] },
+      options: { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+        plugins: { legend, tooltip: { callbacks: { label: (c) => c.dataset.label + ": " + fmt(c.parsed.y) } } },
+        scales: { y: { ticks: { callback: brl, font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } },
+    });
+    const st = dash.comissoes_status || [];
+    if (cxStatus.current && st.length) chartsRef.current.status = new Chart(cxStatus.current, {
+      type: "doughnut", data: { labels: st.map(s => s.status), datasets: [{ data: st.map(s => s.total), backgroundColor: [green, gold, "#b0b6c2", red, peri] }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: "60%", plugins: { legend, tooltip: { callbacks: { label: (c) => c.label + ": " + fmt(c.parsed) } } } },
+    });
+    const dp = dash.despesas_categoria || [];
+    if (cxDesp.current && dp.length) chartsRef.current.desp = new Chart(cxDesp.current, {
+      type: "doughnut", data: { labels: dp.map(s => s.categoria), datasets: [{ data: dp.map(s => s.total), backgroundColor: [navy, gold, peri, "#7e57c2", "#26a69a", "#ef6c00", red] }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: "60%", plugins: { legend, tooltip: { callbacks: { label: (c) => c.label + ": " + fmt(c.parsed) } } } },
+    });
+    return kill;
+  }, [dash, secao]);
+
   return (
     <div className="financeiro-shell">
       <div className="toolbar">
@@ -1424,6 +1457,19 @@ function Financeiro() {
       </nav>
 
       {secao === "dashboard" && dash && (
+       <div className="fin-dash">
+        <div className="fin-headline">
+          <div className="fin-hero">
+            <span>Saldo acumulado (12 meses)</span>
+            <strong>{fmt(dash.serie[dash.serie.length - 1].acumulado)}</strong>
+            <small>entradas − saídas no período</small>
+          </div>
+          <div className="fin-hero gold">
+            <span>Carteira ativa · VGV</span>
+            <strong>{fmt(dash.pipeline.vgv)}</strong>
+            <small>{dash.pipeline.imoveis_ativos} imóveis · comissão potencial {fmt(dash.pipeline.comissao_potencial)} a 6%</small>
+          </div>
+        </div>
         <div className="cards">
           <div className="card-stat">
             <h3>Vendas no mes</h3>
@@ -1463,6 +1509,25 @@ function Financeiro() {
             </div>
           )}
         </div>
+        <div className="fin-charts">
+          <div className="chart-box wide">
+            <h3>Fluxo de caixa — últimos 12 meses</h3>
+            <div className="chart-area"><canvas ref={cxFluxo}></canvas></div>
+          </div>
+          <div className="chart-box">
+            <h3>Comissões por status ({ano})</h3>
+            {(dash.comissoes_status || []).length
+              ? <div className="chart-area"><canvas ref={cxStatus}></canvas></div>
+              : <p className="fin-empty">Nenhuma comissão lançada em {ano}.<br />Registre a 1ª venda na aba <b>Comissoes</b>.</p>}
+          </div>
+          <div className="chart-box">
+            <h3>Despesas por categoria ({ano})</h3>
+            {(dash.despesas_categoria || []).length
+              ? <div className="chart-area"><canvas ref={cxDesp}></canvas></div>
+              : <p className="fin-empty">Nenhuma despesa paga em {ano}.<br />Lance gastos (anúncios, combustível…) na aba <b>Contas</b>.</p>}
+          </div>
+        </div>
+       </div>
       )}
 
       {secao === "comissoes" && (
