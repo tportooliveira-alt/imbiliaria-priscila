@@ -16,6 +16,7 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 - [ ] 🔴 **Conectar Google Drive** ao app do Claude (ainda NÃO está conectado nesta sessão)
 - [ ] 🟡 Confirmar/usar conectores já disponíveis: Box, Microsoft 365, Slack, monday, Gamma, Metaview (precisam de login)
 - [ ] 🟡 **MCP de arquivos/GitHub/banco** no Cowork — definir quais valem (sai da pesquisa)
+- [ ] 🟡 **Instalar agent-browser no PC** (não na VPS) → extrair dados OLX/QA do site. Ver docs/FERRAMENTA-AGENT-BROWSER.md
 - [x] ~~`deploy.sh` na VPS~~ (pronto) · [x] ~~`scripts/build_home.py`~~ (pronto e testado)
 - [ ] 🟡 Testar o fluxo completo PC→push→VPS `./deploy.sh` de ponta a ponta
 
