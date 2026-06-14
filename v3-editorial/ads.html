@@ -91,6 +91,15 @@ a.back{color:var(--peri);font-size:.85rem;text-decoration:none}
     </div>
   </div>
 
+  <div class="card">
+    <h2>3 · Impulsionar post no Instagram (boost)</h2>
+    <div class="row">
+      <div class="field"><label for="igDia">Valor por dia (R$)</label><input id="igDia" type="number" value="15" min="6" step="1" oninput="igCalc()"/><small class="hint">Mínimo do Meta: R$ 6/dia. Bom pra testar: R$ 10–30/dia.</small></div>
+      <div class="field"><label for="igDias">Por quantos dias</label><input id="igDias" type="number" value="5" min="1" max="60" oninput="igCalc()"/></div>
+    </div>
+    <div class="res otim" style="margin-top:6px"><div class="lines" id="igLines"></div></div>
+  </div>
+
   <div class="disc" id="disc"></div>
   <p style="margin-top:14px"><a class="back" href="/admin/">← voltar ao painel</a></p>
 </div>
@@ -99,10 +108,14 @@ a.back{color:var(--peri);font-size:.85rem;text-decoration:none}
 // Benchmarks da pesquisa (docs/PESQUISA-LEADS-2026.md). CPL em R$ — médias de plataforma (Nordeste), NÃO de VDC.
 // Meta: R$15–45/lead. Google: ~2-3x Meta (lead mais caro, mais qualificado).
 const CPL={meta:{otim:15,cons:45},google:{otim:50,cons:120}};
+// CPC = custo por VISITA ao site (clique no link). BR: Meta ~R$0,50-1,50 | Google ~R$1,50-4. Médias de plataforma.
+const CPC={meta:{otim:0.5,cons:1.5},google:{otim:1.5,cons:4}};
 const fmt=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const fmt2=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2});
 const n1=v=>(Math.round(v*10)/10).toLocaleString('pt-BR');
+window.NIMOVEIS=5;
 
-function cenario(orc,splitMeta,conv,com,ticket,cpl){
+function cenario(orc,splitMeta,conv,com,ticket,cpl,cpc){
   const bMeta=orc*splitMeta, bGoogle=orc*(1-splitMeta);
   const leadsMeta=cpl.meta?bMeta/cpl.meta:0, leadsGoogle=cpl.google?bGoogle/cpl.google:0;
   const leads=leadsMeta+leadsGoogle;
@@ -110,15 +123,19 @@ function cenario(orc,splitMeta,conv,com,ticket,cpl){
   const receita=vendas*ticket*(com/100);   // comissão
   const roas=orc?receita/orc:0;
   const cpv=vendas?orc/vendas:0;
-  return {leads,leadsMeta,leadsGoogle,vendas,receita,roas,cpv,cplMedio:leads?orc/leads:0};
+  const visitas=(cpc.meta?bMeta/cpc.meta:0)+(cpc.google?bGoogle/cpc.google:0);
+  const cpcMedio=visitas?orc/visitas:0;
+  const custoPorImovel=window.NIMOVEIS?orc/window.NIMOVEIS:0;
+  return {leads,leadsMeta,leadsGoogle,vendas,receita,roas,cpv,cplMedio:leads?orc/leads:0,visitas,cpcMedio,custoPorImovel};
 }
 function render(id,r){
   document.getElementById(id+'Vendas').textContent=n1(r.vendas)+' venda(s)';
   document.getElementById(id+'Lines').innerHTML=
-    `<div><span>Leads/mês:</span> <b>${n1(r.leads)}</b> (Meta ${n1(r.leadsMeta)} · Google ${n1(r.leadsGoogle)})</div>`+
-    `<div><span>CPL médio:</span> ${fmt(r.cplMedio)}</div>`+
-    `<div><span>Comissão potencial:</span> <b>${fmt(r.receita)}</b></div>`+
-    `<div><span>Retorno (ROAS):</span> <b>${n1(r.roas)}x</b> · custo/venda ${fmt(r.cpv)}</div>`;
+    `<div><span>👁️ Visitas ao site:</span> <b>${n1(r.visitas)}/mês</b> (${fmt2(r.cpcMedio)}/visita)</div>`+
+    `<div><span>🎣 Leads/mês:</span> <b>${n1(r.leads)}</b> (Meta ${n1(r.leadsMeta)} · Google ${n1(r.leadsGoogle)}) · CPL ${fmt(r.cplMedio)}</div>`+
+    `<div><span>🏠 Custo por imóvel:</span> ${fmt(r.custoPorImovel)}/mês (${window.NIMOVEIS} na carteira)</div>`+
+    `<div><span>💰 Comissão potencial:</span> <b>${fmt(r.receita)}</b></div>`+
+    `<div><span>📈 Retorno (ROAS):</span> <b>${n1(r.roas)}x</b> · custo por venda ${fmt(r.cpv)}</div>`;
 }
 function calc(){
   const orc=+document.getElementById('orc').value||0;
@@ -127,8 +144,9 @@ function calc(){
   const conv=+document.getElementById('conv').value||0;
   const com=+document.getElementById('com').value||0;
   const ticket=+document.getElementById('ticket').value||0;
-  render('c',cenario(orc,splitMeta,conv*0.7,com,ticket,{meta:CPL.meta.cons,google:CPL.google.cons}));
-  render('o',cenario(orc,splitMeta,conv,com,ticket,{meta:CPL.meta.otim,google:CPL.google.otim}));
+  render('c',cenario(orc,splitMeta,conv*0.7,com,ticket,{meta:CPL.meta.cons,google:CPL.google.cons},{meta:CPC.meta.cons,google:CPC.google.cons}));
+  render('o',cenario(orc,splitMeta,conv,com,ticket,{meta:CPL.meta.otim,google:CPL.google.otim},{meta:CPC.meta.otim,google:CPC.google.otim}));
+  igCalc();
   document.getElementById('disc').innerHTML=
     '⚠️ <b>Como ler:</b> os números são uma <b>faixa de planejamento</b>, não promessa. Os CPLs vêm de médias de '+
     'plataforma do Nordeste (pesquisa de leads), não de Vitória da Conquista — e a conversão lead→venda é uma estimativa. '+
@@ -138,11 +156,22 @@ function calc(){
 fetch('/api/imoveis').then(r=>r.json()).then(d=>{
   const arr=(d.imoveis||d||[]).filter(i=>(i.preco||0)>=50000);
   if(arr.length){const t=Math.round(arr.reduce((s,i)=>s+(i.preco||0),0)/arr.length);
-    document.getElementById('ticket').value=t;
+    document.getElementById('ticket').value=t; window.NIMOVEIS=arr.length;
     document.getElementById('tkhint').textContent='Média de '+arr.length+' imóveis de venda da carteira.';}
   calc();
 }).catch(()=>{document.getElementById('tkhint').textContent='(usando ticket padrão)';calc();});
-calc();
+// Impulsionar Instagram: total + alcance estimado (CPM BR ~R$8-22 -> 1000 contas por CPM)
+function igCalc(){
+  const dia=+(document.getElementById('igDia')||{}).value||0;
+  const dias=+(document.getElementById('igDias')||{}).value||0;
+  const total=dia*dias;
+  const alcMax=Math.round(total/8*1000), alcMin=Math.round(total/22*1000);
+  const el=document.getElementById('igLines'); if(!el)return;
+  el.innerHTML='<div><span>Investimento total:</span> <b>'+fmt(total)+'</b> ('+fmt(dia)+'/dia × '+dias+' dias)</div>'+
+    '<div><span>Alcance estimado:</span> <b>'+alcMin.toLocaleString('pt-BR')+' a '+alcMax.toLocaleString('pt-BR')+'</b> contas</div>'+
+    '<div style="opacity:.8;font-size:.8rem;margin-top:4px">Impulsione os posts que já tiveram bom engajamento (salvamentos/compart.). Geo: Vitória da Conquista + região.</div>';
+}
+calc(); igCalc();
 </script>
 </body>
 </html>
