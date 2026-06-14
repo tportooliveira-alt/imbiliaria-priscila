@@ -1387,6 +1387,61 @@ function Agenda() {
   );
 }
 
+// ─── Depoimentos (prova social) ──────────────────────────────────────────────
+function Depoimentos() {
+  const [itens, setItens] = React.useState([]);
+  const [form, setForm] = React.useState({ nome: "", texto: "", estrelas: 5, contexto: "" });
+  const [salvando, setSalvando] = React.useState(false);
+  async function carregar() { try { setItens(await api("/api/admin/depoimentos")); } catch (e) { console.error(e); } }
+  React.useEffect(() => { carregar(); }, []);
+  async function salvar(e) {
+    e.preventDefault();
+    if (form.nome.trim().length < 2 || form.texto.trim().length < 3) { alert("Preencha o nome e o depoimento"); return; }
+    setSalvando(true);
+    try { await api("/api/admin/depoimentos", { method: "POST", body: form }); setForm({ nome: "", texto: "", estrelas: 5, contexto: "" }); carregar(); }
+    catch (e) { alert("Erro ao salvar"); } finally { setSalvando(false); }
+  }
+  async function alternar(d) { await api(`/api/admin/depoimentos/${d.id}`, { method: "PUT", body: { ativo: d.ativo ? 0 : 1 } }); carregar(); }
+  async function remover(id) { if (!confirm("Excluir depoimento?")) return; await api(`/api/admin/depoimentos/${id}`, { method: "DELETE" }); carregar(); }
+  return (
+    <div>
+      <div className="toolbar"><h2>Depoimentos ({itens.length})</h2></div>
+      <p style={{ color: "#777", fontSize: 13, marginTop: -6 }}>Só depoimentos REAIS de clientes (com autorização). No site aparecem só os marcados como ativos.</p>
+      <form onSubmit={salvar} style={{ border: "1px solid #c9c2af", padding: 16, borderRadius: 8, margin: "12px 0", display: "grid", gap: 10, maxWidth: 560 }}>
+        <label>Nome do cliente<input value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} required /></label>
+        <label>Depoimento<textarea rows={3} value={form.texto} onChange={e => setForm({ ...form, texto: e.target.value })} required /></label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <label>Estrelas
+            <select value={form.estrelas} onChange={e => setForm({ ...form, estrelas: +e.target.value })}>
+              {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} ★</option>)}
+            </select>
+          </label>
+          <label>Contexto (opcional)<input placeholder="Ex.: Compra em Candeias" value={form.contexto} onChange={e => setForm({ ...form, contexto: e.target.value })} /></label>
+        </div>
+        <button type="submit" className="btn-primary" style={{ width: "auto" }} disabled={salvando}>{salvando ? "Salvando..." : "+ Adicionar depoimento"}</button>
+      </form>
+      {itens.length === 0 ? (
+        <p style={{ color: "#777" }}>Nenhum depoimento ainda. Peça aos clientes reais da Priscila (tem um textinho pronto no docs/CAMPANHA-INSTAGRAM ou pergunte ao Claude).</p>
+      ) : (
+        <table className="tab" style={{ width: "100%" }}>
+          <thead><tr><th>Cliente</th><th>Depoimento</th><th>★</th><th>No site?</th><th>Acoes</th></tr></thead>
+          <tbody>
+            {itens.map(d => (
+              <tr key={d.id}>
+                <td>{d.nome}<br /><small style={{ color: "#888" }}>{d.contexto}</small></td>
+                <td style={{ maxWidth: 320 }}>{d.texto}</td>
+                <td>{d.estrelas}★</td>
+                <td><button className="btn-mini" onClick={() => alternar(d)}>{d.ativo ? "✓ sim" : "— não"}</button></td>
+                <td><button className="btn-mini danger" onClick={() => remover(d.id)}>✕</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
 // ─── Financeiro (W7) ────────────────────────────────────────────────────────
 function Financeiro() {
   const hoje = new Date();
@@ -1783,6 +1838,7 @@ function App() {
           <button className={aba === "documentos" ? "tab on" : "tab"} onClick={() => setAba("documentos")}>Documentos</button>
           <button className={aba === "financeiro" ? "tab on" : "tab"} onClick={() => setAba("financeiro")}>Financeiro</button>
           <button className={aba === "imoveis" ? "tab on" : "tab"} onClick={() => setAba("imoveis")}>Imoveis</button>
+          <button className={aba === "depoimentos" ? "tab on" : "tab"} onClick={() => setAba("depoimentos")}>Depoimentos</button>
         </nav>
         <div>
           <span className="user">{user.email}</span>
@@ -1799,6 +1855,7 @@ function App() {
         {aba === "agenda" && <Agenda />}
         {aba === "documentos" && <Documentos />}
         {aba === "financeiro" && <Financeiro />}
+        {aba === "depoimentos" && <Depoimentos />}
         {aba === "imoveis" && (<>
         <div className="toolbar">
           <h2>Imoveis ({imoveis.length})</h2>

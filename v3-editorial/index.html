@@ -354,6 +354,37 @@ footer a{color:#cdd9f0}footer a:hover{color:#fff}
   </div>
 </section>
 
+<!-- DEPOIMENTOS (prova social) — escondido enquanto não houver depoimento real -->
+<section class="blk" id="depoimentos" style="display:none">
+  <div class="wrap">
+    <h2 class="h2 reveal" style="text-align:center">O que dizem nossos clientes</h2>
+    <p class="reveal" id="depMedia" style="text-align:center;color:#6b7280;margin:.2rem 0 1.6rem"></p>
+    <div class="dep-grid" id="depGrid"></div>
+  </div>
+</section>
+<style>
+.dep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.dep-card{background:#fff;border:1px solid #e6e8ee;border-radius:16px;padding:22px;box-shadow:0 4px 18px rgba(22,40,75,.06)}
+.dep-stars{color:#c9943a;font-size:1.05rem;letter-spacing:2px;margin-bottom:8px}
+.dep-text{font-size:1rem;line-height:1.6;color:#2a3550;font-style:italic}
+.dep-who{margin-top:14px;font-weight:700;color:#16284B}
+.dep-ctx{font-size:.85rem;color:#6b7280;font-weight:500}
+</style>
+<script>
+fetch('/api/depoimentos').then(function(r){return r.json()}).then(function(d){
+  if(!d||!d.total)return;
+  document.getElementById('depoimentos').style.display='';
+  document.getElementById('depMedia').textContent='★ '+d.media+' de 5 · '+d.total+(d.total>1?' avaliações':' avaliação');
+  var esc=function(t){return (t||'').replace(/[<>&]/g,function(c){return{'<':'&lt;','>':'&gt;','&':'&amp;'}[c]})};
+  document.getElementById('depGrid').innerHTML=d.depoimentos.map(function(x){
+    var n=Math.max(1,Math.min(5,x.estrelas||5));
+    var s='★★★★★'.slice(0,n)+'☆☆☆☆☆'.slice(0,5-n);
+    return '<div class="dep-card"><div class="dep-stars">'+s+'</div><div class="dep-text">“'+esc(x.texto)+
+      '”</div><div class="dep-who">'+esc(x.nome)+'</div>'+(x.contexto?'<div class="dep-ctx">'+esc(x.contexto)+'</div>':'')+'</div>';
+  }).join('');
+}).catch(function(){});
+</script>
+
 <!-- SOBRE -->
 <section class="blk wm" id="sobre">
   <div class="wrap sobre">
@@ -545,6 +576,6 @@ function simular(){
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=fb0c50bd").catch(function(){});});}</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=8e27eb1a").catch(function(){});});}</script>
 </body>
 </html>
