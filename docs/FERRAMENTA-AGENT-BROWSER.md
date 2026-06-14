@@ -1,7 +1,8 @@
 # 🌐 Ferramenta: agent-browser (Vercel Labs) — estudo + como usar
 
 Clonado e estudado em 14/06/2026 (a pedido do Thiago) → `/root/tools/agent-browser`.
-Repo: https://github.com/vercel-labs/agent-browser · site: agent-browser.dev · licença Apache-2.0.
+Repo: https://github.com/vercel-labs/agent-browser (SSH: `git@github.com:vercel-labs/agent-browser.git` — exige chave
+GitHub configurada na máquina) · site: agent-browser.dev · licença Apache-2.0.
 
 ## O que é
 **CLI nativo em Rust** que dirige o **Chrome headless via CDP** (Chrome DevTools Protocol) — sem Playwright/Puppeteer.
