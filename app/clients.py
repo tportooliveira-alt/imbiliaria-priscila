@@ -136,3 +136,25 @@ class ClienteClaude:
                 fallback=True,
                 metadata=None,
             )
+
+    def classificar_imagem(
+        self, prompt: str, image_bytes: bytes, mime: str = "image/jpeg", max_tokens: int = 24
+    ) -> str | None:
+        """Visao do Claude: envia uma imagem + prompt e devolve o texto (ou None em erro)."""
+        if not self.available():
+            return None
+        import base64
+        client = self._ensure_client()
+        b64 = base64.standard_b64encode(image_bytes).decode()
+        try:
+            resp = client.messages.create(
+                model=self.modelo,
+                max_tokens=max_tokens,
+                messages=[{"role": "user", "content": [
+                    {"type": "image", "source": {"type": "base64", "media_type": mime, "data": b64}},
+                    {"type": "text", "text": prompt},
+                ]}],
+            )
+            return "".join(b.text for b in resp.content if hasattr(b, "text")).strip()
+        except Exception:
+            return None

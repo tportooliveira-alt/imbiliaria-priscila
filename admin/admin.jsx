@@ -80,8 +80,38 @@ function FormImovel({ inicial, aoSalvar, aoCancelar }) {
   const [salvando, setSalvando] = React.useState(false);
   const [gerandoDesc, setGerandoDesc] = React.useState(false);
   const [avisoDesc, setAvisoDesc] = React.useState("");
+  const [sugerindoPreco, setSugerindoPreco] = React.useState(false);
+  const [avisoPreco, setAvisoPreco] = React.useState("");
 
   function up(k, v) { setDados(d => ({ ...d, [k]: v })); }
+
+  async function sugerirPreco() {
+    setAvisoPreco("");
+    if (!dados.bairro || !(+dados.area_util > 0)) {
+      setAvisoPreco("Preencha bairro e area util antes de sugerir o preco.");
+      return;
+    }
+    setSugerindoPreco(true);
+    try {
+      const r = await api("/api/avaliar-imovel", {
+        method: "POST",
+        body: {
+          bairro: dados.bairro,
+          tipo: (dados.tipo || "casa").toLowerCase(),
+          area_util: +dados.area_util,
+          quartos: +dados.quartos || 0, suites: +dados.suites || 0, vagas: +dados.vagas || 0,
+          padrao: "medio", estado: "bom", idade: "0_10",
+        },
+      });
+      const fmt = v => "R$ " + Math.round(v).toLocaleString("pt-BR");
+      up("preco", Math.round(r.valor_central));
+      setAvisoPreco(`💡 Estimativa ${fmt(r.valor_minimo)}–${fmt(r.valor_maximo)} (central ${fmt(r.valor_central)}, confianca ${r.confianca}). Preenchi com o central — ajuste pelo padrao/estado real.`);
+    } catch (err) {
+      setAvisoPreco(err.message);
+    } finally {
+      setSugerindoPreco(false);
+    }
+  }
 
   async function gerarDescricao() {
     setAvisoDesc("");
@@ -146,7 +176,22 @@ function FormImovel({ inicial, aoSalvar, aoCancelar }) {
       </div>
       <div className="grid-2">
         <div className="field"><label>Area util (m²)</label><input type="number" min={0} step="0.01" value={dados.area_util} onChange={e => up("area_util", +e.target.value)} /></div>
-        <div className="field"><label>Preco (R$)</label><input type="number" min={0} step="0.01" value={dados.preco} onChange={e => up("preco", +e.target.value)} required /></div>
+        <div className="field">
+          <label style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+            <span>Preco (R$)</span>
+            <button
+              type="button"
+              className="btn-secondary"
+              style={{width: "auto", padding: "4px 12px", fontSize: 12, textTransform: "none", letterSpacing: 0}}
+              onClick={sugerirPreco}
+              disabled={sugerindoPreco}
+            >
+              {sugerindoPreco ? "Avaliando..." : "💰 Sugerir preco"}
+            </button>
+          </label>
+          <input type="number" min={0} step="0.01" value={dados.preco} onChange={e => up("preco", +e.target.value)} required />
+          {avisoPreco && <small style={{color: avisoPreco.startsWith("💡") ? "#2a7a2a" : "#a83333"}}>{avisoPreco}</small>}
+        </div>
       </div>
       <div className="field">
         <label style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>

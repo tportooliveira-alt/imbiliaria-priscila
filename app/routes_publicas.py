@@ -232,6 +232,14 @@ class AvaliacaoRequest(BaseModel):
     estado: Literal["reformado", "bom", "regular", "precisa_reforma"] = "bom"
     idade: Literal["novo", "0_10", "10_20", "20_mais"] = "0_10"
     tem_area_externa: bool = False
+    tipo: Literal["casa", "apartamento", "cobertura", "terreno", "comercial"] = "casa"
+    mobilia: Literal["vazio", "semi", "mobiliado"] = "vazio"
+    lazer: Literal["sem", "basico", "completo"] = "sem"
+    vista: Literal["comum", "livre", "privilegiada"] = "comum"
+    andar_alto: bool = False
+    elevador: bool = False
+    banheiros: int = Field(0, ge=0, le=20)
+    area_terreno: float | None = Field(None, gt=0, le=100_000)
     nome: str | None = Field(None, max_length=120)
     contato: str | None = Field(None, max_length=120)
 
@@ -239,6 +247,22 @@ class AvaliacaoRequest(BaseModel):
 @router.get("/api/avaliacao/bairros")
 def bairros() -> dict:
     return {"bairros": BAIRROS_DISPONIVEIS}
+
+
+@router.get("/api/avaliacao/panorama")
+def panorama() -> dict:
+    """R$/m² REAL por bairro (calibrado) — alimenta o grafico de panorama de mercado."""
+    from app.m2_vdc import M2_TERRENO_VDC, M2_VDC
+
+    construido = sorted(
+        [{"bairro": k.replace("_", " ").title(), "m2": v} for k, v in M2_VDC.items() if k != "outro"],
+        key=lambda x: -x["m2"],
+    )
+    terreno = sorted(
+        [{"bairro": k.replace("_", " ").title(), "m2": v} for k, v in M2_TERRENO_VDC.items()],
+        key=lambda x: -x["m2"],
+    )
+    return {"construido": construido, "terreno": terreno}
 
 
 @router.post("/api/avaliar-imovel")
@@ -254,6 +278,14 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
             estado=payload.estado,
             idade=payload.idade,
             tem_area_externa=payload.tem_area_externa,
+            tipo=payload.tipo,
+            mobilia=payload.mobilia,
+            lazer=payload.lazer,
+            vista=payload.vista,
+            andar_alto=payload.andar_alto,
+            elevador=payload.elevador,
+            banheiros=payload.banheiros,
+            area_terreno=payload.area_terreno,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -328,6 +360,25 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
             idempotency_key=f"lead.qualificado:avaliacao:{av_id}:{lead_id}",
         )
 
+    # Potencial de aluguel — yield mensal sobre o valor de venda estimado.
+    # Residencial: yield REAL por bairro (VivaReal jun/2026). Comercial/terreno: por tipo.
+    # Yields reais por bairro (812 anuncios OLX, jun/2026). Apartamento varia por bairro;
+    # casa/cobertura/comercial/terreno usam yield por tipo.
+    yield_bairro = {
+        "candeias": 0.0058, "boa_vista": 0.0053, "recreio": 0.0025, "centro": 0.0045,
+        "felicia": 0.0050, "brasil": 0.0050, "alto_maron": 0.0045,
+        "patagonia": 0.0060, "vila_serrana": 0.0050,
+    }
+    yield_tipo = {
+        "apartamento": 0.0050, "casa": 0.0035, "cobertura": 0.0050,
+        "comercial": 0.0070, "terreno": 0.0015,
+    }
+    if payload.tipo == "apartamento":
+        yield_mes = yield_bairro.get(r.bairro_normalizado, 0.0050)
+    else:
+        yield_mes = yield_tipo.get(payload.tipo, 0.0050)
+    aluguel_estimado = round(r.valor_central * yield_mes)
+
     return {
         "bairro_informado": payload.bairro,
         "bairro_normalizado": r.bairro_normalizado,
@@ -336,6 +387,8 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
         "valor_central": r.valor_central,
         "valor_minimo": r.valor_minimo,
         "valor_maximo": r.valor_maximo,
+        "aluguel_estimado": aluguel_estimado,
+        "aluguel_yield_pct": round(yield_mes * 100, 2),
         "fatores": r.fatores_aplicados,
         "confianca": r.confianca,
         "texto": texto,

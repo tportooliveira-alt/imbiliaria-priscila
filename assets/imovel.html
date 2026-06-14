@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex"/>
+<title>Imóvel · Priscila Vasconcelos</title>
+<link rel="icon" href="/assets/logo-icone.jpeg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--navy:#16284B;--peri:#5C7CB8;--bg:#FBFCFE;--surface:#EEF2F8;--line:#dde5f0;--ink:#16284B;--muted:#5d6b86;--gold:#c9943a;
+--grad:linear-gradient(120deg,#16284B 0%,#2c4a82 55%,#5C7CB8 100%);--shadow:0 18px 50px -20px rgba(22,40,75,.35);--r:20px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;letter-spacing:-.02em;line-height:1.15}
+a{color:inherit;text-decoration:none}img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border:none;cursor:pointer;font-family:'Inter';font-weight:600;font-size:.95rem;padding:.85rem 1.4rem;border-radius:999px;transition:.22s;width:100%}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:var(--shadow)}.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.btn-wa{background:#25D366;color:#fff}.btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}.btn-ghost:hover{border-color:var(--peri)}
+.pill{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:700;color:#fff;background:var(--grad);padding:.4rem .9rem;border-radius:999px;font-family:'Inter'}
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(251,252,254,.82);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand img{height:38px;mix-blend-mode:multiply}
+.back{font-size:.9rem;color:var(--muted);font-weight:600}.back:hover{color:var(--peri)}
+
+/* gallery */
+.gal{margin-top:22px}
+.gal .main{position:relative;border-radius:var(--r);overflow:hidden;aspect-ratio:16/10;background:var(--surface);box-shadow:var(--shadow);cursor:zoom-in}
+.gal .main img{width:100%;height:100%;object-fit:cover}
+.gal .main .badge{position:absolute;top:16px;left:16px;background:rgba(255,255,255,.92);color:var(--navy);font-family:'Inter';font-weight:700;font-size:.8rem;padding:.45rem .9rem;border-radius:999px;backdrop-filter:blur(4px)}
+.gal .main .count{position:absolute;bottom:16px;right:16px;background:rgba(15,28,56,.78);color:#fff;font-size:.8rem;padding:.4rem .8rem;border-radius:999px}
+.thumbs{display:flex;gap:10px;margin-top:10px;overflow-x:auto;padding-bottom:4px}
+.thumbs img{height:74px;width:104px;object-fit:cover;border-radius:12px;cursor:pointer;opacity:.62;transition:.2s;flex:0 0 auto;border:2px solid transparent}
+.thumbs img:hover{opacity:1}.thumbs img.on{opacity:1;border-color:var(--peri)}
+
+.layout{display:grid;grid-template-columns:1fr 360px;gap:34px;margin:30px 0 60px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+h1.title{font-size:clamp(1.6rem,3.6vw,2.3rem);font-weight:800;margin:.2rem 0}
+.loc{color:var(--muted);font-weight:500;margin-bottom:1rem}
+.facts{display:flex;gap:10px;flex-wrap:wrap;margin:1.1rem 0}
+.fact{background:var(--surface);border-radius:14px;padding:.7rem 1rem;font-size:.9rem;font-weight:600;font-family:'Inter';display:flex;gap:.45rem;align-items:center}
+.fact b{color:var(--peri)}
+h2.sec{font-size:1.3rem;margin:1.8rem 0 .7rem;font-weight:700}
+.desc{white-space:pre-line;color:#33425e;font-size:.97rem}
+.chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:.5rem}
+.chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:.5rem 1rem;font-size:.86rem;font-weight:500}
+.chip:before{content:"✓ ";color:var(--peri);font-weight:700}
+.mapbox{border-radius:var(--r);overflow:hidden;border:1px solid var(--line);height:300px;margin-top:.6rem}
+.mapbox iframe{width:100%;height:100%;border:0}
+
+/* sticky card */
+.cta-card{position:sticky;top:84px;background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:24px}
+.cta-card .price{font-family:'Inter';font-weight:800;font-size:1.9rem;color:var(--navy)}
+.cta-card .price small{font-size:.9rem;color:var(--muted);font-weight:500}
+.cta-card .stk{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.formv{margin-top:16px;border-top:1px solid var(--line);padding-top:16px}
+.formv label{font-family:'Inter';font-weight:600;font-size:.82rem;display:block;margin:.6rem 0 .25rem}
+.formv input{width:100%;border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;font-family:'Inter';outline:none}
+.formv input:focus{border-color:var(--peri)}
+.agentmini{display:flex;align-items:center;gap:.7rem;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.agentmini img{width:48px;height:48px;border-radius:50%;object-fit:cover;background:var(--surface)}
+.agentmini b{font-family:'Inter';font-size:.92rem}.agentmini span{font-size:.78rem;color:var(--muted)}
+.mbar{display:none}
+@media(max-width:900px){
+  .cta-card{position:static}
+  .layout{margin-bottom:30px}
+  .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;background:#fff;border-top:1px solid var(--line);padding:10px 14px;gap:12px;align-items:center;box-shadow:0 -12px 30px -14px rgba(22,40,75,.3)}
+  .mbar .p{font-family:'Inter';font-weight:800;color:var(--navy);font-size:1.02rem;white-space:nowrap;line-height:1.1}
+  .mbar .p small{font-size:.72rem;color:var(--muted);font-weight:500}
+  .mbar .btn{width:auto;flex:1}
+  .fab{bottom:84px}
+  footer{margin-bottom:72px}
+}
+
+/* lightbox */
+.lb{position:fixed;inset:0;background:rgba(10,18,38,.92);z-index:99;display:none;align-items:center;justify-content:center;padding:20px}
+.lb.open{display:flex}.lb img{max-width:94vw;max-height:88vh;border-radius:14px}
+.lb .x{position:absolute;top:18px;right:22px;color:#fff;font-size:2rem;cursor:pointer}
+.lb .nav-a{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:2.4rem;cursor:pointer;padding:0 18px;user-select:none}
+.lb .prev{left:6px}.lb .next{right:6px}
+
+footer{background:var(--navy);color:#cdd9f0;padding:36px 0;margin-top:20px;text-align:center;font-size:.82rem}
+footer img{height:60px;mix-blend-mode:screen;margin:0 auto 12px}
+
+/* floating chat */
+.fab{position:fixed;right:20px;bottom:20px;z-index:80;width:60px;height:60px;border-radius:50%;background:var(--grad);box-shadow:var(--shadow);border:none;cursor:pointer;color:#fff;font-size:1.4rem}
+.chatwin{position:fixed;right:20px;bottom:90px;z-index:80;width:350px;max-width:calc(100vw - 40px);height:460px;max-height:70vh;background:#fff;border-radius:22px;box-shadow:0 30px 70px -20px rgba(22,40,75,.5);display:none;flex-direction:column;overflow:hidden;border:1px solid var(--line)}
+.chatwin.open{display:flex}
+.chat-head{background:var(--grad);color:#fff;padding:15px 18px;font-family:'Inter';font-weight:600;display:flex;gap:.5rem;align-items:center}
+.chat-head .dot{width:9px;height:9px;border-radius:50%;background:#7CFFB2}
+.chat-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:.5rem;background:var(--bg)}
+.bub{padding:.65rem .9rem;border-radius:15px;font-size:.9rem;max-width:84%}
+.bub.a{background:var(--surface)}.bub.u{background:var(--grad);color:#fff;margin-left:auto}
+.chat-foot{display:flex;gap:8px;padding:11px;border-top:1px solid var(--line)}
+.chat-foot input{flex:1;border:1px solid var(--line);border-radius:999px;padding:.55rem .9rem;outline:none}
+.chat-foot button{border:none;background:var(--grad);color:#fff;width:40px;border-radius:50%;cursor:pointer}
+.skl{opacity:.5}
+:focus-visible{outline:3px solid var(--peri);outline-offset:2px;border-radius:6px}
+.btn,.fab{min-height:44px}
+.lb .x,.lb .nav-a{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+  <a class="brand" href="/assets/preview.html"><img src="/assets/logo-branco.jpeg" alt="Priscila Vasconcelos"/></a>
+  <a class="back" href="/assets/preview.html">← Voltar aos imóveis</a>
+</div></header>
+
+<main class="wrap" id="app">
+  <div class="gal"><div class="main skl" style="height:380px"></div></div>
+  <p class="skl" style="padding:30px 0;color:var(--muted)">Carregando imóvel…</p>
+</main>
+
+<footer><div class="wrap">
+  <img src="/assets/logo-preto.jpeg" alt="Priscila Vasconcelos"/>
+  <div>© Priscila Vasconcelos · CRECI/BA 29.231 · Vitória da Conquista, BA</div>
+</div></footer>
+
+<div class="lb" id="lb" role="dialog" aria-label="Galeria de fotos"><span class="x" role="button" tabindex="0" aria-label="Fechar" onclick="lbClose()">✕</span><span class="nav-a prev" role="button" tabindex="0" aria-label="Foto anterior" onclick="lbStep(-1)">‹</span><img id="lbImg" src="" alt="Foto ampliada do imóvel"/><span class="nav-a next" role="button" tabindex="0" aria-label="Próxima foto" onclick="lbStep(1)">›</span></div>
+
+<div class="mbar" id="mbar"></div>
+
+<button class="fab" onclick="toggleChat()" aria-label="Abrir chat com a Ana">💬</button>
+<div class="chatwin" id="chatwin">
+  <div class="chat-head"><span class="dot"></span> Ana · Priscila Vasconcelos</div>
+  <div class="chat-body" id="chatBody"><div class="bub a">Oi! 😊 Quer saber mais desse imóvel ou agendar uma visita? Me chama!</div></div>
+  <div class="chat-foot"><input id="chatInput" aria-label="Mensagem para a Ana" placeholder="Escreva aqui..." onkeydown="if(event.key==='Enter')sendChat()"/><button onclick="sendChat()" aria-label="Enviar mensagem">➤</button></div>
+</div>
+
+<script>
+const WA='5577999395511';
+const params=new URLSearchParams(location.search);
+const slug=params.get('slug')||'casa-duplex-a-venda-boa-vista';
+let imgs=[],cur=0,IMOVEL=null;
+const fmt=v=>'R$ '+Number(v).toLocaleString('pt-BR');
+const imgUrl=(a,s)=>`/assets/${a}/${s}.webp`;
+
+fetch('/api/imoveis/'+slug).then(r=>r.json()).then(d=>{render(d)}).catch(()=>{
+  document.getElementById('app').innerHTML='<p style="padding:40px 0">Não consegui carregar o imóvel. <a href="/assets/preview.html" style="color:var(--peri)">Voltar</a></p>';
+});
+
+function render(d){
+  IMOVEL=d; document.title=d.titulo.trim()+' · Priscila Vasconcelos';
+  imgs=(d.imagens||[]).map(i=>i.arquivo);
+  const locacao=d.tipo==='Comercial';
+  const preco=locacao?`${fmt(d.preco)}<small>/mês</small>`:fmt(d.preco);
+  const facts=[];
+  if(d.quartos>0)facts.push(`🛏️ <b>${d.quartos}</b> quartos`);
+  if(d.suites>0)facts.push(`🛁 <b>${d.suites}</b> suítes`);
+  if(d.vagas>0)facts.push(`🚗 <b>${d.vagas}</b> vagas`);
+  if(d.area_util)facts.push(`📐 <b>${Math.round(d.area_util)}</b> m²`);
+  const chips=(d.caracteristicas||[]).map(c=>`<span class="chip">${c}</span>`).join('');
+  const mapq=encodeURIComponent(d.bairro.trim()+', Vitória da Conquista, BA');
+  const waMsg=encodeURIComponent(`Olá Priscila! Tenho interesse no imóvel "${d.titulo.trim()}" (${d.bairro.trim()} · ${locacao?fmt(d.preco)+'/mês':fmt(d.preco)}). Gostaria de agendar uma visita.`);
+  const tour=(d.tour_360_url && d.tour_360_url!=='None' && d.tour_360_url.startsWith('http'))?`<a class="btn btn-ghost" href="${d.tour_360_url}" target="_blank">🔄 Tour virtual 360°</a>`:'';
+
+  document.getElementById('app').innerHTML=`
+   <div class="gal">
+     <div class="main" onclick="lbOpen(cur)">
+       <img id="mainImg" src="${imgUrl(imgs[0],'1200')}" alt="${d.titulo.trim()}"/>
+       <span class="badge">${locacao?'Para locação':'À venda'} · ${d.bairro.trim()}</span>
+       <span class="count">📷 ${imgs.length} fotos</span>
+     </div>
+     <div class="thumbs" id="thumbs">${imgs.slice(0,14).map((a,i)=>`<img src="${imgUrl(a,'200')}" class="${i===0?'on':''}" onclick="setMain(${i})"/>`).join('')}</div>
+   </div>
+   <div class="layout">
+     <div>
+       <span class="pill">${locacao?'🏢 Comercial':'🏠 '+d.tipo}</span>
+       <h1 class="title">${d.titulo.trim()}</h1>
+       <div class="loc">📍 ${d.bairro.trim()} · Vitória da Conquista, BA</div>
+       <div class="facts">${facts.map(f=>`<span class="fact">${f}</span>`).join('')}</div>
+       <h2 class="sec">Sobre o imóvel</h2>
+       <div class="desc">${(d.descricao||'').trim()}</div>
+       ${chips?`<h2 class="sec">Diferenciais</h2><div class="chips">${chips}</div>`:''}
+       <h2 class="sec">Localização</h2>
+       <div class="mapbox"><iframe title="Mapa de ${d.bairro.trim()}" loading="lazy" src="https://www.google.com/maps?q=${mapq}&output=embed"></iframe></div>
+     </div>
+     <aside>
+       <div class="cta-card">
+         <div class="price">${preco}</div>
+         <div class="stk">
+           <a class="btn btn-wa" href="https://wa.me/${WA}?text=${waMsg}" target="_blank">💬 Agendar pelo WhatsApp</a>
+           <button class="btn btn-primary" onclick="askAna()">✦ Perguntar pra Ana</button>
+           ${tour}
+         </div>
+         <div class="formv">
+           <div style="font-family:'Inter';font-weight:700;font-size:.95rem">Agendar visita</div>
+           <label for="vNome">Seu nome</label><input id="vNome" autocomplete="name" placeholder="Como te chamo?"/>
+           <label for="vTel">Telefone/WhatsApp</label><input id="vTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(77) 9 ____-____"/>
+           <label for="vData">Melhor dia/horário</label><input id="vData" placeholder="Ex.: sábado de manhã"/>
+           <button class="btn btn-primary" style="margin-top:14px" onclick="agendar()">Solicitar visita →</button>
+         </div>
+         <div class="agentmini">
+           <img src="/assets/priscila-bracos.jpg" alt="Priscila"/>
+           <div><b>Priscila Vasconcelos</b><br><span>CRECI/BA 29.231 · responde em minutos</span></div>
+         </div>
+       </div>
+     </aside>
+   </div>`;
+  document.getElementById('mbar').innerHTML=`<div class="p">${preco}</div><a class="btn btn-wa" href="https://wa.me/${WA}?text=${waMsg}" target="_blank">💬 Agendar visita</a>`;
+}
+function setMain(i){cur=i;document.getElementById('mainImg').src=imgUrl(imgs[i],'1200');document.querySelectorAll('.thumbs img').forEach((t,j)=>t.classList.toggle('on',j===i));}
+function lbOpen(i){cur=i;document.getElementById('lbImg').src=imgUrl(imgs[i],'2400');document.getElementById('lb').classList.add('open');}
+function lbClose(){document.getElementById('lb').classList.remove('open');}
+function lbStep(s){cur=(cur+s+imgs.length)%imgs.length;document.getElementById('lbImg').src=imgUrl(imgs[cur],'2400');setMain(cur);}
+function agendar(){
+  const n=(document.getElementById('vNome').value||'').trim(),t=(document.getElementById('vTel').value||'').trim(),dt=(document.getElementById('vData').value||'').trim();
+  const msg=encodeURIComponent(`Olá Priscila! Quero agendar uma visita no imóvel "${IMOVEL.titulo.trim()}" (${IMOVEL.bairro.trim()}).`+(n?` Meu nome é ${n}.`:'')+(t?` Telefone: ${t}.`:'')+(dt?` Prefiro: ${dt}.`:''));
+  window.open(`https://wa.me/${WA}?text=${msg}`,'_blank');
+}
+function askAna(){toggleChat(true);document.getElementById('chatInput').value=`Me conta mais sobre o ${IMOVEL.titulo.trim()}`;document.getElementById('chatInput').focus();}
+
+// chat
+let history=[];
+function toggleChat(force){const w=document.getElementById('chatwin');force===true?w.classList.add('open'):w.classList.toggle('open');}
+function bub(t,c){const b=document.createElement('div');b.className='bub '+c;b.textContent=t;document.getElementById('chatBody').appendChild(b);document.getElementById('chatBody').scrollTop=9e9;return b;}
+function sendChat(){const i=document.getElementById('chatInput'),m=i.value.trim();if(!m)return;bub(m,'u');i.value='';history.push({role:'user',content:m});
+  const t=bub('digitando…','a');t.classList.add('skl');
+  const ctx=IMOVEL?`[Cliente vendo: ${IMOVEL.titulo.trim()} em ${IMOVEL.bairro.trim()}, ${fmt(IMOVEL.preco)}] `:'';
+  fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:ctx+m,history})})
+   .then(r=>r.json()).then(d=>{t.remove();const r=d.resposta||'...';bub(r,'a');history.push({role:'assistant',content:r});})
+   .catch(()=>{t.remove();bub('Me chama no WhatsApp: (77) 99939-5511 😊','a');});}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')lbClose();});
+</script>
+</body>
+</html>

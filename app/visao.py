@@ -35,7 +35,8 @@ _PROMPT = (
 
 
 def disponivel() -> bool:
-    return bool(os.getenv("GOOGLE_API_KEY"))
+    # Gemini (preferido) OU Claude (visao) — qualquer um habilita o auto-organizar.
+    return bool(os.getenv("GOOGLE_API_KEY")) or bool(os.getenv("ANTHROPIC_API_KEY"))
 
 
 def _normalizar(resposta: str) -> str | None:
@@ -63,26 +64,39 @@ def classificar_comodo(arquivo_path: str | Path, *, modelo: str = "gemini-2.0-fl
     caminho = Path(arquivo_path)
     if not caminho.exists():
         return None
-    try:
-        from google import genai
-        from google.genai import types
+    ext = caminho.suffix.lower().lstrip(".")
+    mime = "image/jpeg" if ext in {"jpg", "jpeg"} else f"image/{ext or 'jpeg'}"
 
-        client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
-        # determina mime
-        ext = caminho.suffix.lower().lstrip(".")
-        mime = "image/jpeg" if ext in {"jpg", "jpeg"} else f"image/{ext or 'jpeg'}"
-        with caminho.open("rb") as f:
-            dados = f.read()
-        resp = client.models.generate_content(
-            model=modelo,
-            contents=[
-                types.Part.from_bytes(data=dados, mime_type=mime),
-                _PROMPT,
-            ],
-        )
-        return _normalizar(resp.text or "")
-    except Exception:
-        return None
+    # 1) Gemini Vision (preferido, se houver chave)
+    if os.getenv("GOOGLE_API_KEY"):
+        try:
+            from google import genai
+            from google.genai import types
+
+            client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
+            with caminho.open("rb") as f:
+                dados = f.read()
+            resp = client.models.generate_content(
+                model=modelo,
+                contents=[types.Part.from_bytes(data=dados, mime_type=mime), _PROMPT],
+            )
+            tipo = _normalizar(resp.text or "")
+            if tipo:
+                return tipo
+        except Exception:
+            pass  # cai para o Claude
+
+    # 2) Claude Vision (Haiku — barato) quando o Gemini nao esta disponivel/falhou
+    if os.getenv("ANTHROPIC_API_KEY"):
+        try:
+            from app.clients import ClienteClaude
+            with caminho.open("rb") as f:
+                dados = f.read()
+            texto = ClienteClaude("claude-haiku-4-5").classificar_imagem(_PROMPT, dados, mime)
+            return _normalizar(texto or "")
+        except Exception:
+            return None
+    return None
 
 
 def ordenar_editorial(imagens: list[dict]) -> list[int]:

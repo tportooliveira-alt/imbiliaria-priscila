@@ -33,7 +33,8 @@ def _montar_contexto_carteira() -> str:
                    GROUP BY bairro ORDER BY n DESC LIMIT 6"""
             ).fetchall()
             destaques = conn.execute(
-                """SELECT titulo, bairro, preco, quartos, area_util
+                """SELECT titulo, bairro, preco, quartos, suites, vagas, area_util,
+                          descricao, caracteristicas
                    FROM imoveis WHERE ativo=1 AND destaque=1
                    ORDER BY preco DESC LIMIT 5"""
             ).fetchall()
@@ -50,16 +51,46 @@ def _montar_contexto_carteira() -> str:
             linhas.append("Distribuicao por bairro:")
             for r in por_bairro:
                 preco = r["preco_medio"] or 0
-                preco_fmt = f"~R$ {preco/1000:.0f} mil" if preco < 1_000_000 else f"~R$ {preco/1_000_000:.2f} mi"
-                linhas.append(f"  - {r['bairro']}: {r['n']} imoveis (ticket {preco_fmt})")
+                preco_fmt = "~R$ " + f"{preco:,.0f}".replace(",", ".")  # exato, sem "X mil"
+                linhas.append(f"  - {r['bairro'].strip()}: {r['n']} imovel(is) (ticket medio {preco_fmt})")
         if destaques:
-            linhas.append("Destaques no momento:")
+            linhas.append(
+                "IMOVEIS ATIVOS (use EXATAMENTE estes numeros — preco, bairro, metragem — "
+                "SEM arredondar; o titulo diz se e venda ou locacao/mes):"
+            )
+            import json as _json
+            import re as _re
+
+            def _limpar(txt: str) -> str:
+                t = _re.sub(r"[^\w\sÀ-ÿ.,;:/()%&-]", " ", txt or "")  # tira emoji/simbolos
+                return _re.sub(r"\s+", " ", t).strip()
+
             for r in destaques:
                 p = r["preco"] or 0
-                p_fmt = f"R$ {p/1_000_000:.2f} mi" if p >= 1_000_000 else f"R$ {p/1000:.0f} mil"
-                linhas.append(
-                    f"  - {r['titulo']} ({r['bairro']}, {r['quartos']}q, {r['area_util']}m2) - {p_fmt}"
-                )
+                p_fmt = "R$ " + f"{p:,.0f}".replace(",", ".")  # EXATO: 6500 -> R$ 6.500
+                ficha = []
+                if r["quartos"]:
+                    ficha.append(f"{r['quartos']} quartos")
+                if r["suites"]:
+                    ficha.append(f"{r['suites']} suites")
+                if r["vagas"]:
+                    ficha.append(f"{r['vagas']} vagas")
+                if r["area_util"]:
+                    ficha.append(f"{r['area_util']:.0f}m2")
+                ficha_str = (" · ".join(ficha)) if ficha else ""
+                detalhe = f" ({ficha_str})" if ficha_str else ""
+                linhas.append(f"  - {r['titulo'].strip()}{detalhe} — {r['bairro'].strip()} — {p_fmt}")
+                # Diferenciais cadastrados (ex.: piscina aquecida, energia solar)
+                try:
+                    carac = _json.loads(r["caracteristicas"] or "[]")
+                except Exception:
+                    carac = []
+                if carac:
+                    linhas.append(f"      diferenciais: {', '.join(carac[:8])}")
+                # Resumo da descricao real (ex.: 'colado no Shopping Conquista Sul')
+                desc = _limpar(r["descricao"] or "")
+                if desc:
+                    linhas.append(f"      detalhes completos: {desc[:1200]}")
         return "\n".join(linhas)
     except Exception:
         return ""
@@ -157,6 +188,17 @@ def _cascata(rota: Rota, system: str, mensagem: str, historico: list[dict] | Non
     return ClienteFallback().gerar(system, mensagem, historico)
 
 
+def _sem_markdown(t: str) -> str:
+    """Remove markdown da resposta da Ana (chat estilo WhatsApp nao renderiza ** nem #)."""
+    if not t:
+        return t
+    import re as _re
+    t = t.replace("**", "").replace("__", "").replace("`", "")
+    t = _re.sub(r"(?m)^\s{0,3}#{1,6}\s*", "", t)   # titulos #, ##
+    t = _re.sub(r"(?m)^\s{0,3}\*\s+", "• ", t)      # bullets '* ' -> '• '
+    return t.strip()
+
+
 def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem: bool = False,
               nome_cliente: str | None = None) -> dict:
     """Pipeline completo: classifica → cascata Gemini → Claude → fallback."""
@@ -176,7 +218,7 @@ def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem:
         "motivo": cls.motivo,
         "modelo": resp.modelo,
         "fallback": resp.fallback,
-        "resposta": resp.texto,
+        "resposta": _sem_markdown(resp.texto),
         "lead_score": lead.score,
         "lead_stage": lead.stage,
         "lead_next_question": lead.next_question,

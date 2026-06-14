@@ -25,7 +25,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -64,16 +64,15 @@ class HeadersDeSeguranca(BaseHTTPMiddleware):
         resp.headers.setdefault(
             "Permissions-Policy", "camera=(), microphone=(), geolocation=()"
         )
-        # Soft-launch: noindex em TUDO ate o lancamento oficial.
-        # (Remover esta linha quando a Priscila aprovar, pra liberar o Google.)
-        resp.headers.setdefault("X-Robots-Tag", "noindex, nofollow")
+        if request.url.path.startswith("/admin") or request.url.path.startswith("/api/admin"):
+            resp.headers.setdefault("X-Robots-Tag", "noindex, nofollow")
         # CSP — permite React/Babel via unpkg + WhatsApp/Google fonts.
         # 'unsafe-inline' e 'unsafe-eval' continuam necessarios enquanto Babel
         # standalone roda no navegador; ao migrar para build esses some.
         resp.headers.setdefault(
             "Content-Security-Policy",
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; "
             "font-src 'self' https://fonts.gstatic.com data:; "
             "img-src 'self' data: blob: https:; "
@@ -283,26 +282,9 @@ if admin_dir.exists():
     app.mount("/admin", StaticFiles(directory=admin_dir, html=True), name="admin_ui")
 
 
-# Site NO AR (soft-launch): / e os links curtos redirecionam pra v3-editorial.
-# O X-Robots-Tag noindex GLOBAL (no middleware acima) segura o Google ate o lancamento
-# oficial — quando a Priscila aprovar tudo, remover aquele noindex global pra indexar.
 @app.get("/")
 def index() -> RedirectResponse:
     return RedirectResponse(url="/v3-editorial/")
-
-
-@app.get("/anunciar")
-@app.get("/avaliar")
-def anunciar_redirect() -> RedirectResponse:
-    """Link curto p/ captacao (placas, Instagram, WhatsApp)."""
-    return RedirectResponse(url="/v3-editorial/anunciar.html")
-
-
-@app.get("/mercado")
-@app.get("/panorama")
-def mercado_redirect() -> RedirectResponse:
-    """Link curto p/ a aba de Panorama do Mercado."""
-    return RedirectResponse(url="/v3-editorial/mercado.html")
 
 
 if __name__ == "__main__":

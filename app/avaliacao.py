@@ -10,11 +10,22 @@ from dataclasses import dataclass
 from app.m2_vdc import (
     FATOR_ESTADO,
     FATOR_IDADE,
+    FATOR_LAZER,
+    FATOR_MOBILIA,
     FATOR_PADRAO,
+    FATOR_TIPO,
+    FATOR_VISTA,
+    M2_CASA_MULT,
     EstadoConservacao,
     FaixaIdade,
+    Lazer,
+    Mobilia,
     PadraoConstrucao,
+    TipoImovel,
+    Vista,
+    fator_area,
     m2_do_bairro,
+    terreno_do_bairro,
 )
 
 
@@ -42,41 +53,92 @@ def avaliar(
     estado: EstadoConservacao = "bom",
     idade: FaixaIdade = "0_10",
     tem_area_externa: bool = False,
+    tipo: TipoImovel = "casa",
+    mobilia: Mobilia = "vazio",
+    lazer: Lazer = "sem",
+    vista: Vista = "comum",
+    andar_alto: bool = False,
+    elevador: bool = False,
+    banheiros: int = 0,
+    area_terreno: float | None = None,
 ) -> ResultadoAvaliacao:
-    """Calcula faixa de valor para um imovel em VDC."""
+    """Calcula faixa de valor para um imovel em VDC (calculadora avancada)."""
     if area_util <= 0:
         raise ValueError("area_util deve ser positiva")
 
     chave, m2_base = m2_do_bairro(bairro)
 
-    f_padrao = FATOR_PADRAO[padrao]
-    f_estado = FATOR_ESTADO[estado]
-    f_idade = FATOR_IDADE[idade]
+    # Casa usa multiplicador POR BAIRRO (casa/apto varia 0,62 a 1,29); demais tipos, fator fixo.
+    f_tipo = M2_CASA_MULT.get(chave, M2_CASA_MULT["_def"]) if tipo == "casa" else FATOR_TIPO[tipo]
+    eh_terreno = tipo == "terreno"
 
-    # Ajustes secundarios
+    # Terreno e avaliado pelo m² de terra: fatores de construcao nao se aplicam.
+    if eh_terreno:
+        f_padrao = f_estado = f_idade = f_mobilia = f_lazer = 1.0
+        f_vista = FATOR_VISTA[vista]
+    else:
+        f_padrao = FATOR_PADRAO[padrao]
+        f_estado = FATOR_ESTADO[estado]
+        f_idade = FATOR_IDADE[idade]
+        f_mobilia = FATOR_MOBILIA[mobilia]
+        f_lazer = FATOR_LAZER[lazer]
+        f_vista = FATOR_VISTA[vista]
+
+    # Ajustes secundarios (aditivos)
     f_extras = 1.0
-    if suites > 0:
-        f_extras += 0.03 * suites
-    if vagas >= 2:
-        f_extras += 0.04
-    elif vagas == 1:
-        f_extras += 0.02
-    if tem_area_externa:
-        f_extras += 0.05
-    if quartos >= 4:
-        f_extras += 0.04
+    if not eh_terreno:
+        if suites > 0:
+            f_extras += 0.03 * suites
+        if vagas >= 2:
+            f_extras += 0.04
+        elif vagas == 1:
+            f_extras += 0.02
+        if tem_area_externa:
+            f_extras += 0.05
+        if quartos >= 4:
+            f_extras += 0.04
+        if banheiros >= 3:
+            f_extras += 0.02
+        if andar_alto:
+            f_extras += 0.02
+        if elevador:
+            f_extras += 0.02
+        # Lote generoso (casa com terreno bem maior que a area construida)
+        if area_terreno and area_terreno > area_util * 1.8:
+            f_extras += 0.06
+        elif area_terreno and area_terreno > area_util * 1.3:
+            f_extras += 0.03
 
-    m2_ajustado = m2_base * f_padrao * f_estado * f_idade * f_extras
-    valor_central = m2_ajustado * area_util
+    f_extras = min(f_extras, 1.45)  # teto p/ nao estourar
+    f_area = fator_area(area_util)  # elasticidade nao-linear pela metragem
 
-    # Faixa: ±12% (heuristica conservadora)
-    valor_minimo = valor_central * 0.88
-    valor_maximo = valor_central * 1.12
+    if eh_terreno:
+        # Terreno: avaliado pelo m² de TERRA do bairro (dado de mercado), nao pelo construido.
+        m2_terreno = terreno_do_bairro(chave, m2_base)
+        area_base = area_terreno or area_util
+        m2_ajustado = m2_terreno * f_vista * f_extras
+        valor_central = m2_ajustado * area_base
+    else:
+        m2_ajustado = (
+            m2_base * f_tipo * f_padrao * f_estado * f_idade
+            * f_mobilia * f_lazer * f_vista * f_area * f_extras
+        )
+        area_base = area_util
+        valor_central = m2_ajustado * area_base
 
-    # Confianca: alta se bairro mapeado e dados completos
-    confianca = "alta" if chave != "outro" and area_util >= 30 else "media"
-    if area_util > 600 or area_util < 30:
+    # Confianca primeiro (define a largura da faixa).
+    confianca = "alta" if chave != "outro" and 30 <= area_util <= 300 else "media"
+    # Tipos heterogeneos (terreno, comercial, casa grande) sao menos fiaveis no MCDDM
+    # automatico -> a avaliacao precisa e pelo Metodo Evolutivo / vistoria. Nunca "alta".
+    if eh_terreno or tipo == "comercial" or (tipo == "casa" and area_util > 250):
+        confianca = "media" if confianca == "alta" else confianca
+    if area_util > 800 or area_util < 20 or (tipo == "casa" and area_util > 350):
         confianca = "baixa"
+
+    # Faixa: quanto MENOR a confianca, mais larga (menor precisao do automatico).
+    margem = {"alta": 0.12, "media": 0.16, "baixa": 0.22}[confianca]
+    valor_minimo = valor_central * (1 - margem)
+    valor_maximo = valor_central * (1 + margem)
 
     return ResultadoAvaliacao(
         bairro_normalizado=chave,
@@ -86,20 +148,33 @@ def avaliar(
         valor_minimo=round(valor_minimo, 2),
         valor_maximo=round(valor_maximo, 2),
         fatores_aplicados={
+            "tipo": f_tipo,
             "padrao": f_padrao,
             "estado": f_estado,
             "idade": f_idade,
+            "mobilia": f_mobilia,
+            "lazer": f_lazer,
+            "vista": f_vista,
+            "area": round(f_area, 3),
             "extras": round(f_extras, 3),
         },
         detalhes={
             "area_util": area_util,
+            "area_terreno": area_terreno or 0,
             "quartos": quartos,
             "suites": suites,
             "vagas": vagas,
+            "banheiros": banheiros,
             "padrao": padrao,
             "estado": estado,
             "idade": idade,
+            "tipo": tipo,
+            "mobilia": mobilia,
+            "lazer": lazer,
+            "vista": vista,
             "tem_area_externa": int(tem_area_externa),
+            "andar_alto": int(andar_alto),
+            "elevador": int(elevador),
         },
         confianca=confianca,
     )
