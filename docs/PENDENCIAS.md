@@ -7,8 +7,11 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 
 ## 🔄 Rodando agora (background — não precisa fazer nada)
 - [x] ~~**Pesquisa: Claude Code + MCP + automação**~~ ✅ pronta (25/25 confirmadas) → virou `SETUP-DOIS-LADOS.md`
-- [ ] **Pesquisa: 360° + vídeo + depoimentos na conversão** (task `wscezwr75`) → vira melhorias do site
-- _Resultado de cada uma será empurrado aqui no chat quando terminar._
+- [x] ~~**Pesquisa: 360° + vídeo + depoimentos**~~ ✅ `PESQUISA-360-VIDEO-DEPOIMENTOS.md` — veredito: 360 é "bom ter"
+  (não converte sozinho); **PROVA SOCIAL/depoimentos é a alavanca**; priorizar fotos+descrição. Vários "números" derrubados.
+- [x] ~~**Pesquisa: nobres integrações (MCP/conectores)**~~ ✅ `PESQUISA-INTEGRACOES-2026.md` — expor VPS como custom
+  MCP (plano F) é o caminho; Calendar/Gmail conectam no claude.ai; WhatsApp MCP é imaturo (seguir Evolution direta).
+- _Resultados empurrados no chat._
 
 ## 🖥️ Setup "dois lados" + acesso direto (o objetivo: Claude lê/age sozinho, sem alimentar na mão)
 - [x] ~~**`docs/SETUP-DOIS-LADOS.md`** — guia passo a passo~~ ✅ montado (rascunho pronto pra executar junto)
@@ -34,9 +37,11 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 - [ ] 🟢 Cruzar gasto de ads × leads gerados = **CPL real local**
 - [x] ~~Dashboard com gráficos + fluxo de caixa + pipeline da carteira~~ (feito)
 
-## 🎨 Design
+## 🎨 Design / Confiança
+- [ ] 🟡 **Seção de DEPOIMENTOS reais** (texto + estrelas) na home e na página do imóvel — **maior alavancagem comprovada**
+  (prova social). Meta: ≥20 depoimentos reais da Priscila, média 4,5+. Ver `PESQUISA-360-VIDEO-DEPOIMENTOS.md`.
+- [ ] 🟢 Priorizar **fotos + descrições** dos imóveis (mais impacto que tour). 360° fica como opção (não investir pesado).
 - [ ] 🟢 Padronizar **botões secundários** (3ª da crítica — o principal, CTA dourado, já foi)
-- [ ] 🟢 Aplicar o que a **pesquisa de 360°/vídeo/depoimentos** recomendar (seção de depoimentos, vídeo na home, etc.)
 
 ## 🧮 Calculadora de avaliação
 - [ ] 🟢 **DEGRAU 2**: Método Evolutivo p/ casas de alto padrão (CUB/BA R-8 + depreciação Ross-Heidecke + fator de comercialização) — crava casa de alto padrão
