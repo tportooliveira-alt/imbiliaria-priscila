@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Calculadora de Investimento em Ads · Priscila Vasconcelos (interno)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--navy:#16284B;--gold:#c9943a;--peri:#5C7CB8;--line:#e6e8ee;--muted:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Inter',sans-serif;color:#1a2236;background:#f4f6fa}
+.wrap{max-width:920px;margin:0 auto;padding:22px}
+header{background:var(--navy);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:18px}
+header h1{font-family:'Playfair Display',serif;margin:0 0 4px;font-size:1.5rem}
+header p{margin:0;opacity:.85;font-size:.9rem}
+.tag{display:inline-block;background:rgba(201,148,58,.22);color:#e8c178;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:var(--navy);margin:0 0 14px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.85rem;font-weight:600;margin-bottom:5px}
+.field input[type=number],.field input[type=range]{width:100%}
+.field input[type=number]{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;font-size:1rem;font-family:'Inter'}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rng{display:flex;align-items:center;gap:10px}
+.rng b{min-width:54px;text-align:right;color:var(--navy)}
+small.hint{color:var(--muted);font-size:.78rem}
+.results{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.res{background:linear-gradient(120deg,#16284B,#24477e);color:#fff;border-radius:12px;padding:16px}
+.res.otim{background:linear-gradient(120deg,#8a6418,#c9943a);}
+.res h3{margin:0 0 10px;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.res .big{font-size:1.5rem;font-weight:700;font-family:'Playfair Display',serif}
+.res .lines{margin-top:10px;font-size:.86rem;line-height:1.7}
+.res .lines span{opacity:.8}
+.disc{font-size:.78rem;color:var(--muted);line-height:1.6;background:#fff7e9;border:1px solid #f0dcb6;border-radius:10px;padding:12px 14px}
+.split-val{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:3px}
+a.back{color:var(--peri);font-size:.85rem;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="tag">Ferramenta interna · Priscila Vasconcelos</span>
+    <h1>Calculadora de Investimento em Ads</h1>
+    <p>Quanto investir em Meta + Google e o retorno potencial — com base na pesquisa de leads e na carteira real.</p>
+  </header>
+
+  <div class="card">
+    <h2>1 · Quanto e onde investir</h2>
+    <div class="field">
+      <label for="orc">Orçamento mensal total (R$)</label>
+      <input id="orc" type="number" value="1000" min="0" step="100" oninput="calc()"/>
+      <small class="hint">Comece pequeno (R$ 600–1.500/mês) e suba com o que funcionar.</small>
+    </div>
+    <div class="field">
+      <label for="split">Divisão Meta × Google</label>
+      <div class="rng"><span style="font-size:.8rem">Meta</span><input id="split" type="range" min="0" max="100" value="70" oninput="calc()"/><b id="splitb">70%</b></div>
+      <div class="split-val"><span>Meta (gerar demanda, lead barato)</span><span>Google (intenção, lead caro)</span></div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="conv">Conversão lead → venda (%)</label>
+        <input id="conv" type="number" value="1.5" min="0.1" max="20" step="0.1" oninput="calc()"/>
+        <small class="hint">Imóvel é ticket alto: 1–3% é realista.</small>
+      </div>
+      <div class="field">
+        <label for="com">Comissão por venda (%)</label>
+        <input id="com" type="number" value="6" min="1" max="10" step="0.5" oninput="calc()"/>
+      </div>
+    </div>
+    <div class="field">
+      <label for="ticket">Ticket médio da carteira (R$)</label>
+      <input id="ticket" type="number" value="967300" step="1000" oninput="calc()"/>
+      <small class="hint" id="tkhint">Carregando da carteira real…</small>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2 · Resultado estimado / mês</h2>
+    <div class="results">
+      <div class="res">
+        <h3>Cenário conservador</h3>
+        <div class="big" id="cVendas">—</div>
+        <div class="lines" id="cLines"></div>
+      </div>
+      <div class="res otim">
+        <h3>Cenário otimista</h3>
+        <div class="big" id="oVendas">—</div>
+        <div class="lines" id="oLines"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="disc" id="disc"></div>
+  <p style="margin-top:14px"><a class="back" href="/admin/">← voltar ao painel</a></p>
+</div>
+
+<script>
+// Benchmarks da pesquisa (docs/PESQUISA-LEADS-2026.md). CPL em R$ — médias de plataforma (Nordeste), NÃO de VDC.
+// Meta: R$15–45/lead. Google: ~2-3x Meta (lead mais caro, mais qualificado).
+const CPL={meta:{otim:15,cons:45},google:{otim:50,cons:120}};
+const fmt=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+const n1=v=>(Math.round(v*10)/10).toLocaleString('pt-BR');
+
+function cenario(orc,splitMeta,conv,com,ticket,cpl){
+  const bMeta=orc*splitMeta, bGoogle=orc*(1-splitMeta);
+  const leadsMeta=cpl.meta?bMeta/cpl.meta:0, leadsGoogle=cpl.google?bGoogle/cpl.google:0;
+  const leads=leadsMeta+leadsGoogle;
+  const vendas=leads*(conv/100);
+  const receita=vendas*ticket*(com/100);   // comissão
+  const roas=orc?receita/orc:0;
+  const cpv=vendas?orc/vendas:0;
+  return {leads,leadsMeta,leadsGoogle,vendas,receita,roas,cpv,cplMedio:leads?orc/leads:0};
+}
+function render(id,r){
+  document.getElementById(id+'Vendas').textContent=n1(r.vendas)+' venda(s)';
+  document.getElementById(id+'Lines').innerHTML=
+    `<div><span>Leads/mês:</span> <b>${n1(r.leads)}</b> (Meta ${n1(r.leadsMeta)} · Google ${n1(r.leadsGoogle)})</div>`+
+    `<div><span>CPL médio:</span> ${fmt(r.cplMedio)}</div>`+
+    `<div><span>Comissão potencial:</span> <b>${fmt(r.receita)}</b></div>`+
+    `<div><span>Retorno (ROAS):</span> <b>${n1(r.roas)}x</b> · custo/venda ${fmt(r.cpv)}</div>`;
+}
+function calc(){
+  const orc=+document.getElementById('orc').value||0;
+  const splitMeta=(+document.getElementById('split').value||0)/100;
+  document.getElementById('splitb').textContent=Math.round(splitMeta*100)+'%';
+  const conv=+document.getElementById('conv').value||0;
+  const com=+document.getElementById('com').value||0;
+  const ticket=+document.getElementById('ticket').value||0;
+  render('c',cenario(orc,splitMeta,conv*0.7,com,ticket,{meta:CPL.meta.cons,google:CPL.google.cons}));
+  render('o',cenario(orc,splitMeta,conv,com,ticket,{meta:CPL.meta.otim,google:CPL.google.otim}));
+  document.getElementById('disc').innerHTML=
+    '⚠️ <b>Como ler:</b> os números são uma <b>faixa de planejamento</b>, não promessa. Os CPLs vêm de médias de '+
+    'plataforma do Nordeste (pesquisa de leads), não de Vitória da Conquista — e a conversão lead→venda é uma estimativa. '+
+    'Sem <b>pixel/rastreamento</b> instalado, o algoritmo não otimiza. Use pra decidir o orçamento e acompanhar o real depois.';
+}
+// ticket médio real da carteira (só imóveis de VENDA)
+fetch('/api/imoveis').then(r=>r.json()).then(d=>{
+  const arr=(d.imoveis||d||[]).filter(i=>(i.preco||0)>=50000);
+  if(arr.length){const t=Math.round(arr.reduce((s,i)=>s+(i.preco||0),0)/arr.length);
+    document.getElementById('ticket').value=t;
+    document.getElementById('tkhint').textContent='Média de '+arr.length+' imóveis de venda da carteira.';}
+  calc();
+}).catch(()=>{document.getElementById('tkhint').textContent='(usando ticket padrão)';calc();});
+calc();
+</script>
+</body>
+</html>

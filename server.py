@@ -306,6 +306,12 @@ def mercado_redirect() -> RedirectResponse:
     return RedirectResponse(url="/v3-editorial/mercado.html")
 
 
+@app.get("/ads")
+def ads_redirect() -> RedirectResponse:
+    """Ferramenta INTERNA: calculadora de investimento em Ads (noindex)."""
+    return RedirectResponse(url="/v3-editorial/ads.html")
+
+
 if __name__ == "__main__":
     import uvicorn
 
