@@ -55,6 +55,10 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 - [ ] 🟢 **GOOGLE_API_KEY vazia** — hoje a visão/classificação usa Claude (ok); só ligar Gemini se quiser baratear
 - [ ] 🟢 Bug de boot inofensivo: `UNIQUE constraint usuarios.email` no restart (corrigir com `if not exists`)
 
+## 🔬 Método de estudo (Thiago quer construir em cima)
+- [x] ~~Salvar o **MÉTODO de estudo**~~ ✅ `docs/METODO-ESTUDO.md` (pipeline de pesquisa verificada)
+- [ ] 🟡 **Criar algo com o método** (combinado p/ retomar): skill/rotina "pesquisa-priscila" + base `docs/estudos/` + cruzar com agent-browser
+
 ## 🚀 Lançamento oficial
 - [ ] 🔴 **Remover `noindex`** do `server.py` quando a Priscila aprovar (hoje o site está soft-launch, fora do Google)
 - [ ] 🟡 Trocar a **senha temporária** do admin (`233024`) por uma definitiva
