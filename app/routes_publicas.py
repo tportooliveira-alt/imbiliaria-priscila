@@ -670,6 +670,22 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
 
     push_name = msg.get("pushName") or None
 
+    # ─── SECRETÁRIA (Sofia): só a Priscila (número dela + "Sofia") agenda por WhatsApp ──
+    # Intercepta ANTES da Ana — cliente (outro número) nunca cai aqui.
+    try:
+        from app import secretaria
+        if secretaria.acionar(remote, str(texto)):
+            res = secretaria.processar(str(texto))
+            try:
+                from app import whatsapp as _wa
+                if _wa.disponivel():
+                    _wa.enviar_mensagem(remote, res["mensagem"])
+            except Exception:
+                pass
+            return {"secretaria": True, "ok": res.get("ok"), "detalhe": res.get("mensagem")}
+    except Exception:
+        pass
+
     lead_id = leads_repo.upsert_lead(
         nome=push_name,
         telefone=remote,

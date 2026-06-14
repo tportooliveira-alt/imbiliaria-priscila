@@ -31,9 +31,22 @@ def eh_priscila(remote: str) -> bool:
     return r == alvo or r[-11:] == alvo[-11:]  # tolera DDI/variações nos últimos 11 dígitos
 
 
+KEYWORD = "sofia"  # palavra-chave (decisão do Thiago): ela diz "Sofia, marca..."
+
+
 def eh_comando_agenda(texto: str) -> bool:
     t = (texto or "").lower()
     return any(g in t for g in _GATILHOS)
+
+
+def acionar(remote: str, texto: str) -> bool:
+    """Só vira secretária se: número da Priscila + palavra-chave 'Sofia' na mensagem."""
+    return eh_priscila(remote) and KEYWORD in (texto or "").lower()
+
+
+def _limpar(texto: str) -> str:
+    """Remove o 'Sofia,' inicial antes de interpretar."""
+    return re.sub(r"^\s*sofia[\s,:!-]*", "", texto or "", flags=re.I).strip()
 
 
 _SYS = (
@@ -81,7 +94,7 @@ def _fmt_br(iso: str) -> str:
 
 def processar(texto: str) -> dict:
     """Interpreta e cria o compromisso. Retorna {ok, mensagem} pra confirmar pra Priscila."""
-    d = interpretar(texto)
+    d = interpretar(_limpar(texto))
     if d.get("acao") != "criar" or not d.get("inicio"):
         return {"ok": False, "mensagem": "🤖 " + (d.get("resumo")
                 or "Não entendi o agendamento. Ex.: 'marca visita com a dona Maria sexta às 10h'.")}
