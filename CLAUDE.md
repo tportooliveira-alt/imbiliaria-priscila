@@ -7,6 +7,18 @@ Plataforma da corretora **Priscila Vasconcelos** (Vitória da Conquista-BA): sit
 **capta e qualifica leads** e entrega "mastigado" para a Priscila fechar. A IA cliente-facing
 se chama **Ana**. Dono/dev: **Thiago** (esposo/sócio); Priscila é a corretora de verdade.
 
+## 🧰 Ferramentas e plugins disponíveis — USAR o que for preciso (não fazer na mão)
+- **/deep-research** — workflow multi-agente (busca em paralelo + verifica + sintetiza). Para pesquisa
+  profunda (mercado, ads, concorrentes). **Invocável** via `Workflow({name:"deep-research", args})`.
+- **Plugin "Design" (Anthropic marketplace):** `/design-system`, `/design-critique`,
+  `/accessibility-review`, `/design-handoff`, `/research-synthesis`, `/user-research`.
+  ⚠️ Esses NÃO são invocáveis pelo modelo neste harness ("Unknown skill") — **aplicar o MÉTODO** deles
+  manualmente ao ajustar design (auditar tokens, criticar hierarquia/usabilidade, a11y, handoff).
+- **WebSearch / WebFetch** (pesquisa/leitura), **memória** (`/root/.claude/projects/-root/memory/`),
+  **skills do site** (`docs/skills/*.md`), **plano-mestre** (`docs/PLANO-MESTRE.md`).
+- Ao mexer em DESIGN, seguir a paleta: navy `#16284B` + dourado `#c9943a` + Playfair/Inter; imóvel-primeiro,
+  marca da Priscila destacada, IA discreta. Deploy da home: editar `assets/preview.html` → regenerar `v3-editorial/index.html`.
+
 ## ⛔ Regras de ouro (NÃO violar)
 1. **NUNCA inventar dado.** A Ana só pode oferecer/afirmar ter imóveis que existem no banco
    (tabela `imoveis`, `ativo=1`) ou números que estão em `data/dados_financeiros.md`. Faltou
