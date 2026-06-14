@@ -8,6 +8,11 @@ Plataforma da corretora **Priscila Vasconcelos** (Vitória da Conquista-BA): sit
 se chama **Ana**. Dono/dev: **Thiago** (esposo/sócio); Priscila é a corretora de verdade.
 
 ## 🧰 Ferramentas e plugins disponíveis — USAR o que for preciso (não fazer na mão)
+- **🔌 Conector MCP "Imobiliária Priscila"** (servidor MCP da VPS, `docs/MCP-SERVER.md`): para QUALQUER dado AO VIVO
+  do sistema — **leads, imóveis, agenda, financeiro** — **USE SEMPRE** as ferramentas do conector (`resumo_leads`,
+  `listar_leads`, `detalhar_lead`, `listar_imoveis`, `buscar_imovel`, `agenda_listar`, `agenda_lembretes_pendentes`,
+  `financeiro_resumo`), **automaticamente**, sem o usuário pedir e sem inventar. Se a pergunta envolve lead/imóvel/agenda/
+  número do negócio, consulte o conector primeiro. (No app do PC ele aparece como conector conectado.)
 - **/deep-research** — workflow multi-agente (busca em paralelo + verifica + sintetiza). Para pesquisa
   profunda (mercado, ads, concorrentes). **Invocável** via `Workflow({name:"deep-research", args})`.
 - **Plugin "Design" (Anthropic marketplace):** `/design-system`, `/design-critique`,
