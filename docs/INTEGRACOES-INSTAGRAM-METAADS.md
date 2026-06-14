@@ -47,3 +47,18 @@ CLAUDE.md + segredos fora do git**.
 > Antes de ligar pra valer: **validar** nomes/comandos e custos (Claude Pro? Ryze pago?) com a pesquisa de integrações.
 
 _Relacionados: `PLANO-AMANHA-15-06.md`, `PESQUISA-LEADS-2026.md`, `SETUP-DOIS-LADOS.md`, `PENDENCIAS.md`._
+
+---
+
+## 🧰 Ferramentas-ponte (input do Thiago — aula 14/06) — A VERIFICAR na pesquisa
+Princípio da aula: **não se "instala plugin nativo" — usa-se CONECTORES (APIs/MCP) que fazem a ponte** entre o Claude e a rede social. A ferramenta precisa ter **API aberta ou servidor MCP**. Configura em **Claude → Conectores/Personalizar**, fornecendo as credenciais da conta (leitura/escrita).
+
+| Ferramenta | Pra que serve (segundo a aula) |
+|---|---|
+| **Composio** (composio.dev) | Plataforma centralizadora p/ criar conectores customizados — o chat **lê e CRIA dados** em plataformas externas. Tem MCP + muitos apps. _Forte candidata._ |
+| **Windsor AI** (windsor.ai) | Consolida dados de várias fontes — conecta Claude ao **Instagram/YouTube** p/ **métricas e relatórios** de desempenho. _(analytics/relatório, não necessariamente publicar)_ |
+| **Unipile** (unipile.com) | Interações com **mensagens/DMs** (LinkedIn e redes similares) — automação de leitura/envio/resposta. _(mensageria)_ |
+
+> 💡 **Dica-chave da aula (vale ouro):** o gargalo NÃO é a ferramenta de conexão — é **detalhar o PROCESSO (o passo a passo do workflow)**. Primeiro estruturar **o que a IA deve fazer** (ex.: ao receber um comentário/lead), DEPOIS montar a automação técnica.
+
+**Como aplicar:** a pesquisa "postar Instagram/FB" (rodando) vai **verificar maturidade, custo e segurança** dessas 3 (Composio, Windsor, Unipile) + comparar com Upload-Post/Ayrshare/Graph API. Decidimos a melhor combinação com os dados na mão.
