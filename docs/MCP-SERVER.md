@@ -3,7 +3,8 @@
 Construído 15/06 (plano F do quebra-cabeça). Expõe o sistema como **ferramentas** pro Claude (Cowork/Code):
 o agente conversa e **age** — consulta leads, vê agenda, marca compromisso, resumo financeiro, manda WhatsApp.
 
-## Estado
+## Estado — ✅ NO AR (15/06)
+- **Exposto** em `https://pvscelosimobiliaria.com/mcp-<TOKEN>/` (token secreto no `.env`, modo SÓ LEITURA, validado: conecta + lista 8 ferramentas + lê dados reais). systemd `imobiliaria-mcp` ativo. nginx OK, site intacto.
 - ✅ `app/mcp_server.py` (FastMCP 3.4.2) — **construído e testado local** (127.0.0.1:8765, endpoint `/mcp`).
 - ✅ **8 ferramentas**, modo **SÓ LEITURA por padrão** (seguro): `resumo_leads`, `listar_leads`, `detalhar_lead`,
   `listar_imoveis`, `buscar_imovel`, `agenda_listar`, `agenda_lembretes_pendentes`, `financeiro_resumo`.
