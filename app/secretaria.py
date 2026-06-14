@@ -101,10 +101,10 @@ def processar(texto: str) -> dict:
     titulo = (d.get("titulo") or "Compromisso").strip()
     inicio = d["inicio"]
     fim = d.get("fim") or _mais_1h(inicio)
+    obs = f'Agendado pela Priscila via WhatsApp (Sofia). Pedido: "{_limpar(texto)[:300]}"'
     try:
         novo = agenda_repo.criar(titulo=titulo, inicio=inicio, fim=fim,
-                                 tipo=d.get("tipo") or "visita",
-                                 observacoes="(agendado por WhatsApp pela Priscila)")
+                                 tipo=d.get("tipo") or "visita", observacoes=obs)
     except Exception as exc:
         return {"ok": False, "mensagem": f"🤖 Tentei marcar mas deu erro ({type(exc).__name__})."}
     return {"ok": True, "id": novo,
