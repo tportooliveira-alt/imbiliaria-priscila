@@ -48,6 +48,7 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
   no app (Configurações → Conectores → Google Calendar → autorizar com a conta da Priscila/dele). Depois, no **Cowork**,
   é só pedir ("marca visita amanhã 15h com o lead X") que o Claude cria/edita o evento. ⚠️ Este conector NÃO aparece
   na sessão da VPS (headless) — as ações de calendário rodam no **app do Thiago**, onde o conector está logado.
+- [ ] 🟢 **Backend auto-sync (reforço, opção 1 — Thiago pediu OS DOIS)**: site cria evento no Google Calendar sozinho. Precisa: `pip install google-api-python-client` no venv + **service account JSON** (Google Cloud) com o calendário compartilhado. Código a fazer (`app/gcal.py`).
 
 ## 🤖 Ana / WhatsApp / IA
 - [ ] 🟡 **Resposta automática do WhatsApp**: validar em modo teste → produção
