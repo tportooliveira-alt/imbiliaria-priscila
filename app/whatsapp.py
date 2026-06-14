@@ -167,10 +167,13 @@ def transcrever_audio(msg: dict) -> str | None:
         return None
 
 
-def gerar_voz(texto: str) -> bytes | None:
-    """Gera audio (voz da Ana) a partir do texto, via ElevenLabs. None se falhar."""
+def gerar_voz(texto: str, voice_id: str | None = None) -> bytes | None:
+    """Gera audio a partir do texto, via ElevenLabs. None se falhar.
+
+    voice_id: voz especifica (ex.: a do Joao). Sem isso, usa a voz padrao (Ana).
+    """
     el = os.getenv("ELEVENLABS_API_KEY", "").strip()
-    voz = os.getenv("ELEVENLABS_VOICE_ID", "").strip()
+    voz = (voice_id or os.getenv("ELEVENLABS_VOICE_ID", "")).strip()
     if not el or not voz or not (texto or "").strip():
         return None
     try:

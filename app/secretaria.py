@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import unicodedata
 from datetime import datetime, timedelta, timezone
 
 from app import agenda as agenda_repo
@@ -31,22 +32,27 @@ def eh_priscila(remote: str) -> bool:
     return r == alvo or r[-11:] == alvo[-11:]  # tolera DDI/variações nos últimos 11 dígitos
 
 
-KEYWORD = "sofia"  # palavra-chave (decisão do Thiago): ela diz "Sofia, marca..."
+NOME = "João"        # assistente de AGENDA — IA masculina (distinta da Ana, que atende cliente)
+KEYWORD = "joao"     # ela diz "João, marca..." (comparado sem acento)
+
+
+def _sem_acento(s: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", s or "")
+                   if unicodedata.category(c) != "Mn").lower()
 
 
 def eh_comando_agenda(texto: str) -> bool:
-    t = (texto or "").lower()
-    return any(g in t for g in _GATILHOS)
+    return any(g in _sem_acento(texto) for g in _GATILHOS)
 
 
 def acionar(remote: str, texto: str) -> bool:
-    """Só vira secretária se: número da Priscila + palavra-chave 'Sofia' na mensagem."""
-    return eh_priscila(remote) and KEYWORD in (texto or "").lower()
+    """Só vira o João se: número da Priscila + a palavra 'João' na mensagem."""
+    return eh_priscila(remote) and KEYWORD in _sem_acento(texto)
 
 
 def _limpar(texto: str) -> str:
-    """Remove o 'Sofia,' inicial antes de interpretar."""
-    return re.sub(r"^\s*sofia[\s,:!-]*", "", texto or "", flags=re.I).strip()
+    """Remove o 'João,' inicial antes de interpretar."""
+    return re.sub(r"^\s*jo[aã]o[\s,:!-]*", "", texto or "", flags=re.I).strip()
 
 
 _SYS = (
@@ -93,19 +99,37 @@ def _fmt_br(iso: str) -> str:
 
 
 def processar(texto: str) -> dict:
-    """Interpreta e cria o compromisso. Retorna {ok, mensagem} pra confirmar pra Priscila."""
+    """Interpreta e cria o compromisso. Retorna {ok, mensagem (texto), fala (pra áudio do João)}."""
     d = interpretar(_limpar(texto))
     if d.get("acao") != "criar" or not d.get("inicio"):
-        return {"ok": False, "mensagem": "🤖 " + (d.get("resumo")
-                or "Não entendi o agendamento. Ex.: 'marca visita com a dona Maria sexta às 10h'.")}
+        base = d.get("resumo") or "Opa, não entendi direito, dona Priscila. Tenta tipo: 'João, marca visita com a dona Maria sexta às 10h'."
+        return {"ok": False, "mensagem": "🤖 " + base, "fala": base}
     titulo = (d.get("titulo") or "Compromisso").strip()
     inicio = d["inicio"]
     fim = d.get("fim") or _mais_1h(inicio)
-    obs = f'Agendado pela Priscila via WhatsApp (Sofia). Pedido: "{_limpar(texto)[:300]}"'
+    obs = f'Agendado pela Priscila via WhatsApp (João). Pedido: "{_limpar(texto)[:300]}"'
     try:
         novo = agenda_repo.criar(titulo=titulo, inicio=inicio, fim=fim,
                                  tipo=d.get("tipo") or "visita", observacoes=obs)
     except Exception as exc:
-        return {"ok": False, "mensagem": f"🤖 Tentei marcar mas deu erro ({type(exc).__name__})."}
-    return {"ok": True, "id": novo,
-            "mensagem": f"✅ Marquei: *{titulo}* — {_fmt_br(inicio)}. Tá na sua agenda! 📅"}
+        m = f"Opa, tentei marcar mas deu um problema aqui ({type(exc).__name__}), dona Priscila."
+        return {"ok": False, "mensagem": "🤖 " + m, "fala": m}
+    msg = f"✅ Fechou, dona Priscila! Marquei: {titulo} — {_fmt_br(inicio)}. Tá na sua agenda 👊"
+    fala = (f"Fechou, dona Priscila! Marquei {titulo}, {_fala_data(inicio)}. "
+            "Tá na sua agenda, viu? Qualquer coisa é só me chamar.")
+    return {"ok": True, "id": novo, "mensagem": msg, "fala": fala}
+
+
+_MESES = ["", "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+          "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
+_DIAS_FALA = ["segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado", "domingo"]
+
+
+def _fala_data(iso: str) -> str:
+    """Data falada e natural pro áudio (ex.: 'sexta-feira, dia 19 de junho, às 10 horas')."""
+    try:
+        dt = datetime.fromisoformat(iso)
+        hora = f"{dt.hour} horas" if dt.minute == 0 else f"{dt.hour} e {dt.minute:02d}"
+        return f"{_DIAS_FALA[dt.weekday()]}, dia {dt.day} de {_MESES[dt.month]}, às {hora}"
+    except Exception:
+        return iso

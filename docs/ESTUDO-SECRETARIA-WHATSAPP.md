@@ -1,4 +1,6 @@
-# 🗓️ Estudo: Secretária por WhatsApp (Priscila agenda) sem confundir a Ana
+# 🗓️ Estudo: Assistente de agenda por WhatsApp — JOÃO (voz masculina) vs Ana (cliente)
+
+> Atualizado: o assistente de AGENDA é o **João** (IA masculina, voz Renato/BR via ElevenLabs, confirma em ÁUDIO). Palavra-chave 'João' (aceita sem acento). Trava: número da Priscila + 'João'. Distinto da **Ana** (feminina, atende cliente).
 
 Objetivo: a Priscila manda do **número pessoal dela** → "marca visita com a dona Maria sexta 10h" → o sistema cria o
 compromisso na agenda e confirma. **Só o número dela** pode. A **Ana (bot cliente) NÃO pode se confundir.**
