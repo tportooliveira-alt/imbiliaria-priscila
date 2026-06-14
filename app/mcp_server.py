@@ -95,27 +95,23 @@ def financeiro_resumo(ano: int | None = None, mes: int | None = None) -> dict:
     return financeiro_repo.dashboard(ano=ano, mes=mes)
 
 
-# ─── AÇÃO (só com MCP_WRITE_ENABLED=1) ───────────────────────────────────────
-@mcp.tool
-def agenda_criar(titulo: str, inicio: str, fim: str, tipo: str = "visita",
-                 lead_id: int | None = None, observacoes: str = "") -> dict:
-    """Cria um compromisso na agenda. inicio/fim em ISO (YYYY-MM-DDTHH:MM). Horário de BRASÍLIA (UTC-3)."""
-    if not WRITE:
-        return {"erro": "escrita desativada (MCP_WRITE_ENABLED=0)"}
-    novo = agenda_repo.criar(titulo=titulo, inicio=inicio, fim=fim, tipo=tipo,
-                             lead_id=lead_id, observacoes=observacoes)
-    return {"ok": True, "id": novo}
+# ─── AÇÃO (só REGISTRADAS quando habilitadas — senão nem aparecem pro Cowork) ──
+if WRITE:
+    @mcp.tool
+    def agenda_criar(titulo: str, inicio: str, fim: str, tipo: str = "visita",
+                     lead_id: int | None = None, observacoes: str = "") -> dict:
+        """Cria um compromisso na agenda. inicio/fim em ISO (YYYY-MM-DDTHH:MM). Horário de BRASÍLIA (UTC-3)."""
+        novo = agenda_repo.criar(titulo=titulo, inicio=inicio, fim=fim, tipo=tipo,
+                                 lead_id=lead_id, observacoes=observacoes)
+        return {"ok": True, "id": novo}
 
-
-@mcp.tool
-def enviar_whatsapp_lembrete(telefone: str, texto: str) -> dict:
-    """Envia 1 mensagem de WhatsApp (lembrete). Requer MCP_WRITE_ENABLED=1 e MCP_WHATSAPP_ENABLED=1."""
-    if not (WRITE and WA_OK):
-        return {"erro": "envio de WhatsApp desativado (MCP_WHATSAPP_ENABLED=0)"}
-    if not whatsapp_mod.disponivel():
-        return {"erro": "WhatsApp não configurado"}
-    r = whatsapp_mod.enviar_mensagem(telefone, texto)
-    return _j(r)
+if WRITE and WA_OK:
+    @mcp.tool
+    def enviar_whatsapp_lembrete(telefone: str, texto: str) -> dict:
+        """Envia 1 mensagem de WhatsApp (lembrete). Só com MCP_WRITE_ENABLED=1 e MCP_WHATSAPP_ENABLED=1."""
+        if not whatsapp_mod.disponivel():
+            return {"erro": "WhatsApp não configurado"}
+        return _j(whatsapp_mod.enviar_mensagem(telefone, texto))
 
 
 if __name__ == "__main__":
