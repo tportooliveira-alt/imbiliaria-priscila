@@ -24,6 +24,7 @@ a{color:inherit;text-decoration:none}img{max-width:100%;display:block}
 .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border:none;cursor:pointer;font-family:'Inter';font-weight:600;font-size:.95rem;padding:.9rem 1.5rem;border-radius:999px;transition:.22s;min-height:46px}
 .btn-primary{background:var(--grad);color:#fff;box-shadow:var(--shadow)}.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.btn-gold{background:var(--grad-gold);color:#fff;box-shadow:0 6px 18px rgba(201,148,58,.34)}.btn-gold:hover{transform:translateY(-2px);filter:brightness(1.04)}
 .btn-wa{background:#25D366;color:#fff}.btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}.btn-ghost:hover{border-color:var(--peri)}
 .pill{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:700;color:#fff;background:rgba(255,255,255,.18);padding:.4rem .9rem;border-radius:999px;font-family:'Inter'}
 :focus-visible{outline:3px solid var(--peri);outline-offset:2px;border-radius:6px}
@@ -141,7 +142,7 @@ footer img{height:58px;mix-blend-mode:screen;margin:0 auto 12px}
       <label class="check"><input type="checkbox" id="elevador"/> Tem elevador (prédio)</label>
       <label class="check"><input type="checkbox" id="andar"/> Andar alto / cobertura</label>
     </details>
-    <button class="btn btn-primary" style="margin-top:18px;width:100%" onclick="avaliar()" id="btnAval">Ver quanto vale →</button>
+    <button class="btn btn-gold" style="margin-top:18px;width:100%" onclick="avaliar()" id="btnAval">Ver quanto vale →</button>
 
     <div class="result" id="result">
       <div style="opacity:.85;font-size:.85rem">Faixa estimada de mercado</div>
@@ -160,7 +161,7 @@ footer img{height:58px;mix-blend-mode:screen;margin:0 auto 12px}
         <div class="field"><label for="cTel">WhatsApp</label><input id="cTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(77) 9 ____-____"/></div>
       </div>
       <div class="field"><label for="cValor">Valor pretendido (opcional)</label><input id="cValor" type="number" inputmode="numeric" placeholder="Quanto você gostaria?"/></div>
-      <button class="btn btn-primary" style="margin-top:16px;width:100%" onclick="enviarLead()" id="btnLead">Ver minha avaliação →</button>
+      <button class="btn btn-gold" style="margin-top:16px;width:100%" onclick="enviarLead()" id="btnLead">Ver minha avaliação →</button>
     </div>
     <div class="okmsg" id="okmsg">✅ Pronto! Sua avaliação está aí em cima. A Priscila vai te chamar no WhatsApp com a avaliação completa. Obrigada pela confiança! 💙</div>
   </div>
