@@ -38,8 +38,8 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 - [x] ~~Dashboard com gráficos + fluxo de caixa + pipeline da carteira~~ (feito)
 
 ## 🎨 Design / Confiança
-- [ ] 🟡 **Seção de DEPOIMENTOS reais** (texto + estrelas) na home e na página do imóvel — **maior alavancagem comprovada**
-  (prova social). Meta: ≥20 depoimentos reais da Priscila, média 4,5+. Ver `PESQUISA-360-VIDEO-DEPOIMENTOS.md`.
+- [x] ~~**Estrutura de DEPOIMENTOS**~~ ✅ feita: tabela + admin (aba Depoimentos) + seção no site (estrelas+média,
+  escondida se vazia). **Falta**: Priscila COLETAR os reais (≥20, 4,5+) e cadastrar no admin. Textinho de pedido pronto.
 - [ ] 🟢 Priorizar **fotos + descrições** dos imóveis (mais impacto que tour). 360° fica como opção (não investir pesado).
 - [ ] 🟢 Padronizar **botões secundários** (3ª da crítica — o principal, CTA dourado, já foi)
 
