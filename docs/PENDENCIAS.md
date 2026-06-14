@@ -44,10 +44,9 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 
 ## 📅 Google Agenda (integração)
 - [x] ~~**Nível 1**: botão "📅 Google" em cada compromisso do admin~~ ✅ abre o Google Agenda preenchido (sem credencial)
-- [ ] 🟡 **Nível 2 (auto-sync) — ESCOLHIDO: conector Google Calendar no Cowork.** Thiago conecta o Google Calendar
-  no app (Configurações → Conectores → Google Calendar → autorizar com a conta da Priscila/dele). Depois, no **Cowork**,
-  é só pedir ("marca visita amanhã 15h com o lead X") que o Claude cria/edita o evento. ⚠️ Este conector NÃO aparece
-  na sessão da VPS (headless) — as ações de calendário rodam no **app do Thiago**, onde o conector está logado.
+- [x] ~~**Nível 2 (auto-sync) — conector Google Calendar no Cowork**~~ ✅ **TESTADO E FUNCIONANDO (14/06)**: no Cowork,
+  pedido "marca teste amanhã 9h" → evento "Teste" criado em 15/06 09h-10h na Google Agenda. No **Cowork** é só pedir que o
+  Claude cria/edita/cancela. ⚠️ O conector só existe no **app do Thiago**, NÃO na sessão da VPS (headless).
 - [ ] 🟢 **Backend auto-sync (reforço, opção 1 — Thiago pediu OS DOIS)**: site cria evento no Google Calendar sozinho. Precisa: `pip install google-api-python-client` no venv + **service account JSON** (Google Cloud) com o calendário compartilhado. Código a fazer (`app/gcal.py`).
 
 ## 🤖 Ana / WhatsApp / IA
