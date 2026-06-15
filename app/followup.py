@@ -16,6 +16,7 @@ import os
 from datetime import datetime, timedelta
 
 from app import leads as leads_repo
+from app import whatsapp as _wa
 from app.db import db_session
 
 ENABLED = os.getenv("FOLLOWUP_ENABLED", "0") == "1"
@@ -71,6 +72,8 @@ def elegiveis(limite: int = 50) -> list[dict]:
         for ld in leads:
             lid = ld["id"]
             if _eh_empresa(ld["nome"]):   # pula corretor/empresa/teste
+                continue
+            if not _wa.telefone_valido(ld["telefone"]):  # pula LID/grupo (não é telefone real)
                 continue
             inter = conn.execute(
                 "SELECT tipo, descricao, criado_em FROM lead_interacoes WHERE lead_id=? ORDER BY id DESC",
