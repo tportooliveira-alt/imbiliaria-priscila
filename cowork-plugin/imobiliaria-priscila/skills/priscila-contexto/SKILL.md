@@ -16,6 +16,20 @@ Use no começo de qualquer tarefa do projeto. Casa com a skill [[orquestrar-com-
 - **Thiago** — dev, esposo e sócio (faz a parte técnica). Priscila é a corretora de verdade.
 - Site: **pvscelosimobiliaria.com** (soft-launch, ainda com `noindex`). Ticket ~R$1 mi, comissão ~6% (~R$60k/venda).
 
+## 🎙️ Persona da Priscila (a VOZ — use em todo conteúdo)
+Nas redes/conteúdo, a voz é a da **própria Priscila** (1ª pessoa, marca pessoal):
+- **Tom:** próxima, acolhedora, didática, honesta, **sem pressão e sem "vendedor chato"**. Lema: *"clareza antes de decidir."*
+- Atende **de perto**, cada cliente é dela; conhece VDC de cabeça (bairro por bairro). Explica cada passo (financiamento, documentos, negociação).
+- **Honesta:** não promete o que não dá; só fecha o que faz sentido pro cliente. CRECI/BA 29.231.
+- _(Atenção: nas REDES a voz é a Priscila em 1ª pessoa. No WhatsApp, a IA de atendimento é a **Ana**, que fala da Priscila em 3ª pessoa — não confundir os dois contextos.)_
+
+## 🎨 Identidade visual / formato de design (a CARA dela — use em toda arte)
+Todo design (Canva/Gamma) tem que sair no **template da marca**, não genérico:
+- **Cores:** azul-marinho **#16284B** (principal), peri **#5C7CB8**, **dourado #c9943a→#e8b55a** (destaques/CTAs), areia **#f5f0e8**, fundo claro #FBFCFE.
+- **Fontes:** **Playfair Display** (serif, nos títulos) + **Inter** (texto). Estilo **editorial, elegante, clean**, cards arredondados.
+- **Logo** da Priscila presente; **marca d'água** nas fotos de imóvel: "Priscila Vasconcelos · CRECI/BA 29.231".
+- Layout consistente entre os posts (mesma capa-padrão, paleta e tipografia) — a pessoa reconhece que é dela só de bater o olho.
+
 ## O sistema (o que já existe)
 - **Site**: FastAPI (uvicorn 127.0.0.1:8001) + nginx + **SQLite** (`data/site.db`); front estático em `v3-editorial/`,
   painel **admin** em React/Babel (`admin/admin.jsx`). Roda na VPS via systemd `imobiliaria`.

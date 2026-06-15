@@ -38,6 +38,8 @@ votação, cita fonte) — pra ser sólido e fundamentado, não raso. Nunca inve
 5. **Registrar** o que foi publicado (data + tema) pra variar e não repetir.
 
 ## Imagens / Design (gerar a arte de verdade — Canva + Gamma)
+> ⚠️ Toda arte E todo texto seguem a **persona (voz)** e a **identidade visual (template/cores/fontes/logo)** da
+> Priscila definidas em [[priscila-contexto]] — a pessoa tem que reconhecer que é dela só de bater o olho. Nada genérico.
 - **Notícia/conhecimento:** gerar o **design do carrossel** com **Gamma** (conector já disponível no Cowork — gera os
   slides visuais por IA a partir do texto) ou **Canva** (templates da marca). Aplicar as cores da marca
   (azul **#16284B**, peri #5C7CB8, **dourado** nos destaques) e a fonte Inter/serif. Saída: as artes prontas dos slides.
