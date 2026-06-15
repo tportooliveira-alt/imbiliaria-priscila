@@ -402,6 +402,239 @@ function GerenciadorImagens({ imovel, aoFechar }) {
   );
 }
 
+// ─── Empreendimentos ─────────────────────────────────────────────────────────
+const STATUS_OBRA = [
+  ["na_planta", "Na planta"],
+  ["em_obras", "Em obras"],
+  ["pronto", "Pronto"],
+];
+
+function GerenciadorTipologias({ tipologias, setTipologias }) {
+  function up(idx, k, v) {
+    setTipologias(ts => ts.map((t, i) => i === idx ? { ...t, [k]: v } : t));
+  }
+  function adicionar() {
+    setTipologias(ts => [...ts, { nome: "", area_util: 0, quartos: 0, suites: 0, vagas: 0, preco_a_partir: 0, ordem: ts.length }]);
+  }
+  function remover(idx) {
+    setTipologias(ts => ts.filter((_, i) => i !== idx).map((t, i) => ({ ...t, ordem: i })));
+  }
+  return (
+    <div className="field">
+      <label>Tipologias / plantas</label>
+      {tipologias.length === 0 && (
+        <p style={{fontSize: 13, color: "#777", margin: "0 0 8px"}}>Nenhuma tipologia ainda. Adicione as plantas disponiveis.</p>
+      )}
+      {tipologias.map((t, idx) => (
+        <div key={idx} style={{display: "grid", gridTemplateColumns: "1.4fr .8fr .6fr .6fr .6fr 1fr auto", gap: 8, alignItems: "end", marginBottom: 8}}>
+          <div className="field" style={{marginBottom: 0}}>
+            {idx === 0 && <label style={{fontSize: 11}}>Planta</label>}
+            <input value={t.nome} placeholder="Ex: 2 quartos" onChange={e => up(idx, "nome", e.target.value)} />
+          </div>
+          <div className="field" style={{marginBottom: 0}}>
+            {idx === 0 && <label style={{fontSize: 11}}>m²</label>}
+            <input type="number" min={0} step="0.01" value={t.area_util} onChange={e => up(idx, "area_util", +e.target.value)} />
+          </div>
+          <div className="field" style={{marginBottom: 0}}>
+            {idx === 0 && <label style={{fontSize: 11}}>Quartos</label>}
+            <input type="number" min={0} value={t.quartos} onChange={e => up(idx, "quartos", +e.target.value)} />
+          </div>
+          <div className="field" style={{marginBottom: 0}}>
+            {idx === 0 && <label style={{fontSize: 11}}>Suites</label>}
+            <input type="number" min={0} value={t.suites} onChange={e => up(idx, "suites", +e.target.value)} />
+          </div>
+          <div className="field" style={{marginBottom: 0}}>
+            {idx === 0 && <label style={{fontSize: 11}}>Vagas</label>}
+            <input type="number" min={0} value={t.vagas} onChange={e => up(idx, "vagas", +e.target.value)} />
+          </div>
+          <div className="field" style={{marginBottom: 0}}>
+            {idx === 0 && <label style={{fontSize: 11}}>A partir de R$</label>}
+            <input type="number" min={0} step="0.01" value={t.preco_a_partir} onChange={e => up(idx, "preco_a_partir", +e.target.value)} />
+          </div>
+          <button type="button" className="btn-mini danger" onClick={() => remover(idx)} title="Remover tipologia" style={{height: 38}}>×</button>
+        </div>
+      ))}
+      <button type="button" className="btn-secondary" style={{width: "auto", marginTop: 4}} onClick={adicionar}>
+        + Adicionar tipologia
+      </button>
+    </div>
+  );
+}
+
+function FormEmpreendimento({ inicial, aoSalvar, aoCancelar }) {
+  const [dados, setDados] = React.useState(inicial || {
+    nome: "", construtora: "", bairro: "", descricao: "", video_url: "",
+    status_obra: "na_planta", entrega_prevista: "", destaque: false, ativo: true,
+  });
+  const [tipologias, setTipologias] = React.useState(
+    (inicial?.tipologias || []).map((t, i) => ({ ordem: i, ...t }))
+  );
+  const [erro, setErro] = React.useState("");
+  const [salvando, setSalvando] = React.useState(false);
+
+  function up(k, v) { setDados(d => ({ ...d, [k]: v })); }
+
+  async function submit(e) {
+    e.preventDefault();
+    setErro(""); setSalvando(true);
+    try {
+      const payload = { ...dados, tipologias: tipologias.map((t, i) => ({ ...t, ordem: i })) };
+      if (inicial?.id) {
+        await api(`/api/admin/empreendimentos/${inicial.id}`, { method: "PUT", body: payload });
+      } else {
+        await api("/api/admin/empreendimentos", { method: "POST", body: payload });
+      }
+      aoSalvar();
+    } catch (err) { setErro(err.message); }
+    finally { setSalvando(false); }
+  }
+
+  return (
+    <form onSubmit={submit}>
+      {erro && <div className="alerta">{erro}</div>}
+      <div className="field"><label>Nome do empreendimento</label><input value={dados.nome} onChange={e => up("nome", e.target.value)} required /></div>
+      <div className="grid-2">
+        <div className="field"><label>Construtora</label><input value={dados.construtora || ""} onChange={e => up("construtora", e.target.value)} /></div>
+        <div className="field"><label>Bairro</label><input value={dados.bairro || ""} onChange={e => up("bairro", e.target.value)} required /></div>
+      </div>
+      <div className="grid-2">
+        <div className="field"><label>Status da obra</label>
+          <select value={dados.status_obra} onChange={e => up("status_obra", e.target.value)}>
+            {STATUS_OBRA.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          </select>
+        </div>
+        <div className="field"><label>Entrega prevista</label>
+          <input placeholder="Ex: Dez/2027" value={dados.entrega_prevista || ""} onChange={e => up("entrega_prevista", e.target.value)} />
+        </div>
+      </div>
+      <div className="field">
+        <label>Video (link YouTube/Vimeo)</label>
+        <input type="url" placeholder="https://youtu.be/..." value={dados.video_url || ""} onChange={e => up("video_url", e.target.value)} />
+      </div>
+      <div className="field">
+        <label>Descricao</label>
+        <textarea value={dados.descricao || ""} onChange={e => up("descricao", e.target.value)} rows={6} />
+      </div>
+
+      <GerenciadorTipologias tipologias={tipologias} setTipologias={setTipologias} />
+
+      <div className="field" style={{display: "flex", gap: 18}}>
+        <label style={{display: "flex", alignItems: "center", gap: 8, textTransform: "none", letterSpacing: 0, fontSize: 14, color: "#1a1a1a", marginBottom: 0}}>
+          <input type="checkbox" style={{width: "auto"}} checked={dados.destaque} onChange={e => up("destaque", e.target.checked)} /> Destaque
+        </label>
+        <label style={{display: "flex", alignItems: "center", gap: 8, textTransform: "none", letterSpacing: 0, fontSize: 14, color: "#1a1a1a", marginBottom: 0}}>
+          <input type="checkbox" style={{width: "auto"}} checked={dados.ativo} onChange={e => up("ativo", e.target.checked)} /> Ativo
+        </label>
+      </div>
+      <div className="modal-foot" style={{padding: 0, borderTop: 0}}>
+        <button type="button" className="btn-secondary" onClick={aoCancelar}>Cancelar</button>
+        <button className="btn-primary" style={{display: "inline-block", width: "auto"}} disabled={salvando}>
+          {salvando ? "Salvando..." : "Salvar"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function GerenciadorImagensEmp({ empreendimento, aoFechar }) {
+  const [imagens, setImagens] = React.useState([]);
+  const [enviando, setEnviando] = React.useState(0);
+  const [over, setOver] = React.useState(false);
+
+  React.useEffect(() => { recarregar(); }, []);
+
+  async function recarregar() {
+    const r = await api(`/api/empreendimentos/${empreendimento.slug}`);
+    setImagens(r.imagens || []);
+  }
+
+  async function enviar(arquivos) {
+    if (!arquivos?.length) return;
+    const lista = Array.from(arquivos).filter(a => a.type.startsWith("image/"));
+    if (!lista.length) return;
+    setEnviando(lista.length);
+    const temCapa = imagens.some(i => i.tipo === "capa");
+    let tipoAuto = temCapa ? "galeria" : "capa";
+    try {
+      for (const arq of lista) {
+        const fd = new FormData();
+        fd.append("files", arq);
+        fd.append("tipo", tipoAuto);
+        await api(`/api/admin/empreendimentos/${empreendimento.id}/imagens`, { method: "POST", body: fd });
+        tipoAuto = "galeria";
+      }
+      await recarregar();
+    } catch (e) { alert(e.message); }
+    finally { setEnviando(0); }
+  }
+
+  async function remover(id) {
+    if (!confirm("Remover esta foto?")) return;
+    await api(`/api/admin/empreendimentos/imagens/${id}`, { method: "DELETE" });
+    await recarregar();
+  }
+
+  return (
+    <div>
+      <div className={`dropzone ${over ? "is-over" : ""}`}
+        onDragOver={e => { e.preventDefault(); setOver(true); }}
+        onDragLeave={() => setOver(false)}
+        onDrop={e => { e.preventDefault(); setOver(false); enviar(e.dataTransfer.files); }}
+      >
+        <p style={{margin: "0 0 6px", fontSize: 15, color: "#1a1a1a"}}>
+          <b>Arraste as fotos aqui</b> ou clique no botao
+        </p>
+        <p style={{margin: "0 0 14px", fontSize: 13, color: "#777"}}>
+          A primeira foto vira capa automaticamente.
+        </p>
+        <label htmlFor="upl-emp" className="btn-primary" style={{display: "inline-block", width: "auto", padding: "10px 22px", cursor: "pointer"}}>
+          Selecionar fotos do computador
+        </label>
+        <input id="upl-emp" type="file" multiple accept="image/*" style={{display: "none"}} onChange={e => enviar(e.target.files)} />
+        {enviando > 0 && (
+          <p style={{marginTop: 14, color: "#2d4a3e"}}>
+            Enviando e otimizando {enviando} {enviando === 1 ? "foto" : "fotos"}...
+          </p>
+        )}
+      </div>
+
+      {imagens.length > 0 && (
+        <p style={{fontSize: 12, color: "#888", margin: "16px 0 8px"}}>
+          {imagens.length} {imagens.length === 1 ? "foto" : "fotos"}
+        </p>
+      )}
+
+      <div className="galeria">
+        {imagens.map((img, idx) => {
+          const ehCapa = img.tipo === "capa";
+          return (
+            <div key={img.id} className={`foto-card ${ehCapa ? "is-capa" : ""}`}>
+              <div className="foto-thumb" style={{backgroundImage: `url(/assets/${img.arquivo}/600.webp)`}}>
+                {ehCapa && <span className="foto-flag">★ CAPA</span>}
+                <span className="foto-pos">#{idx + 1}</span>
+              </div>
+              <div className="foto-acoes">
+                <button type="button" className="btn-mini danger" onClick={() => remover(img.id)} title="Remover">
+                  ✕ Remover
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {imagens.length === 0 && (
+        <p style={{textAlign: "center", color: "#777", marginTop: 24}}>
+          Nenhuma foto ainda. Arraste fotos acima para comecar.
+        </p>
+      )}
+
+      <div className="modal-foot" style={{padding: "16px 0 0"}}>
+        <button className="btn-secondary" onClick={aoFechar}>Concluir</button>
+      </div>
+    </div>
+  );
+}
+
 function fmtMoeda(n) {
   if (n == null) return "—";
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
@@ -1786,6 +2019,115 @@ function FormFinanceiro({ titulo, dados, setDados, campos, onSalvar, onCancelar 
   );
 }
 
+// ─── Empreendimentos (lista + CRUD) ──────────────────────────────────────────
+const STATUS_OBRA_LABEL = { na_planta: "Na planta", em_obras: "Em obras", pronto: "Pronto" };
+
+function Empreendimentos() {
+  const [itens, setItens] = React.useState([]);
+  const [editando, setEditando] = React.useState(null);
+  const [galeria, setGaleria] = React.useState(null);
+
+  async function recarregar() {
+    const r = await api("/api/empreendimentos");
+    setItens(r.items || []);
+  }
+  React.useEffect(() => { recarregar(); }, []);
+
+  async function deletar(id) {
+    if (!confirm("Desativar este empreendimento?")) return;
+    await api(`/api/admin/empreendimentos/${id}`, { method: "DELETE" });
+    await recarregar();
+  }
+
+  async function togglePublicar(emp) {
+    const novo = !emp.ativo;
+    const acao = novo ? "Publicar este empreendimento no site publico?" : "Tirar este empreendimento do site (vai virar rascunho)?";
+    if (!confirm(acao)) return;
+    await api(`/api/admin/empreendimentos/${emp.id}`, { method: "PUT", body: { ...emp, ativo: novo } });
+    await recarregar();
+  }
+
+  return (
+    <>
+      <div className="toolbar">
+        <h2>Empreendimentos ({itens.length})</h2>
+        <button className="btn-add" onClick={() => setEditando({})}>+ Novo empreendimento</button>
+      </div>
+
+      <div className="grid-imoveis">
+        {itens.map(emp => {
+          const capa = emp.imagens?.find(i => i.tipo === "capa") || emp.imagens?.[0];
+          const precoMin = (emp.tipologias || []).reduce((min, t) => {
+            const p = +t.preco_a_partir || 0;
+            return p > 0 && (min === 0 || p < min) ? p : min;
+          }, 0);
+          return (
+            <div key={emp.id} className={`card-imovel ${!emp.ativo ? "rascunho" : ""}`}>
+              <div className="capa" style={{backgroundImage: capa ? `url(/assets/${capa.arquivo}/600.webp)` : ""}}>
+                {!capa && <span className="capa-vazia">sem foto</span>}
+                <span className={`status-pill ${emp.ativo ? "publicado" : "rascunho"}`}>
+                  {emp.ativo ? "● PUBLICADO" : "○ RASCUNHO"}
+                </span>
+              </div>
+              <div className="body">
+                <h3>{emp.nome}</h3>
+                <span className="meta">{emp.bairro}{emp.construtora ? ` · ${emp.construtora}` : ""} · {STATUS_OBRA_LABEL[emp.status_obra] || emp.status_obra}</span>
+                <span className="preco">{precoMin > 0 ? `A partir de R$ ${precoMin.toLocaleString("pt-BR")}` : "Preco a consultar"}</span>
+              </div>
+              <div className="acoes">
+                <button onClick={() => setGaleria(emp)} className="acao-fotos">
+                  📷 Fotos ({emp.imagens?.length || 0})
+                </button>
+                <button onClick={() => setEditando(emp)}>Editar dados</button>
+                <button
+                  className={emp.ativo ? "btn-despublicar" : "btn-publicar"}
+                  onClick={() => togglePublicar(emp)}
+                >
+                  {emp.ativo ? "Tirar do site" : "Publicar no site"}
+                </button>
+                <button className="danger" onClick={() => deletar(emp.id)}>Excluir</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {itens.length === 0 && <p style={{textAlign: "center", color: "#555", marginTop: 40}}>Nenhum empreendimento cadastrado ainda.</p>}
+
+      {editando && (
+        <div className="modal-bg" onClick={e => e.target === e.currentTarget && setEditando(null)}>
+          <div className="modal">
+            <div className="modal-head">
+              <h2>{editando.id ? "Editar empreendimento" : "Novo empreendimento"}</h2>
+              <button onClick={() => setEditando(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              <FormEmpreendimento
+                inicial={editando.id ? editando : null}
+                aoSalvar={() => { setEditando(null); recarregar(); }}
+                aoCancelar={() => setEditando(null)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {galeria && (
+        <div className="modal-bg" onClick={e => e.target === e.currentTarget && setGaleria(null)}>
+          <div className="modal">
+            <div className="modal-head">
+              <h2>Fotos · {galeria.nome}</h2>
+              <button onClick={() => { setGaleria(null); recarregar(); }}>×</button>
+            </div>
+            <div className="modal-body">
+              <GerenciadorImagensEmp empreendimento={galeria} aoFechar={() => { setGaleria(null); recarregar(); }} />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function App() {
   const [user, setUser] = React.useState(null);
   const [carregando, setCarregando] = React.useState(true);
@@ -1838,6 +2180,7 @@ function App() {
           <button className={aba === "documentos" ? "tab on" : "tab"} onClick={() => setAba("documentos")}>Documentos</button>
           <button className={aba === "financeiro" ? "tab on" : "tab"} onClick={() => setAba("financeiro")}>Financeiro</button>
           <button className={aba === "imoveis" ? "tab on" : "tab"} onClick={() => setAba("imoveis")}>Imoveis</button>
+          <button className={aba === "empreendimentos" ? "tab on" : "tab"} onClick={() => setAba("empreendimentos")}>Empreendimentos</button>
           <button className={aba === "depoimentos" ? "tab on" : "tab"} onClick={() => setAba("depoimentos")}>Depoimentos</button>
         </nav>
         <div>
@@ -1856,6 +2199,7 @@ function App() {
         {aba === "documentos" && <Documentos />}
         {aba === "financeiro" && <Financeiro />}
         {aba === "depoimentos" && <Depoimentos />}
+        {aba === "empreendimentos" && <Empreendimentos />}
         {aba === "imoveis" && (<>
         <div className="toolbar">
           <h2>Imoveis ({imoveis.length})</h2>

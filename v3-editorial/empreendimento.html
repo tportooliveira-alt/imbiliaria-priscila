@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Empreendimento · Priscila Vasconcelos</title>
+<link rel="icon" href="/assets/logo-icone.jpeg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--navy:#16284B;--peri:#5C7CB8;--bg:#FBFCFE;--surface:#EEF2F8;--line:#dde5f0;--ink:#16284B;--muted:#5d6b86;--gold:#c9943a;--gold2:#e8b55a;
+--grad-gold:linear-gradient(120deg,#c9943a,#e8b55a);
+--grad:linear-gradient(120deg,#16284B 0%,#2c4a82 55%,#5C7CB8 100%);--shadow:0 18px 50px -20px rgba(22,40,75,.35);--r:20px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;letter-spacing:-.02em;line-height:1.15}
+a{color:inherit;text-decoration:none}img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border:none;cursor:pointer;font-family:'Inter';font-weight:600;font-size:.95rem;padding:.85rem 1.4rem;border-radius:999px;transition:.22s;width:100%}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:var(--shadow)}.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.btn-gold{background:var(--grad-gold);color:#fff;box-shadow:0 6px 18px rgba(201,148,58,.34)}.btn-gold:hover{transform:translateY(-2px);filter:brightness(1.04)}
+.btn-wa{background:#25D366;color:#fff}.btn-ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}.btn-ghost:hover{border-color:var(--peri)}
+.pill{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:700;color:#fff;background:var(--grad);padding:.4rem .9rem;border-radius:999px;font-family:'Inter'}
+.badge-st{display:inline-flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:700;color:#fff;padding:.4rem .9rem;border-radius:999px;font-family:'Inter'}
+.badge-st.na_planta{background:var(--peri)}
+.badge-st.em_obras{background:var(--gold)}
+.badge-st.pronto{background:#228b57}
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(251,252,254,.82);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand img{height:38px;mix-blend-mode:multiply}
+.back{font-size:.9rem;color:var(--muted);font-weight:600}.back:hover{color:var(--peri)}
+
+/* gallery */
+.gal{margin-top:22px}
+.gal .main{position:relative;border-radius:var(--r);overflow:hidden;aspect-ratio:16/10;background:var(--surface);box-shadow:var(--shadow);cursor:zoom-in}
+.gal .main img{width:100%;height:100%;object-fit:cover}
+.gal .main .badge{position:absolute;top:16px;left:16px;backdrop-filter:blur(4px)}
+.gal .main .count{position:absolute;bottom:16px;right:16px;background:rgba(15,28,56,.78);color:#fff;font-size:.8rem;padding:.4rem .8rem;border-radius:999px}
+.thumbs{display:flex;gap:10px;margin-top:10px;overflow-x:auto;padding-bottom:4px}
+.thumbs img{height:74px;width:104px;object-fit:cover;border-radius:12px;cursor:pointer;opacity:.62;transition:.2s;flex:0 0 auto;border:2px solid transparent}
+.thumbs img:hover{opacity:1}.thumbs img.on{opacity:1;border-color:var(--peri)}
+
+.layout{display:grid;grid-template-columns:1fr 360px;gap:34px;margin:30px 0 60px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+h1.title{font-size:clamp(1.6rem,3.6vw,2.3rem);font-weight:800;margin:.2rem 0}
+.constr{font-family:'Inter';font-weight:700;font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--peri);margin-top:.2rem}
+.loc{color:var(--muted);font-weight:500;margin-bottom:1rem}
+.metarow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:.6rem 0 1rem}
+.facts{display:flex;gap:10px;flex-wrap:wrap;margin:1.1rem 0}
+.fact{background:var(--surface);border-radius:14px;padding:.7rem 1rem;font-size:.9rem;font-weight:600;font-family:'Inter';display:flex;gap:.45rem;align-items:center}
+.fact b{color:var(--peri)}
+h2.sec{font-size:1.3rem;margin:1.8rem 0 .7rem;font-weight:700}
+.desc{white-space:pre-line;color:#33425e;font-size:.97rem}
+
+/* vídeo responsivo */
+.video{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);margin-top:.6rem;aspect-ratio:16/9;background:#000}
+.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+
+/* tipologias */
+.tipos{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:.6rem}
+@media(max-width:560px){.tipos{grid-template-columns:1fr}}
+.tipo{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px 20px;box-shadow:0 6px 22px -16px rgba(22,40,75,.4)}
+.tipo h3{font-family:'Inter';font-weight:700;font-size:1.05rem;color:var(--navy)}
+.tipo .tfacts{display:flex;gap:8px;flex-wrap:wrap;margin:.7rem 0}
+.tipo .tf{background:var(--surface);border-radius:11px;padding:.4rem .7rem;font-size:.82rem;font-weight:600;font-family:'Inter';display:flex;gap:.3rem;align-items:center}
+.tipo .tf b{color:var(--peri)}
+.tipo .tprice{font-family:'Inter';font-weight:800;font-size:1.18rem;color:var(--navy);margin-top:.3rem}
+.tipo .tprice small{display:block;font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.tipo .twa{margin-top:.9rem}
+.tipo .twa a{font-family:'Inter';font-weight:700;font-size:.85rem;color:#25a052;display:inline-flex;gap:.3rem;align-items:center}
+
+/* sticky card */
+.cta-card{position:sticky;top:84px;background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:24px}
+.cta-card .price{font-family:'Inter';font-weight:800;font-size:1.7rem;color:var(--navy)}
+.cta-card .price small{display:block;font-size:.8rem;color:var(--muted);font-weight:600;letter-spacing:.03em}
+.cta-card .entrega{margin-top:.7rem;font-size:.86rem;color:var(--muted)}
+.cta-card .stk{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.formv{margin-top:16px;border-top:1px solid var(--line);padding-top:16px}
+.formv label{font-family:'Inter';font-weight:600;font-size:.82rem;display:block;margin:.6rem 0 .25rem}
+.formv input{width:100%;border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem;font-family:'Inter';outline:none}
+.formv input:focus{border-color:var(--peri)}
+.agentmini{display:flex;align-items:center;gap:.7rem;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.agentmini img{width:48px;height:48px;border-radius:50%;object-fit:cover;background:var(--surface)}
+.agentmini b{font-family:'Inter';font-size:.92rem}.agentmini span{font-size:.78rem;color:var(--muted)}
+.mbar{display:none}
+@media(max-width:900px){
+  .cta-card{position:static}
+  .layout{margin-bottom:30px}
+  .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:70;background:#fff;border-top:1px solid var(--line);padding:10px 14px;gap:12px;align-items:center;box-shadow:0 -12px 30px -14px rgba(22,40,75,.3)}
+  .mbar .p{font-family:'Inter';font-weight:800;color:var(--navy);font-size:1.02rem;white-space:nowrap;line-height:1.1}
+  .mbar .p small{font-size:.72rem;color:var(--muted);font-weight:500}
+  .mbar .btn{width:auto;flex:1}
+  footer{margin-bottom:72px}
+}
+
+/* lightbox */
+.lb{position:fixed;inset:0;background:rgba(10,18,38,.92);z-index:99;display:none;align-items:center;justify-content:center;padding:20px}
+.lb.open{display:flex}.lb img{max-width:94vw;max-height:88vh;border-radius:14px}
+.lb .x{position:absolute;top:18px;right:22px;color:#fff;font-size:2rem;cursor:pointer}
+.lb .nav-a{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:2.4rem;cursor:pointer;padding:0 18px;user-select:none}
+.lb .prev{left:6px}.lb .next{right:6px}
+
+footer{background:var(--navy);color:#cdd9f0;padding:36px 0;margin-top:20px;text-align:center;font-size:.82rem}
+footer img{height:60px;mix-blend-mode:screen;margin:0 auto 12px}
+.skl{opacity:.5}
+:focus-visible{outline:3px solid var(--peri);outline-offset:2px;border-radius:6px}
+.btn{min-height:44px}
+.lb .x,.lb .nav-a{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.notfound{text-align:center;padding:70px 20px;max-width:520px;margin:0 auto}
+.notfound h1{font-size:1.8rem;margin-bottom:.6rem}
+.notfound p{color:var(--muted);margin-bottom:1.5rem}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+<script src="/assets/analytics.js" defer></script>
+</head>
+<body>
+<header><div class="wrap nav">
+  <a class="brand" href="empreendimentos.html"><img src="/assets/logo-branco.jpeg" alt="Priscila Vasconcelos"/></a>
+  <a class="back" href="empreendimentos.html">← Voltar aos empreendimentos</a>
+</div></header>
+
+<main class="wrap" id="app">
+  <div class="gal"><div class="main skl" style="height:380px"></div></div>
+  <p class="skl" style="padding:30px 0;color:var(--muted)">Carregando empreendimento…</p>
+</main>
+
+<footer><div class="wrap">
+  <img src="/assets/logo-preto.jpeg" alt="Priscila Vasconcelos"/>
+  <div>© Priscila Vasconcelos · CRECI/BA 29.231 · Vitória da Conquista, BA</div>
+</div></footer>
+
+<div class="lb" id="lb" role="dialog" aria-label="Galeria de fotos"><span class="x" role="button" tabindex="0" aria-label="Fechar" onclick="lbClose()">✕</span><span class="nav-a prev" role="button" tabindex="0" aria-label="Foto anterior" onclick="lbStep(-1)">‹</span><img id="lbImg" src="" alt="Foto ampliada do empreendimento"/><span class="nav-a next" role="button" tabindex="0" aria-label="Próxima foto" onclick="lbStep(1)">›</span></div>
+
+<div class="mbar" id="mbar"></div>
+
+<script>
+const WA='5577999395511';
+const STATUS_LABEL={na_planta:'Na planta',em_obras:'Em obras',pronto:'Pronto p/ morar'};
+const params=new URLSearchParams(location.search);
+const slug=params.get('slug')||'';
+let imgs=[],cur=0,EMP=null;
+const fmt=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const imgUrl=(a,s)=>`/assets/${a}/${s}.webp`;
+const esc=t=>(t||'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+if(!slug){ notFound(); }
+else{
+  fetch('/api/empreendimentos/'+encodeURIComponent(slug))
+    .then(r=>{ if(r.status===404) throw '404'; return r.json(); })
+    .then(d=>render(d))
+    .catch(e=>{ if(e==='404') notFound(); else loadError(); });
+}
+
+function notFound(){
+  document.getElementById('app').innerHTML=
+    '<div class="notfound"><h1>Empreendimento não encontrado 🙃</h1>'+
+    '<p>Esse empreendimento pode ter saído do ar ou o link está incorreto. Veja os outros disponíveis ou fale com a Priscila.</p>'+
+    '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">'+
+    '<a class="btn btn-primary" style="width:auto" href="empreendimentos.html">Ver empreendimentos</a>'+
+    '<a class="btn btn-wa" style="width:auto" href="https://wa.me/'+WA+'" target="_blank">💬 Falar no WhatsApp</a></div></div>';
+}
+function loadError(){
+  document.getElementById('app').innerHTML='<p style="padding:40px 0">Não consegui carregar agora. <a href="empreendimentos.html" style="color:var(--peri)">Voltar</a></p>';
+}
+
+// monta iframe de YouTube/Vimeo a partir de uma URL; retorna '' se não reconhecer
+function videoEmbed(url){
+  if(!url || url==='None') return '';
+  url=String(url).trim();
+  let src='';
+  let m=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
+  if(m){ src='https://www.youtube.com/embed/'+m[1]; }
+  if(!src){ let v=url.match(/vimeo\.com\/(?:video\/)?(\d+)/); if(v){ src='https://player.vimeo.com/video/'+v[1]; } }
+  if(!src) return '';
+  return '<h2 class="sec">🎬 Vídeo do empreendimento</h2><div class="video"><iframe src="'+src+'" title="Vídeo do empreendimento" loading="lazy" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe></div>';
+}
+
+function menorPreco(tips){
+  var p=(tips||[]).map(function(t){return Number(t.preco_a_partir)||0;}).filter(function(x){return x>0;});
+  return p.length?Math.min.apply(null,p):0;
+}
+
+function tipoCard(t,nome,bairro){
+  var f=[];
+  if(t.area_util)f.push('📐 <b>'+Math.round(t.area_util)+'</b> m²');
+  if(t.quartos>0)f.push('🛏️ <b>'+t.quartos+'</b> quartos');
+  if(t.suites>0)f.push('🛁 <b>'+t.suites+'</b> suítes');
+  if(t.vagas>0)f.push('🚗 <b>'+t.vagas+'</b> vagas');
+  var preco=Number(t.preco_a_partir)||0;
+  var waMsg=encodeURIComponent('Olá Priscila! Tenho interesse na planta "'+(t.nome||'').trim()+'" do empreendimento "'+nome+'"'+(bairro?(' ('+bairro+')'):'')+'. Pode me passar mais detalhes?');
+  return '<div class="tipo"><h3>'+esc(t.nome||'Planta')+'</h3>'+
+    '<div class="tfacts">'+f.map(function(x){return '<span class="tf">'+x+'</span>';}).join('')+'</div>'+
+    (preco?'<div class="tprice"><small>A partir de</small>'+fmt(preco)+'</div>':'')+
+    '<div class="twa"><a href="https://wa.me/'+WA+'?text='+waMsg+'" target="_blank">💬 Quero essa planta</a></div></div>';
+}
+
+function render(d){
+  EMP=d;
+  var nome=(d.nome||'').trim(), bairro=(d.bairro||'').trim(), constr=(d.construtora||'').trim();
+  document.title=nome+' · Priscila Vasconcelos';
+  imgs=(d.imagens||[]).map(i=>i.arquivo);
+  var st=d.status_obra||'na_planta';
+  var temImg=imgs.length>0;
+
+  var facts=[];
+  if(d.entrega_prevista) facts.push('📅 Entrega <b>'+esc(String(d.entrega_prevista))+'</b>');
+  if((d.tipologias||[]).length) facts.push('🏗️ <b>'+d.tipologias.length+'</b> tipologia'+(d.tipologias.length>1?'s':''));
+
+  var menor=menorPreco(d.tipologias);
+  var tipos=(d.tipologias||[]).map(function(t){return tipoCard(t,nome,bairro);}).join('');
+  var video=videoEmbed(d.video_url);
+  var mapq=bairro?encodeURIComponent(bairro+', Vitória da Conquista, BA'):'';
+
+  var waMsg=encodeURIComponent('Olá Priscila! Tenho interesse no empreendimento "'+nome+'"'+(bairro?(' em '+bairro):'')+(constr?(' ('+constr+')'):'')+'. Gostaria de mais informações e agendar uma visita.');
+
+  var gallery= temImg ?
+    ('<div class="gal">'+
+      '<div class="main" onclick="lbOpen(cur)">'+
+        '<img id="mainImg" src="'+imgUrl(imgs[0],'1200')+'" alt="'+esc(nome)+'"/>'+
+        '<span class="badge badge-st '+st+'">'+(STATUS_LABEL[st]||'Lançamento')+'</span>'+
+        '<span class="count">📷 '+imgs.length+' fotos</span>'+
+      '</div>'+
+      '<div class="thumbs" id="thumbs">'+imgs.slice(0,14).map(function(a,i){return '<img src="'+imgUrl(a,'200')+'" class="'+(i===0?'on':'')+'" onclick="setMain('+i+')"/>';}).join('')+'</div>'+
+    '</div>') : '';
+
+  document.getElementById('app').innerHTML=
+   gallery+
+   '<div class="layout">'+
+     '<div>'+
+       '<div class="metarow"><span class="pill">🏢 Empreendimento</span><span class="badge-st '+st+'">'+(STATUS_LABEL[st]||'Lançamento')+'</span></div>'+
+       (constr?'<div class="constr">'+esc(constr)+'</div>':'')+
+       '<h1 class="title">'+esc(nome)+'</h1>'+
+       '<div class="loc">📍 '+(bairro?esc(bairro)+' · ':'')+'Vitória da Conquista, BA</div>'+
+       (facts.length?'<div class="facts">'+facts.map(function(f){return '<span class="fact">'+f+'</span>';}).join('')+'</div>':'')+
+       (d.descricao&&d.descricao.trim()?'<h2 class="sec">Sobre o empreendimento</h2><div class="desc">'+esc(d.descricao.trim())+'</div>':'')+
+       video+
+       (tipos?'<h2 class="sec">Plantas & tipologias</h2><div class="tipos">'+tipos+'</div>':'')+
+       (mapq?'<h2 class="sec">Localização</h2><div class="video" style="aspect-ratio:auto;height:300px"><iframe title="Mapa de '+esc(bairro)+'" loading="lazy" src="https://www.google.com/maps?q='+mapq+'&output=embed"></iframe></div>':'')+
+     '</div>'+
+     '<aside>'+
+       '<div class="cta-card">'+
+         (menor?'<div class="price"><small>A partir de</small>'+fmt(menor)+'</div>':'<div class="price" style="font-size:1.2rem">Consulte valores</div>')+
+         (d.entrega_prevista?'<div class="entrega">📅 Entrega prevista: <b>'+esc(String(d.entrega_prevista))+'</b></div>':'')+
+         '<div class="stk">'+
+           '<a class="btn btn-gold" href="https://wa.me/'+WA+'?text='+waMsg+'" target="_blank">💬 Falar no WhatsApp</a>'+
+           '<a class="btn btn-ghost" href="https://wa.me/'+WA+'?text='+encodeURIComponent('Olá Priscila! Quero agendar uma visita ao empreendimento "'+nome+'".')+'" target="_blank">📅 Agendar visita</a>'+
+         '</div>'+
+         '<div class="formv">'+
+           '<div style="font-family:\'Inter\';font-weight:700;font-size:.95rem">Quero mais informações</div>'+
+           '<label for="vNome">Seu nome</label><input id="vNome" autocomplete="name" placeholder="Como te chamo?"/>'+
+           '<label for="vTel">Telefone/WhatsApp</label><input id="vTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(77) 9 ____-____"/>'+
+           '<button class="btn btn-primary" style="margin-top:14px" onclick="solicitar()">Solicitar contato →</button>'+
+         '</div>'+
+         '<div class="agentmini">'+
+           '<img src="/assets/priscila-bracos.jpg" alt="Priscila"/>'+
+           '<div><b>Priscila Vasconcelos</b><br><span>CRECI/BA 29.231 · responde em minutos</span></div>'+
+         '</div>'+
+       '</div>'+
+     '</aside>'+
+   '</div>';
+
+  document.getElementById('mbar').innerHTML=
+    '<div class="p">'+(menor?'<small>A partir de</small>'+fmt(menor):'Consulte valores')+'</div>'+
+    '<a class="btn btn-wa" href="https://wa.me/'+WA+'?text='+waMsg+'" target="_blank">💬 Tenho interesse</a>';
+}
+
+function setMain(i){cur=i;document.getElementById('mainImg').src=imgUrl(imgs[i],'1200');document.querySelectorAll('.thumbs img').forEach((t,j)=>t.classList.toggle('on',j===i));}
+function lbOpen(i){if(!imgs.length)return;cur=i;document.getElementById('lbImg').src=imgUrl(imgs[i],'2400');document.getElementById('lb').classList.add('open');}
+function lbClose(){document.getElementById('lb').classList.remove('open');}
+function lbStep(s){if(!imgs.length)return;cur=(cur+s+imgs.length)%imgs.length;document.getElementById('lbImg').src=imgUrl(imgs[cur],'2400');setMain(cur);}
+function solicitar(){
+  var n=(document.getElementById('vNome').value||'').trim(),t=(document.getElementById('vTel').value||'').trim();
+  var nome=EMP?(EMP.nome||'').trim():'';
+  var msg=encodeURIComponent('Olá Priscila! Quero mais informações sobre o empreendimento "'+nome+'".'+(n?(' Meu nome é '+n+'.'):'')+(t?(' Telefone: '+t+'.'):''));
+  window.open('https://wa.me/'+WA+'?text='+msg,'_blank');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')lbClose();});
+</script>
+</body>
+</html>
