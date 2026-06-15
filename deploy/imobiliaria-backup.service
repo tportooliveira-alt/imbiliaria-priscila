@@ -1,0 +1,9 @@
+[Unit]
+Description=Backup diário do CRM (site.db) com rotação
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/var/www/imobiliaria/deploy/backup-site-db.sh
+Nice=15
+IOSchedulingClass=idle
