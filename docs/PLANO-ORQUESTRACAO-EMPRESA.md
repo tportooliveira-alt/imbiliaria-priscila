@@ -98,9 +98,11 @@ Fonte: Gartner (via Deloitte TMT Predictions 2026) — https://www.deloitte.com/
 
 Ordenado de: **mais barato + maior retorno imediato** → **mais avancado + curto prazo** → **escalamento futuro**.
 
+> ✅ **STATUS (15/06 noite — atualizado na revisao):** o **DEGRAU 1 INTEIRO** (webhook autenticado, notificacao de lead quente, promessa 24h corrigida, Postiz desligado) **e o item 7 (backup do site.db)** JA FORAM EXECUTADOS nesta sessao. **Comece pelo DEGRAU 2, itens 5 e 6** (prompt caching + 3 eventos de conversao). O resto do roadmap segue valido.
+
 ---
 
-### DEGRAU 1 — Tapar vazamentos de seguranca e funil (dias, custo zero, retorno imediato)
+### DEGRAU 1 — Tapar vazamentos de seguranca e funil (dias, custo zero, retorno imediato) ✅ FEITO 15/06
 
 **Por que primeiro:** um lead quente sem notificacao perde mais dinheiro do que qualquer novo agente ganha. Seguranca frouxa coloca toda a operacao em risco antes de escalar.
 
@@ -214,11 +216,11 @@ Ordenado de: **mais barato + maior retorno imediato** → **mais avancado + curt
 
 ## Referencias (fontes primarias da pesquisa)
 
-- Anthropic — "Building Effective AI Agents": https://www.anthropic.com/research/building-effective-agents
+- Anthropic — "Building Effective AI Agents": https://www.anthropic.com/engineering/building-effective-agents  _(URL verificada nesta sessao)_
 - Anthropic Engineering — "Building effective agents" (PDF): https://resources.anthropic.com/hubfs/Building%20Effective%20AI%20Agents-%20Architecture%20Patterns%20and%20Implementation%20Frameworks.pdf
 - Anthropic Engineering — "How we built our multi-agent research system": https://www.anthropic.com/engineering/multi-agent-research-system
 - Anthropic Engineering — "How to build effective tools for agents": https://www.anthropic.com/engineering/writing-tools-for-agents
-- Anthropic — "The Founder's Playbook: Building an AI-Native Startup" (maio 2026): https://www.anthropic.com/blog/the-founders-playbook
+- Anthropic — "The Founder's Playbook: Building an AI-Native Startup" (maio 2026): _URL exata a confirmar — o PDF oficial estava num link website-files.com (ver imagem que o Thiago enviou); citado de fonte secundaria, nao verificado diretamente._
 - Gartner/Deloitte TMT Predictions 2026 (alerta de cancelamento de projetos): https://www.deloitte.com/us/en/insights/industry/technology/technology-media-and-telecom-predictions/2026/ai-agent-orchestration.html
 - whatsapp-mcp (integracao WhatsApp pessoal via MCP): https://github.com/lharries/whatsapp-mcp
 
