@@ -119,8 +119,12 @@ def processar_upload(
     *,
     slug: str,
     pasta_destino: Path,
+    subpasta: str = "imoveis",
 ) -> ImagemProcessada:
-    """Valida, remove EXIF e gera as 5 versões. Retorna metadados."""
+    """Valida, remove EXIF e gera as 5 versões. Retorna metadados.
+
+    `subpasta` define a pasta-base sob /assets (ex.: "imoveis" ou "empreendimentos").
+    """
     if not blob:
         raise ImagemInvalida("arquivo vazio")
     if len(blob) > MAX_BYTES:
@@ -131,7 +135,7 @@ def processar_upload(
     largura, altura = img.size
 
     file_id = uuid.uuid4().hex
-    base = pasta_destino / "imoveis" / slug / file_id
+    base = pasta_destino / subpasta / slug / file_id
     base.mkdir(parents=True, exist_ok=True)
 
     # Original — sem EXIF, mas preservando qualidade ao salvar como JPEG q=95
@@ -160,7 +164,7 @@ def processar_upload(
         copia.save(base / f"{largura_alvo}.webp", format="WEBP", quality=qualidade, method=6)
 
     return ImagemProcessada(
-        arquivo=f"imoveis/{slug}/{file_id}",
+        arquivo=f"{subpasta}/{slug}/{file_id}",
         formato_original=formato,
         largura=largura,
         altura=altura,

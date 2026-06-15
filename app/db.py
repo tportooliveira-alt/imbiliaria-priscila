@@ -340,6 +340,52 @@ CREATE TABLE IF NOT EXISTS depoimentos (
     criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_depoimentos_ativo ON depoimentos(ativo, ordem);
+
+-- Empreendimentos (lançamentos de construtora): entidade PAI com tipologias filhas
+CREATE TABLE IF NOT EXISTS empreendimentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT NOT NULL UNIQUE,
+    nome TEXT NOT NULL,
+    construtora TEXT DEFAULT '',
+    bairro TEXT DEFAULT '',
+    descricao TEXT DEFAULT '',
+    video_url TEXT,                            -- link YouTube/Vimeo (sem carga no servidor)
+    status_obra TEXT DEFAULT 'na_planta',      -- na_planta | em_obras | pronto
+    entrega_prevista TEXT DEFAULT '',          -- ex.: "Dez/2027"
+    destaque INTEGER DEFAULT 0,
+    ativo INTEGER DEFAULT 1,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS empreendimento_tipologias (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    empreendimento_id INTEGER NOT NULL,
+    nome TEXT NOT NULL,                         -- "Apartamento Tipo 1", "Cobertura"...
+    area_util REAL DEFAULT 0,
+    quartos INTEGER DEFAULT 0,
+    suites INTEGER DEFAULT 0,
+    vagas INTEGER DEFAULT 0,
+    preco_a_partir REAL DEFAULT 0,             -- exibido como "A partir de R$"
+    ordem INTEGER DEFAULT 0,
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (empreendimento_id) REFERENCES empreendimentos(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS empreendimento_imagens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    empreendimento_id INTEGER NOT NULL,
+    arquivo TEXT NOT NULL,
+    legenda TEXT DEFAULT '',
+    ordem INTEGER DEFAULT 0,
+    tipo TEXT DEFAULT 'sala',
+    criado_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (empreendimento_id) REFERENCES empreendimentos(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_emp_tipologias ON empreendimento_tipologias(empreendimento_id);
+CREATE INDEX IF NOT EXISTS idx_emp_imagens ON empreendimento_imagens(empreendimento_id);
+CREATE INDEX IF NOT EXISTS idx_empreendimentos_ativo ON empreendimentos(ativo);
 """
 
 

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
-from app import auth, imagens, imoveis
+from app import auth, empreendimentos as emp, imagens, imoveis
 
 router = APIRouter()
 bearer = HTTPBearer(auto_error=False)
@@ -62,6 +62,42 @@ class ImovelUpdate(BaseModel):
 
 class ReordemPayload(BaseModel):
     ordem: list[int]
+
+
+class TipologiaPayload(BaseModel):
+    nome: str = Field(..., min_length=1, max_length=120)
+    area_util: float = 0
+    quartos: int = 0
+    suites: int = 0
+    vagas: int = 0
+    preco_a_partir: float = 0
+    ordem: int = 0
+
+
+class EmpreendimentoPayload(BaseModel):
+    nome: str = Field(..., min_length=2, max_length=200)
+    construtora: str = ""
+    bairro: str = ""
+    descricao: str = ""
+    video_url: str | None = None
+    status_obra: str = "na_planta"
+    entrega_prevista: str = ""
+    destaque: bool = False
+    ativo: bool = True
+    tipologias: list[TipologiaPayload] = Field(default_factory=list)
+
+
+class EmpreendimentoUpdate(BaseModel):
+    nome: str | None = None
+    construtora: str | None = None
+    bairro: str | None = None
+    descricao: str | None = None
+    video_url: str | None = None
+    status_obra: str | None = None
+    entrega_prevista: str | None = None
+    destaque: bool | None = None
+    ativo: bool | None = None
+    tipologias: list[TipologiaPayload] | None = None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -177,6 +213,81 @@ def atualizar(imovel_id: int, body: ImovelUpdate, _: dict = Depends(requer_admin
 def remover(imovel_id: int, _: dict = Depends(requer_admin)) -> None:
     if not imoveis.desativar_imovel(imovel_id):
         raise HTTPException(status_code=404, detail="imovel nao encontrado")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Empreendimentos (lançamentos de construtora) — público + admin
+# ─────────────────────────────────────────────────────────────────────────────
+@router.get("/api/empreendimentos")
+def listar_empreendimentos_pub() -> dict:
+    items = emp.listar_empreendimentos()
+    for it in items:
+        it["tipologias"] = emp.listar_tipologias(it["id"])
+        it["imagens"] = emp.listar_imagens(it["id"])
+    return {"total": len(items), "items": items}
+
+
+@router.get("/api/empreendimentos/{slug}")
+def detalhe_empreendimento(slug: str) -> dict:
+    item = emp.detalhar(slug)
+    if not item or not item.get("ativo"):
+        raise HTTPException(status_code=404, detail="empreendimento nao encontrado")
+    return item
+
+
+@router.post("/api/admin/empreendimentos", status_code=status.HTTP_201_CREATED)
+def criar_empreendimento(body: EmpreendimentoPayload, _: dict = Depends(requer_admin)) -> dict:
+    novo = emp.criar_empreendimento(body.model_dump())
+    return emp.detalhar(novo["id"])
+
+
+@router.put("/api/admin/empreendimentos/{emp_id}")
+def atualizar_empreendimento(emp_id: int, body: EmpreendimentoUpdate, _: dict = Depends(requer_admin)) -> dict:
+    dados = {k: v for k, v in body.model_dump().items() if v is not None}
+    if not emp.atualizar_empreendimento(emp_id, dados):
+        raise HTTPException(status_code=404, detail="empreendimento nao encontrado")
+    return emp.detalhar(emp_id)
+
+
+@router.delete("/api/admin/empreendimentos/{emp_id}", status_code=204)
+def remover_empreendimento(emp_id: int, _: dict = Depends(requer_admin)) -> None:
+    if not emp.desativar_empreendimento(emp_id):
+        raise HTTPException(status_code=404, detail="empreendimento nao encontrado")
+
+
+@router.post("/api/admin/empreendimentos/{emp_id}/imagens", status_code=201)
+async def upload_imagens_empreendimento(
+    emp_id: int,
+    files: list[UploadFile] = File(...),
+    tipo: str = Form("sala"),
+    _: dict = Depends(requer_admin),
+) -> dict:
+    item = emp.buscar_por_id(emp_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="empreendimento nao encontrado")
+    if len(files) > 30:
+        raise HTTPException(status_code=400, detail="maximo de 30 arquivos por upload")
+    pasta_assets = Path(__file__).resolve().parent.parent / "assets"
+    enviados: list[dict] = []
+    for file in files:
+        if file.content_type and not file.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail=f"tipo invalido: {file.content_type}")
+        blob = await file.read()
+        try:
+            processada = imagens.processar_upload(
+                blob, slug=item["slug"], pasta_destino=pasta_assets, subpasta="empreendimentos"
+            )
+        except imagens.ImagemInvalida as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        registro = emp.adicionar_imagem(emp_id, arquivo=processada.arquivo, tipo=tipo, legenda="")
+        enviados.append(registro)
+    return {"total": len(enviados), "imagens": enviados}
+
+
+@router.delete("/api/admin/empreendimentos/imagens/{imagem_id}", status_code=204)
+def remover_imagem_empreendimento(imagem_id: int, _: dict = Depends(requer_admin)) -> None:
+    if not emp.remover_imagem(imagem_id):
+        raise HTTPException(status_code=404, detail="imagem nao encontrada")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
