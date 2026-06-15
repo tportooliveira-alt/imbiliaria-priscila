@@ -94,8 +94,10 @@ def _ip_de(req: Request) -> str:
 @router.post("/api/auth/login", response_model=LoginResponse)
 def login(payload: LoginRequest, request: Request) -> LoginResponse:
     # ─── Modo dev local: DEV_OPEN_ADMIN=1 → entra com qualquer credencial ───
+    # SEGURANÇA: bypass só é honrado se a requisição vier de localhost
     import os as _os
-    if _os.getenv("DEV_OPEN_ADMIN") == "1":
+    _dev_origin = request.client.host if request.client else ""
+    if _os.getenv("DEV_OPEN_ADMIN") == "1" and _dev_origin in ("127.0.0.1", "::1"):
         email = (payload.email or "dev@local").lower().strip()
         user = auth.buscar_usuario_por_email(email)
         if not user:
