@@ -49,3 +49,26 @@ visita mas não venda → **preço/imóvel/objeção** (humano da Priscila). O p
 
 _Fontes: contact2sale, First Page Sage, WordStream, Ylopo, Jamil Academy, MIT/InsideSales (5min response), docs Meta.
 Cruza com: PESQUISA-LEADS-2026, PESQUISA-POSTAR-REDES-2026, PESQUISA-INTEGRACOES-2026, PLANO-DE-ATAQUE._
+
+---
+
+## 📐 Cruzamento estatístico — dados por NÍVEL DE CONFIANÇA (15/06)
+> "Aplicar estatística" = pesar a fonte e descartar o refutado, não só citar número.
+
+**🟢 ALTA (vários estudos independentes → bancar):** visita→lead ~2,2% · lead→venda por fonte (Meta pago 1–2%,
+Google 2–2,5%, **indicação 15–25% = 10–20× o pago**) · **resposta <5min = 21× mais qualificável** (temos Ana/João) ·
+funil do vendedor = pipeline próprio.
+**🟡 MÉDIA (fonte única / cross-industry):** lead→MQL ~27% · CPL Meta BR-Nordeste R$15–45 (plataforma, não VDC).
+**🔴 NÃO USAR (refutados, 10 de 25 claims caíram):** CPL Meta US$29,4 · "leads a $5–25" · CPL US$416/480 ·
+CAC US$660/1185 · CPM US$11,20/CPA US$44,19 · "+391% por resposta rápida" · "2,6×/3× <5min" · lead→agendamento 10–15% ·
+"CAC saudável = 5–15% da comissão" (1-2, hipótese não confirmada).
+**⚠️ Regra de ouro:** todo CPL/CPA/CPM absoluto é **US$/EUA** → **não transfere** pra VDC. **Calibrar com NOSSO pixel** (60–90 dias).
+
+## 🧮 Modelo (faixas, não número mágico) — refletido na calculadora `/ads`
+Ticket ~R$1mi × 6% = R$60k/venda. 3 cenários lead→venda: **Pessimista 1%** · **Realista 1,5%** (= o que a `/ads` já usava ✅) ·
+**Otimista 3%** (top-tier, porque temos resposta instantânea). Ex. R$1.000/mês → leads ~22–67 → vendas ~0,3–2 →
+comissão R$20k–120k → **ROAS 20×–120×**. O que NÃO sabemos: CPL real de VDC (mede com pixel). O que SABEMOS: a forma do funil.
+
+## 💸 Canais (na calculadora `/ads`, valor por canal)
+**Google Ads E Meta Ads = primeira linha** (Google porque há busca real de imóvel no BR — alta intenção; paga por CLIQUE).
+\+ **Impulsionar Instagram/Facebook** (boost de post → alcance). CPC Google imóvel VDC ≈ R$1–4 (estimado; real = Keyword Planner/pixel).
