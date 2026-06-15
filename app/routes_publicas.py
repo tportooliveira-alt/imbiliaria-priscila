@@ -487,7 +487,7 @@ def lead_vendedor(payload: LeadVendedorRequest) -> dict:
     return {
         "ok": True,
         "lead_id": lead_id,
-        "mensagem": "Recebido! A Priscila te chama em ate 24h.",
+        "mensagem": "Recebido! 💙 A Priscila vai te chamar no WhatsApp com a avaliacao completa, sem compromisso.",
     }
 
 
@@ -732,6 +732,7 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
             "frio": "frio", "morno": "morno", "quente": "quente",
             "pronto_visita": "quente", "pronto_proposta": "quente",
         }.get(_snap.stage, "frio")
+        _temp_anterior = _det.get("temperatura")
         leads_repo.atualizar(lead_id, score=int(_snap.score), temperatura=_temp)
         # lead quente -> escala dossie pro Paperclip (painel) automaticamente
         if _temp == "quente":
@@ -740,6 +741,23 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
                 paperclip_bridge.escalar_se_quente(lead_id)
             except Exception:
                 pass
+            # avisa a Priscila no WhatsApp SO na transicao pra quente (evita spam):
+            # alavanca nº1 = responder rapido; ela precisa saber NA HORA que esquentou.
+            try:
+                if _temp_anterior != "quente":
+                    import os as _osn
+                    _num_p = _osn.getenv("PRISCILA_WHATSAPP", "").strip()
+                    if _num_p:
+                        from app import whatsapp as _wn
+                        if _wn.disponivel():
+                            _nome_lead = _det.get("nome") or push_name or remote
+                            _wn.enviar_mensagem(
+                                _num_p,
+                                f"🔥 Lead QUENTE: {_nome_lead} ({remote}). Score {int(_snap.score)}. "
+                                f"Última msg: \"{str(texto)[:120]}\". Atenda rápido — abra o painel.",
+                            )
+            except Exception:
+                pass  # aviso nunca pode quebrar a captura do lead
     except Exception:
         pass  # qualificacao nunca pode quebrar a captura do lead
 
