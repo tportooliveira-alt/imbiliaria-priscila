@@ -1158,3 +1158,20 @@ def depoimentos_atualizar(dep_id: int, dados: dict, _user=Depends(requer_admin))
 def depoimentos_remover(dep_id: int, _user=Depends(requer_admin)) -> None:
     if not depoimentos_repo.remover(dep_id):
         raise HTTPException(status_code=404, detail="depoimento nao encontrado")
+
+
+# ─── Follow-up de lead morno (reaquece) ──────────────────────────────────────
+from app import followup as followup_mod  # noqa: E402
+
+
+@router.get("/followup/preview")
+def followup_preview(_user=Depends(requer_admin)) -> dict:
+    """Quem seria reaquecido (não envia nada)."""
+    alvos = followup_mod.elegiveis(limite=50)
+    return {"habilitado": followup_mod.ENABLED, "total": len(alvos), "itens": alvos}
+
+
+@router.post("/followup/enviar")
+def followup_enviar(_user=Depends(requer_admin)) -> dict:
+    """Dispara os follow-ups (só envia se FOLLOWUP_ENABLED=1; senão retorna preview)."""
+    return followup_mod.processar(limite=30)
