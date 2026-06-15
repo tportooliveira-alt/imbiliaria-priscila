@@ -18,13 +18,24 @@ Pessoas **do segmento da Priscila** em Vitória da Conquista e região: quem que
 investir em imóvel**, quem sonha com a **casa própria**, e quem curte **morar bem** (reforma, decoração, bairros, mercado
 local). NÃO é público geral — todo post tem que interessar a **essa** pessoa. Fale a língua dela: prática, esperançosa, local.
 
-## Critério: engajar SEM sair da marca
-- Prefira ângulo **positivo / que anima** (boa notícia, oportunidade, "VDC crescendo", realização) — engaja mais que notícia seca.
-- Pode ir além do imobiliário puro, em **segmentos vizinhos COM audiência** que conectam ao "morar bem": economia
-  pessoal/sonho da casa própria, reforma/decoração/arquitetura, **crescimento e novidades de Vitória da Conquista**,
-  histórias inspiradoras de mudança de vida.
-- ⚠️ **Sempre amarre na marca dela** (morar, comprar, vender, VDC). Se a notícia não tem gancho honesto com isso, NÃO use.
-  Evite política, tragédia, polêmica — não combina com a marca.
+## O que postar: RELEVANTE, AGRADÁVEL e que traz CONHECIMENTO
+Não é "toda notícia que impacta o preço do setor" — é conteúdo **interessante, positivo e que agrega**, do universo do
+**morar / construir / cidade / ramo imobiliário**. Posiciona a Priscila como alguém ligada ao desenvolvimento da cidade
+e do mercado. Ângulo sempre **positivo / que anima**; evite política, tragédia e polêmica (não combinam com a marca).
+O foco é **informar e encantar** (autoridade), não vender direto.
+
+### Pilares de conteúdo (varie entre eles)
+1. 🏠 **Mercado imobiliário & economia** — juros/Selic, financiamento (Caixa/SBPE/FGTS), Minha Casa Minha Vida, preços
+   (FipeZap/IGMI), tendências do setor. O que muda pra quem quer comprar/vender/financiar.
+2. 🏗️ **Construção & engenharia** — novidades de tipos de construção, materiais, técnicas, sustentabilidade, tecnologia
+   na obra. Interessa engenheiros, arquitetos e curiosos do ramo.
+3. 💼 **Negócio & profissão** — modelos de negócio do setor, proptech, novas formas de comprar/vender, a profissão de corretor.
+4. 🏙️ **A cidade (Vitória da Conquista)** — infraestrutura, obras, novas construções/empreendimentos, trabalho da
+   prefeitura, crescimento e desenvolvimento da cidade. _(altíssimo engajamento local)_
+5. 🏡 **Morar bem & casa própria** — economia pessoal útil, financiamento (quando for boa notícia), reforma/decoração/arquitetura.
+6. ✨ **Curiosidade agradável** — fatos interessantes e inspiradores do universo de morar/construir/cidade.
+
+Sempre com um fio que conecta ao público dela (quem vive, compra ou constrói em VDC) — mas o foco é informar e encantar.
 
 ## Passo 1 — Pesquisar BEM com /deep-research (o motor da busca)
 A busca precisa ser **rigorosa** — post com dado errado destrói a credibilidade da Priscila. **Use a funcionalidade
