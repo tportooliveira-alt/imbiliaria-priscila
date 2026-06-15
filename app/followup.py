@@ -40,6 +40,12 @@ def _eh_empresa(nome: str | None) -> bool:
     return any(p in n for p in _NAO_COMPRADOR)
 
 
+def _tel_real(tel: str | None) -> bool:
+    """Telefone BR real tem 10-14 dígitos. Grupo/LID do WhatsApp tem 17-22 → descarta."""
+    d = "".join(c for c in (tel or "") if c.isdigit())
+    return 10 <= len(d) <= 14
+
+
 def mensagem(toque: int, nome: str | None) -> str:
     n = _primeiro_nome(nome)
     ola = f"Oi {n}! " if n else "Oi! "
@@ -73,7 +79,7 @@ def elegiveis(limite: int = 50) -> list[dict]:
             lid = ld["id"]
             if _eh_empresa(ld["nome"]):   # pula corretor/empresa/teste
                 continue
-            if not _wa.telefone_valido(ld["telefone"]):  # pula LID/grupo (não é telefone real)
+            if not _tel_real(ld["telefone"]):  # pula LID/grupo (não é telefone real)
                 continue
             inter = conn.execute(
                 "SELECT tipo, descricao, criado_em FROM lead_interacoes WHERE lead_id=? ORDER BY id DESC",
