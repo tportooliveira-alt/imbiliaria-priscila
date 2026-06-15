@@ -47,6 +47,13 @@ votação, cita fonte) — pra ser sólido e fundamentado, não raso. Nunca inve
   card/legenda por cima no Canva/Gamma.
 - Sempre no padrão visual da marca. Nunca usar imagem que engane, que não tenha direito de uso, ou que não seja a foto real do imóvel.
 
+## 🎙️ Áudio / Reels (voz REAL da Priscila)
+Pra reels e posts em áudio, usar a **voz da própria Priscila clonada no ElevenLabs** (autêntica > voz robótica).
+- A voz dela é uma voz própria no ElevenLabs (ver `docs/VOZ-PRISCILA-ELEVENLABS.md`); o sistema usa via
+  `ELEVENLABS_VOICE_ID_PRISCILA` no `.env`. _(Não confundir com a voz da **Ana** (atendimento) nem do **João** (agenda).)_
+- Roteiro do reel: curto, no tom dela (próxima, didática), sobre o tema do dia. Texto → áudio na voz dela → vídeo (Canva/Gamma).
+- **Aprovação:** o áudio/reel também passa pela Priscila antes de publicar (checkpoint).
+
 ## Cadência
 Roda **1×/dia** (pode ser uma Rotina do Cowork ou tarefa agendada). Mantém os posts curtos, locais (VDC) e no tom da marca.
 Lembre do fuso **Brasília (UTC-3)** ao agendar.
