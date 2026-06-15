@@ -625,13 +625,11 @@ class WebhookWhatsApp(BaseModel):
     data: dict | None = None
 
 
-@router.post("/api/whatsapp/webhook")
-def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
-    """Recebe eventos do Evolution API e registra mensagens recebidas como interacao.
+def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
+    """Processa um evento do Evolution API (messages.upsert) e registra a mensagem.
 
-    Valida `EVOLUTION_WEBHOOK_TOKEN` se configurado (header opcional do Evolution
-    nao e estavel entre versoes; preferimos secret no path em producao).
-    Aqui aceitamos qualquer call e filtramos so eventos relevantes.
+    Função INTERNA — o controle de acesso (segredo) é feito pelas rotas finas
+    abaixo. Campos desconhecidos sao ignorados; so eventos relevantes seguem.
     """
     if not payload.event or not payload.data:
         return {"ignorado": True, "motivo": "evento vazio"}
@@ -872,6 +870,27 @@ def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
         "auto_reply": envio.enviado,
         "modelo": resposta.get("modelo"),
     }
+
+
+# ── Rotas do webhook do WhatsApp (SEGREDO NO PATH) ───────────────────────
+# A rota com /{token} é a de PRODUÇÃO (o Evolution aponta pra ela). A rota
+# antiga, sem token, só funciona enquanto EVOLUTION_WEBHOOK_TOKEN não existir;
+# com o token configurado ela passa a REJEITAR — fecha o furo de mensagem forjada.
+@router.post("/api/whatsapp/webhook")
+def whatsapp_webhook(payload: WebhookWhatsApp) -> dict:
+    import os as _o
+    if _o.getenv("EVOLUTION_WEBHOOK_TOKEN", "").strip():
+        return {"ignorado": True, "motivo": "rota sem token desativada — use secret path"}
+    return _processar_webhook_whatsapp(payload)
+
+
+@router.post("/api/whatsapp/webhook/{token}")
+def whatsapp_webhook_seguro(token: str, payload: WebhookWhatsApp) -> dict:
+    import os as _o
+    _t = _o.getenv("EVOLUTION_WEBHOOK_TOKEN", "").strip()
+    if _t and token != _t:
+        raise HTTPException(status_code=401, detail="token invalido")
+    return _processar_webhook_whatsapp(payload)
 
 
 # ────────────────────────────────────────────────────────────────────────
