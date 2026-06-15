@@ -37,10 +37,13 @@ votação, cita fonte) — pra ser sólido e fundamentado, não raso. Nunca inve
 4. **Enviar pra Priscila aprovar** (com a imagem). Aprovou → agenda no Postiz/Canva/agendador. Pediu ajuste → refaz.
 5. **Registrar** o que foi publicado (data + tema) pra variar e não repetir.
 
-## Imagens
-- **Imóvel/empreendimento:** usar as **FOTOS REAIS** da carteira (já no sistema, com watermark da Priscila).
-- **Notícia/conhecimento:** gerar a arte (Canva/ferramenta de imagem) OU entregar um **brief visual claro** pra montar.
-  Nunca usar imagem que engane ou que não tenha direito de uso.
+## Imagens / Design (gerar a arte de verdade — Canva + Gamma)
+- **Notícia/conhecimento:** gerar o **design do carrossel** com **Gamma** (conector já disponível no Cowork — gera os
+  slides visuais por IA a partir do texto) ou **Canva** (templates da marca). Aplicar as cores da marca
+  (azul **#16284B**, peri #5C7CB8, **dourado** nos destaques) e a fonte Inter/serif. Saída: as artes prontas dos slides.
+- **Imóvel/empreendimento:** usar as **FOTOS REAIS** da carteira (já no sistema, com watermark da Priscila) e montar o
+  card/legenda por cima no Canva/Gamma.
+- Sempre no padrão visual da marca. Nunca usar imagem que engane, que não tenha direito de uso, ou que não seja a foto real do imóvel.
 
 ## Cadência
 Roda **1×/dia** (pode ser uma Rotina do Cowork ou tarefa agendada). Mantém os posts curtos, locais (VDC) e no tom da marca.
