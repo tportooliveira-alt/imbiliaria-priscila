@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "imobiliaria-priscila",
+  "displayName": "Imobiliária Priscila",
+  "description": "Playbook de orquestração com IA + contexto do negócio da corretora Priscila Vasconcelos (Vitória da Conquista/BA). Carrega as regras do projeto (nunca inventar dado, fuso Brasília, arquitetura do sistema) pra trabalhar no Cowork/Claude Code com tudo já orientado.",
+  "version": "1.0.0",
+  "author": { "name": "Thiago Porto" },
+  "keywords": ["imobiliaria", "orquestracao", "ia", "priscila", "cowork", "vdc"],
+  "skills": "./skills/"
+}
