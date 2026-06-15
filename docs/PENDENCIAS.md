@@ -78,6 +78,9 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
 - [ ] 🟡 Trocar a **senha temporária** do admin (`233024`) por uma definitiva
 - [ ] 🟢 Depoimentos reais, vídeo, blog VDC, prospecção ativa
 
+- [ ] 🟡 **MEDIR (não chutar):** CPL/CPC/CPM reais de VDC em R$ e % da comissão como CAC saudável — só saem dos
+  NOSSOS números (pixel Meta/Google + CRM, 60–90 dias). Usar Google Keyword Planner p/ CPC estimado das keywords em VDC.
+
 ## ❓ Perguntas em aberto (decidir / pesquisar)
 - [ ] Volume real de busca no Google em VDC justifica Google Ads, ou foco total em Meta?
 - [ ] CPL/CPC real na microrregião (nenhuma fonte trouxe dado local)

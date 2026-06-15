@@ -10,31 +10,40 @@
 :root{--navy:#16284B;--gold:#c9943a;--peri:#5C7CB8;--line:#e6e8ee;--muted:#6b7280}
 *{box-sizing:border-box}
 body{margin:0;font-family:'Inter',sans-serif;color:#1a2236;background:#f4f6fa}
-.wrap{max-width:920px;margin:0 auto;padding:22px}
+.wrap{max-width:980px;margin:0 auto;padding:22px}
 header{background:var(--navy);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:18px}
 header h1{font-family:'Playfair Display',serif;margin:0 0 4px;font-size:1.5rem}
 header p{margin:0;opacity:.85;font-size:.9rem}
 .tag{display:inline-block;background:rgba(201,148,58,.22);color:#e8c178;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:8px}
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
 .card h2{font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:var(--navy);margin:0 0 14px}
-.field{margin-bottom:14px}
-.field label{display:block;font-size:.85rem;font-weight:600;margin-bottom:5px}
-.field input[type=number],.field input[type=range]{width:100%}
-.field input[type=number]{border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;font-size:1rem;font-family:'Inter'}
+.chan{display:grid;grid-template-columns:1fr 130px;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #f0f2f7}
+.chan:last-child{border-bottom:none}
+.chan .nm{font-weight:600;font-size:.95rem}
+.chan .nm small{display:block;color:var(--muted);font-weight:400;font-size:.78rem;margin-top:2px}
+.chan .out{font-size:.82rem;color:var(--navy);margin-top:4px;font-weight:600}
+.chan input{width:100%;border:1px solid var(--line);border-radius:10px;padding:.55rem .6rem;font-size:1rem;font-family:'Inter';text-align:right}
+.chan .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.chan .two label{font-size:.7rem;color:var(--muted);display:block;text-align:center}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.rng{display:flex;align-items:center;gap:10px}
-.rng b{min-width:54px;text-align:right;color:var(--navy)}
-small.hint{color:var(--muted);font-size:.78rem}
-.results{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.res{background:linear-gradient(120deg,#16284B,#24477e);color:#fff;border-radius:12px;padding:16px}
-.res.otim{background:linear-gradient(120deg,#8a6418,#c9943a);}
-.res h3{margin:0 0 10px;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
-.res .big{font-size:1.5rem;font-weight:700;font-family:'Playfair Display',serif}
-.res .lines{margin-top:10px;font-size:.86rem;line-height:1.7}
-.res .lines span{opacity:.8}
-.disc{font-size:.78rem;color:var(--muted);line-height:1.6;background:#fff7e9;border:1px solid #f0dcb6;border-radius:10px;padding:12px 14px}
-.split-val{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:3px}
+.field{margin-bottom:8px}
+.field label{display:block;font-size:.85rem;font-weight:600;margin-bottom:5px}
+.field input,.field select{width:100%;border:1px solid var(--line);border-radius:10px;padding:.55rem .6rem;font-size:1rem;font-family:'Inter'}
+.results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.res{background:linear-gradient(120deg,#16284B,#24477e);color:#fff;border-radius:12px;padding:15px}
+.res.real{background:linear-gradient(120deg,#2c4a82,#5C7CB8)}
+.res.otim{background:linear-gradient(120deg,#8a6418,#c9943a)}
+.res h3{margin:0 0 8px;font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;opacity:.85}
+.res .big{font-size:1.35rem;font-weight:700;font-family:'Playfair Display',serif}
+.res .ln{margin-top:8px;font-size:.82rem;line-height:1.6}
+.res .ln span{opacity:.82}
+.tot{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:12px;font-size:.92rem}
+.tot b{color:var(--navy)}
+.ind{background:#fff7e9;border:1px solid #f0dcb6;border-radius:10px;padding:12px 14px;font-size:.88rem;margin-top:12px}
+.disc{font-size:.78rem;color:var(--muted);line-height:1.6;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}
+.disc b{color:var(--navy)}
 a.back{color:var(--peri);font-size:.85rem;text-decoration:none}
+@media(max-width:680px){.results{grid-template-columns:1fr}.chan{grid-template-columns:1fr 110px}}
 </style>
 </head>
 <body>
@@ -42,62 +51,52 @@ a.back{color:var(--peri);font-size:.85rem;text-decoration:none}
   <header>
     <span class="tag">Ferramenta interna · Priscila Vasconcelos</span>
     <h1>Calculadora de Investimento em Ads</h1>
-    <p>Quanto investir em Meta + Google e o retorno potencial — com base na pesquisa de leads e na carteira real.</p>
+    <p>Quanto pagar em cada canal (Google, Meta, Instagram, Facebook) e o retorno potencial — calibrado com pesquisa + carteira real.</p>
   </header>
 
   <div class="card">
-    <h2>1 · Quanto e onde investir</h2>
-    <div class="field">
-      <label for="orc">Orçamento mensal total (R$)</label>
-      <input id="orc" type="number" value="1000" min="0" step="100" oninput="calc()"/>
-      <small class="hint">Comece pequeno (R$ 600–1.500/mês) e suba com o que funcionar.</small>
+    <h2>1 · Quanto PAGAR por canal (R$)</h2>
+    <div class="chan">
+      <div class="nm">🔎 Google Ads <small>busca de imóvel no Google (alta intenção). Paga por clique (CPC).</small><div class="out" id="oG"></div></div>
+      <input id="gAds" type="number" value="300" min="0" step="50" oninput="calc()"/>
     </div>
-    <div class="field">
-      <label for="split">Divisão Meta × Google</label>
-      <div class="rng"><span style="font-size:.8rem">Meta</span><input id="split" type="range" min="0" max="100" value="70" oninput="calc()"/><b id="splitb">70%</b></div>
-      <div class="split-val"><span>Meta (gerar demanda, lead barato)</span><span>Google (intenção, lead caro)</span></div>
+    <div class="chan">
+      <div class="nm">📘📸 Meta Ads <small>Gerenciador — Facebook + Instagram na mesma campanha. Paga por lead (CPL).</small><div class="out" id="oM"></div></div>
+      <input id="mAds" type="number" value="700" min="0" step="50" oninput="calc()"/>
     </div>
-    <div class="row">
-      <div class="field">
-        <label for="conv">Conversão lead → venda (%)</label>
-        <input id="conv" type="number" value="1.5" min="0.1" max="20" step="0.1" oninput="calc()"/>
-        <small class="hint">Imóvel é ticket alto: 1–3% é realista.</small>
-      </div>
-      <div class="field">
-        <label for="com">Comissão por venda (%)</label>
-        <input id="com" type="number" value="6" min="1" max="10" step="0.5" oninput="calc()"/>
-      </div>
+    <div class="chan">
+      <div class="nm">📸 Impulsionar Instagram <small>boost de 1 post (rápido) → alcance.</small><div class="out" id="oIG"></div></div>
+      <div class="two"><div><label>R$/dia</label><input id="igDia" type="number" value="15" min="0" oninput="calc()"/></div><div><label>dias</label><input id="igDias" type="number" value="5" min="0" oninput="calc()"/></div></div>
     </div>
-    <div class="field">
-      <label for="ticket">Ticket médio da carteira (R$)</label>
-      <input id="ticket" type="number" value="967300" step="1000" oninput="calc()"/>
-      <small class="hint" id="tkhint">Carregando da carteira real…</small>
+    <div class="chan">
+      <div class="nm">📘 Impulsionar Facebook <small>boost de post na Página → alcance.</small><div class="out" id="oFB"></div></div>
+      <div class="two"><div><label>R$/dia</label><input id="fbDia" type="number" value="10" min="0" oninput="calc()"/></div><div><label>dias</label><input id="fbDias" type="number" value="5" min="0" oninput="calc()"/></div></div>
     </div>
   </div>
 
   <div class="card">
-    <h2>2 · Resultado estimado / mês</h2>
+    <h2>2 · Parâmetros</h2>
+    <div class="row">
+      <div class="field"><label for="fonte">Fonte do lead</label>
+        <select id="fonte" onchange="calc()">
+          <option value="pago">Anúncio pago (frio)</option>
+          <option value="indic">Indicação / esfera (converte 10–20× mais)</option>
+        </select>
+      </div>
+      <div class="field"><label for="com">Comissão por venda (%)</label><input id="com" type="number" value="6" min="1" max="10" step="0.5" oninput="calc()"/></div>
+    </div>
+    <div class="field"><label for="ticket">Ticket médio da carteira (R$)</label><input id="ticket" type="number" value="967300" step="1000" oninput="calc()"/><small style="color:var(--muted);font-size:.78rem" id="tkhint">Carregando da carteira…</small></div>
+  </div>
+
+  <div class="card">
+    <h2>3 · Resultado / mês</h2>
+    <div class="tot" id="tot"></div>
     <div class="results">
-      <div class="res">
-        <h3>Cenário conservador</h3>
-        <div class="big" id="cVendas">—</div>
-        <div class="lines" id="cLines"></div>
-      </div>
-      <div class="res otim">
-        <h3>Cenário otimista</h3>
-        <div class="big" id="oVendas">—</div>
-        <div class="lines" id="oLines"></div>
-      </div>
+      <div class="res"><h3>Pessimista (1%)</h3><div class="big" id="pV">—</div><div class="ln" id="pL"></div></div>
+      <div class="res real"><h3>Realista (1,5%)</h3><div class="big" id="rV">—</div><div class="ln" id="rL"></div></div>
+      <div class="res otim"><h3>Otimista (3%)*</h3><div class="big" id="oV">—</div><div class="ln" id="oL"></div></div>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>3 · Impulsionar post no Instagram (boost)</h2>
-    <div class="row">
-      <div class="field"><label for="igDia">Valor por dia (R$)</label><input id="igDia" type="number" value="15" min="6" step="1" oninput="igCalc()"/><small class="hint">Mínimo do Meta: R$ 6/dia. Bom pra testar: R$ 10–30/dia.</small></div>
-      <div class="field"><label for="igDias">Por quantos dias</label><input id="igDias" type="number" value="5" min="1" max="60" oninput="igCalc()"/></div>
-    </div>
-    <div class="res otim" style="margin-top:6px"><div class="lines" id="igLines"></div></div>
+    <div class="ind" id="ind"></div>
   </div>
 
   <div class="disc" id="disc"></div>
@@ -105,73 +104,71 @@ a.back{color:var(--peri);font-size:.85rem;text-decoration:none}
 </div>
 
 <script>
-// Benchmarks da pesquisa (docs/PESQUISA-LEADS-2026.md). CPL em R$ — médias de plataforma (Nordeste), NÃO de VDC.
-// Meta: R$15–45/lead. Google: ~2-3x Meta (lead mais caro, mais qualificado).
-const CPL={meta:{otim:15,cons:45},google:{otim:50,cons:120}};
-// CPC = custo por VISITA ao site (clique no link). BR: Meta ~R$0,50-1,50 | Google ~R$1,50-4. Médias de plataforma.
-const CPC={meta:{otim:0.5,cons:1.5},google:{otim:1.5,cons:4}};
+/* Constantes — pesquisa (PLANO-MARKETING-CALIBRADO.md). CONFIANÇA: taxas de conversão = ALTA; CPL/CPC/CPM absolutos = BAIXA (médias de plataforma, NÃO de VDC — calibrar com pixel). */
+const CPL_META={otim:15,cons:45};          // R$/lead no Meta (BR-Nordeste)
+const CPC_GOOGLE={otim:1.5,cons:4};        // R$/clique no Google (imóvel, interior)
+const GOOGLE_CVR={otim:0.033,cons:0.0247}; // visita do Google → lead
+const CPM={otim:8,cons:22};                // R$/1000 contas alcançadas (impulsionar)
+const CONV={pess:0.01,real:0.015,otim:0.03}; // lead→venda (pago): pessimista/realista/otimista(top-tier=resposta instantânea)
+const CONV_INDIC=0.18;                     // lead→venda indicação (15–25%)
 const fmt=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
-const fmt2=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2});
 const n1=v=>(Math.round(v*10)/10).toLocaleString('pt-BR');
-window.NIMOVEIS=5;
+const ni=v=>Math.round(v).toLocaleString('pt-BR');
+let NIMOVEIS=5;
 
-function cenario(orc,splitMeta,conv,com,ticket,cpl,cpc){
-  const bMeta=orc*splitMeta, bGoogle=orc*(1-splitMeta);
-  const leadsMeta=cpl.meta?bMeta/cpl.meta:0, leadsGoogle=cpl.google?bGoogle/cpl.google:0;
-  const leads=leadsMeta+leadsGoogle;
-  const vendas=leads*(conv/100);
-  const receita=vendas*ticket*(com/100);   // comissão
-  const roas=orc?receita/orc:0;
-  const cpv=vendas?orc/vendas:0;
-  const visitas=(cpc.meta?bMeta/cpc.meta:0)+(cpc.google?bGoogle/cpc.google:0);
-  const cpcMedio=visitas?orc/visitas:0;
-  const custoPorImovel=window.NIMOVEIS?orc/window.NIMOVEIS:0;
-  return {leads,leadsMeta,leadsGoogle,vendas,receita,roas,cpv,cplMedio:leads?orc/leads:0,visitas,cpcMedio,custoPorImovel};
-}
-function render(id,r){
-  document.getElementById(id+'Vendas').textContent=n1(r.vendas)+' venda(s)';
-  document.getElementById(id+'Lines').innerHTML=
-    `<div><span>👁️ Visitas ao site:</span> <b>${n1(r.visitas)}/mês</b> (${fmt2(r.cpcMedio)}/visita)</div>`+
-    `<div><span>🎣 Leads/mês:</span> <b>${n1(r.leads)}</b> (Meta ${n1(r.leadsMeta)} · Google ${n1(r.leadsGoogle)}) · CPL ${fmt(r.cplMedio)}</div>`+
-    `<div><span>🏠 Custo por imóvel:</span> ${fmt(r.custoPorImovel)}/mês (${window.NIMOVEIS} na carteira)</div>`+
-    `<div><span>💰 Comissão potencial:</span> <b>${fmt(r.receita)}</b></div>`+
-    `<div><span>📈 Retorno (ROAS):</span> <b>${n1(r.roas)}x</b> · custo por venda ${fmt(r.cpv)}</div>`;
-}
+function mid(o){return (o.otim+o.cons)/2;}
+
 function calc(){
-  const orc=+document.getElementById('orc').value||0;
-  const splitMeta=(+document.getElementById('split').value||0)/100;
-  document.getElementById('splitb').textContent=Math.round(splitMeta*100)+'%';
-  const conv=+document.getElementById('conv').value||0;
-  const com=+document.getElementById('com').value||0;
-  const ticket=+document.getElementById('ticket').value||0;
-  render('c',cenario(orc,splitMeta,conv*0.7,com,ticket,{meta:CPL.meta.cons,google:CPL.google.cons},{meta:CPC.meta.cons,google:CPC.google.cons}));
-  render('o',cenario(orc,splitMeta,conv,com,ticket,{meta:CPL.meta.otim,google:CPL.google.otim},{meta:CPC.meta.otim,google:CPC.google.otim}));
-  igCalc();
+  const gAds=+v('gAds'),mAds=+v('mAds');
+  const igTot=(+v('igDia'))*(+v('igDias')), fbTot=(+v('fbDia'))*(+v('fbDias'));
+  const com=+v('com')/100, ticket=+v('ticket')||0, fonte=v('fonte');
+  // por canal (usa CPL/CPC médios; leads em faixa)
+  const gVis=gAds/mid(CPC_GOOGLE), gLeads=gVis*mid(GOOGLE_CVR);
+  const mLeads=mAds/mid(CPL_META);
+  const igAlc=igTot/mid(CPM)*1000, fbAlc=fbTot/mid(CPM)*1000;
+  out('oG', gAds?('~'+ni(gVis)+' visitas → ~'+n1(gLeads)+' leads'):'');
+  out('oM', mAds?('~'+n1(mLeads)+' leads (FB+IG)'):'');
+  out('oIG', igTot?('~'+ni(igAlc)+' contas alcançadas'):'');
+  out('oFB', fbTot?('~'+ni(fbAlc)+' contas alcançadas'):'');
+  // combinado
+  const totalPago=gAds+mAds+igTot+fbTot;
+  const leads=gLeads+mLeads;
+  document.getElementById('tot').innerHTML=
+    '<div>💸 Total pago: <b>'+fmt(totalPago)+'</b>/mês</div>'+
+    '<div>🎣 Leads (anúncios): <b>~'+n1(leads)+'</b>/mês</div>'+
+    '<div>📣 Alcance (boost): <b>~'+ni(igAlc+fbAlc)+'</b> contas</div>'+
+    '<div>🏠 Custo por imóvel: <b>'+fmt(NIMOVEIS?totalPago/NIMOVEIS:0)+'</b> ('+NIMOVEIS+' na carteira)</div>';
+  const ind=fonte==='indic';
+  cen('p',leads,ind?CONV_INDIC:CONV.pess,com,ticket,totalPago);
+  cen('r',leads,ind?CONV_INDIC:CONV.real,com,ticket,totalPago);
+  cen('o',leads,ind?CONV_INDIC:CONV.otim,com,ticket,totalPago);
+  document.getElementById('ind').innerHTML=ind
+    ? '🤝 <b>Fonte = indicação:</b> usei conversão de <b>18%</b> (esfera converte 15–25%, ~10–20× o lead pago). É a alavanca mais barata — invista em <b>depoimentos e pedir indicação</b>.'
+    : '🤝 <b>Dica:</b> lead de <b>indicação</b> converte <b>10–20× mais</b> que pago. Troque a "fonte do lead" pra ver. Peça depoimentos/indicações — é o melhor ROI.';
   document.getElementById('disc').innerHTML=
-    '⚠️ <b>Como ler:</b> os números são uma <b>faixa de planejamento</b>, não promessa. Os CPLs vêm de médias de '+
-    'plataforma do Nordeste (pesquisa de leads), não de Vitória da Conquista — e a conversão lead→venda é uma estimativa. '+
-    'Sem <b>pixel/rastreamento</b> instalado, o algoritmo não otimiza. Use pra decidir o orçamento e acompanhar o real depois.';
+    '⚠️ <b>Como ler (honestidade):</b> as <b>taxas de conversão</b> (lead→venda, visita→lead) têm confiança ALTA (vários estudos). '+
+    'Mas os <b>custos absolutos</b> (CPC, CPL, CPM) são <b>médias de plataforma</b>, <b>não de Vitória da Conquista</b> — o número REAL só com o '+
+    '<b>pixel medindo</b> (60–90 dias) ou o <b>Google Keyword Planner</b>. No Google você paga <b>por clique</b>, não por aparecer. '+
+    '*Otimista 3% = top-tier, possível porque a <b>Ana/João respondem em segundos</b> (a maior alavanca do funil).';
 }
-// ticket médio real da carteira (só imóveis de VENDA)
+function cen(id,leads,conv,com,ticket,pago){
+  const vendas=leads*conv, receita=vendas*ticket*com, roas=pago?receita/pago:0;
+  document.getElementById(id+'V').textContent=n1(vendas)+' venda(s)';
+  document.getElementById(id+'L').innerHTML=
+    '<div><span>Comissão:</span> <b>'+fmt(receita)+'</b></div>'+
+    '<div><span>ROAS:</span> <b>'+n1(roas)+'×</b></div>'+
+    '<div><span>Custo/venda:</span> '+fmt(vendas?pago/vendas:0)+'</div>';
+}
+function v(id){return (document.getElementById(id)||{}).value||0;}
+function out(id,t){const e=document.getElementById(id);if(e)e.textContent=t;}
+
 fetch('/api/imoveis').then(r=>r.json()).then(d=>{
   const arr=(d.imoveis||d||[]).filter(i=>(i.preco||0)>=50000);
-  if(arr.length){const t=Math.round(arr.reduce((s,i)=>s+(i.preco||0),0)/arr.length);
-    document.getElementById('ticket').value=t; window.NIMOVEIS=arr.length;
+  if(arr.length){NIMOVEIS=arr.length;document.getElementById('ticket').value=Math.round(arr.reduce((s,i)=>s+(i.preco||0),0)/arr.length);
     document.getElementById('tkhint').textContent='Média de '+arr.length+' imóveis de venda da carteira.';}
   calc();
 }).catch(()=>{document.getElementById('tkhint').textContent='(usando ticket padrão)';calc();});
-// Impulsionar Instagram: total + alcance estimado (CPM BR ~R$8-22 -> 1000 contas por CPM)
-function igCalc(){
-  const dia=+(document.getElementById('igDia')||{}).value||0;
-  const dias=+(document.getElementById('igDias')||{}).value||0;
-  const total=dia*dias;
-  const alcMax=Math.round(total/8*1000), alcMin=Math.round(total/22*1000);
-  const el=document.getElementById('igLines'); if(!el)return;
-  el.innerHTML='<div><span>Investimento total:</span> <b>'+fmt(total)+'</b> ('+fmt(dia)+'/dia × '+dias+' dias)</div>'+
-    '<div><span>Alcance estimado:</span> <b>'+alcMin.toLocaleString('pt-BR')+' a '+alcMax.toLocaleString('pt-BR')+'</b> contas</div>'+
-    '<div style="opacity:.8;font-size:.8rem;margin-top:4px">Impulsione os posts que já tiveram bom engajamento (salvamentos/compart.). Geo: Vitória da Conquista + região.</div>';
-}
-calc(); igCalc();
+calc();
 </script>
 </body>
 </html>
