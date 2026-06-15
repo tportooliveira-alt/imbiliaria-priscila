@@ -1,6 +1,7 @@
 """Rotas publicas: simulador de financiamento e avaliacao de imovel."""
 from __future__ import annotations
 
+import logging
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Request
@@ -12,6 +13,30 @@ from app.db import db_session
 from app.m2_vdc import BAIRROS_DISPONIVEIS
 
 router = APIRouter()
+_log = logging.getLogger("imobiliaria.publicas")
+
+
+def _avisar_priscila_lead_quente(nome: str, remote: str, score: int, ultima_msg: str) -> None:
+    """Avisa a Priscila (em background) que um lead esquentou. Loga falha, NUNCA propaga.
+
+    Roda numa thread daemon pra nao segurar a resposta do webhook.
+    """
+    try:
+        import os as _o
+        num = _o.getenv("PRISCILA_WHATSAPP", "").strip()
+        if not num:
+            return
+        from app import whatsapp as _wn
+        if not _wn.disponivel():
+            _log.warning("aviso lead quente nao enviado: whatsapp indisponivel (lead %s)", remote)
+            return
+        msg = (f"🔥 Lead QUENTE: {nome} ({remote}). Score {score}. "
+               f"Última msg: \"{ultima_msg[:120]}\". Atenda rápido — abra o painel.")
+        env = _wn.enviar_mensagem(num, msg)
+        if not getattr(env, "enviado", False):
+            _log.warning("aviso lead quente: envio falhou (lead %s)", remote)
+    except Exception:
+        _log.exception("erro ao avisar Priscila sobre lead quente (lead %s)", remote)
 
 
 # ────────────────────────────────────────────────────────────────────────
@@ -741,23 +766,16 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
                 paperclip_bridge.escalar_se_quente(lead_id)
             except Exception:
                 pass
-            # avisa a Priscila no WhatsApp SO na transicao pra quente (evita spam):
-            # alavanca nº1 = responder rapido; ela precisa saber NA HORA que esquentou.
-            try:
-                if _temp_anterior != "quente":
-                    import os as _osn
-                    _num_p = _osn.getenv("PRISCILA_WHATSAPP", "").strip()
-                    if _num_p:
-                        from app import whatsapp as _wn
-                        if _wn.disponivel():
-                            _nome_lead = _det.get("nome") or push_name or remote
-                            _wn.enviar_mensagem(
-                                _num_p,
-                                f"🔥 Lead QUENTE: {_nome_lead} ({remote}). Score {int(_snap.score)}. "
-                                f"Última msg: \"{str(texto)[:120]}\". Atenda rápido — abra o painel.",
-                            )
-            except Exception:
-                pass  # aviso nunca pode quebrar a captura do lead
+            # avisa a Priscila SO na transicao pra quente (sem spam), em BACKGROUND
+            # (thread daemon — nao segura a resposta do webhook) e logando falha.
+            if _temp_anterior != "quente":
+                import threading as _th
+                _nome_lead = _det.get("nome") or push_name or remote
+                _th.Thread(
+                    target=_avisar_priscila_lead_quente,
+                    args=(_nome_lead, remote, int(_snap.score), str(texto)),
+                    daemon=True,
+                ).start()
     except Exception:
         pass  # qualificacao nunca pode quebrar a captura do lead
 
