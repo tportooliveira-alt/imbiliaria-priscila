@@ -73,6 +73,13 @@ Marque `[x]` quando concluir. Prioridade: 🔴 alta · 🟡 média · 🟢 quand
   seu imóvel", dicas de VDC, bastidores da Priscila), carrosséis salváveis, calendário de posts, rotina de notícias
   diárias, e plano de captação de vendedores via Insta. Base: `PESQUISA-LEADS-2026.md` (saves/shares > curtidas).
 
+## 🔄 Recalibração contínua (combinado 15/06 — usar base do estudo, recalibrar com o tempo)
+- [x] ~~Base estatística (7 pesquisas) na calculadora `/ads`~~ ✅ em uso (faixas + níveis de confiança).
+- [ ] 🟡 **A cada venda registrada** (Admin→Financeiro/comissões) → recalcular **NOSSA taxa real** (vendas ÷ leads do CRM) e
+  atualizar as constantes de `v3-editorial/ads.html`. Quanto mais vendas, mais preciso.
+- [ ] 🟡 **Quando o pixel tiver dados** (60–90 dias) → trocar CPL/CPC/CPM de plataforma pelos **reais de VDC**.
+- _Gatilho automático (calculadora puxa a taxa real sozinha) pode ser ligado quando houver ≥ algumas vendas._
+
 ## 🚀 Lançamento oficial
 - [ ] 🔴 **Remover `noindex`** do `server.py` quando a Priscila aprovar (hoje o site está soft-launch, fora do Google)
 - [ ] 🟡 Trocar a **senha temporária** do admin (`233024`) por uma definitiva
