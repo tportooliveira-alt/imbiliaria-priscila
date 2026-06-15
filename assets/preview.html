@@ -63,14 +63,36 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rg
 .hero h1{font-size:clamp(2.2rem,5.2vw,3.6rem);font-weight:800}
 .hero h1 .g{font-style:italic;background:var(--grad-gold);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero p.sub{font-size:1.12rem;color:var(--muted);margin:1.1rem 0 1.7rem;max-width:600px}
-.searchbox{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;display:flex;gap:10px;align-items:center}
-.searchbox input{flex:1;border:none;outline:none;font-size:1rem;font-family:'Inter';padding:.6rem .4rem;background:transparent;color:var(--ink)}
+/* ── busca estilo portal (Comprar/Alugar/Empreendimentos) ── */
+.portalsearch{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;max-width:680px}
+.ps-tabs{display:flex;gap:2px;padding:8px 8px 0;background:var(--surface)}
+.ps-tab{flex:0 0 auto;border:none;background:transparent;cursor:pointer;font-family:'Inter';font-weight:600;font-size:.92rem;color:var(--muted);padding:.7rem 1.15rem;border-radius:12px 12px 0 0;transition:.18s;min-height:44px}
+.ps-tab:hover{color:var(--navy)}
+.ps-tab.on{color:var(--navy);background:#fff;box-shadow:0 -3px 0 var(--gold) inset}
+.ps-body{display:flex;gap:10px;align-items:stretch;padding:14px}
+.ps-field{display:flex;flex-direction:column;justify-content:center;border:1px solid var(--line);border-radius:14px;padding:.35rem .8rem;background:#fff}
+.ps-field.tipo{flex:0 0 auto;min-width:150px}
+.ps-field.texto{flex:1;min-width:0}
+.ps-field .lbl{font-family:'Inter';font-weight:600;font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.ps-field select,.ps-field input{border:none;outline:none;background:transparent;font-family:'Inter';font-size:1rem;color:var(--ink);padding:.15rem 0;width:100%}
+.ps-field select{cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:1.1rem;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235d6b86' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>") right center no-repeat}
+.ps-body .btn{flex:0 0 auto}
+.ps-status{display:none;flex:1;gap:6px;flex-wrap:wrap;align-items:center}
+.ps-st{border:1.5px solid var(--line);background:#fff;color:var(--muted);font-family:'Inter';font-weight:600;font-size:.88rem;padding:.55rem 1rem;border-radius:999px;cursor:pointer;transition:.18s;min-height:40px}
+.ps-st.on,.ps-st:hover{border-color:var(--gold);color:var(--navy);background:rgba(201,148,58,.12)}
+.portalsearch.emp .ps-field{display:none}
+.portalsearch.emp .ps-status{display:flex}
+.ps-busca-aviso{margin:14px 2px 0;font-size:.92rem;color:var(--navy);background:rgba(201,148,58,.12);border:1px solid rgba(201,148,58,.3);border-radius:12px;padding:.7rem .95rem;display:none}
+.ps-busca-aviso.show{display:block}
+.ps-busca-aviso a{color:var(--gold);font-weight:700}
 .search-hint{font-size:.82rem;color:var(--muted);margin:.7rem 2px}
+.search-hint a{color:var(--peri);font-weight:600;text-decoration:underline;cursor:pointer}
 @media(max-width:560px){
-  .searchbox{flex-direction:column;align-items:stretch;gap:8px}
-  .searchbox span{display:none}
-  .searchbox .btn{width:100%;justify-content:center}
-  .searchbox input{text-align:center;font-size:1.02rem;padding:.7rem}
+  .ps-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .ps-tab{padding:.7rem .9rem;font-size:.86rem}
+  .ps-body{flex-direction:column;align-items:stretch}
+  .ps-field.tipo{min-width:0}
+  .ps-body .btn{width:100%;justify-content:center}
   .cta-row .btn{flex:1;justify-content:center}
   .hero{padding:46px 0 40px}
 }
@@ -276,20 +298,41 @@ footer a{color:#cdd9f0}footer a:hover{color:#fff}
     <span class="pill">✦ Imóveis de alto padrão · CRECI/BA 29.231</span>
     <h1>Seu próximo imóvel em <span class="g">Vitória da Conquista</span></h1>
     <p class="sub">Curadoria de imóveis selecionados, com o atendimento pessoal da Priscila. Conte o que você procura que a gente acha o certo pra você.</p>
-    <div class="searchbox">
-      <span style="font-size:1.3rem" aria-hidden="true">🔎</span>
-      <input id="heroSearch" aria-label="Descreva o imóvel que você procura" placeholder="Ex.: apartamento 3 quartos em Candeias com varanda..." onkeydown="if(event.key==='Enter')askHero()" />
-      <button class="btn btn-gold" onclick="askHero()">Buscar imóvel</button>
+    <div class="portalsearch" role="search">
+      <div class="ps-tabs" role="tablist" aria-label="O que você procura">
+        <button type="button" class="ps-tab on" id="ptab-venda" role="tab" aria-selected="true" data-busca-op="venda" onclick="setBuscaAba('venda')">Comprar</button>
+        <button type="button" class="ps-tab" id="ptab-locacao" role="tab" aria-selected="false" data-busca-op="locacao" onclick="setBuscaAba('locacao')">Alugar</button>
+        <button type="button" class="ps-tab" id="ptab-emp" role="tab" aria-selected="false" data-busca-op="empreendimentos" onclick="setBuscaAba('empreendimentos')">Empreendimentos</button>
+      </div>
+      <div class="ps-body">
+        <label class="ps-field tipo" for="buscaTipo">
+          <span class="lbl">Tipo</span>
+          <select id="buscaTipo" aria-label="Tipo de imóvel">
+            <option value="">Todos</option>
+            <option value="Casa">Casa</option>
+            <option value="Apartamento">Apartamento</option>
+            <option value="Cobertura">Cobertura</option>
+            <option value="Terreno">Terreno</option>
+            <option value="Comercial">Comercial</option>
+          </select>
+        </label>
+        <label class="ps-field texto" for="buscaTexto">
+          <span class="lbl">Onde / o que</span>
+          <input id="buscaTexto" type="text" aria-label="Bairro ou característica do imóvel" placeholder="Digite o bairro ou característica (ex.: Candeias, piscina)" onkeydown="if(event.key==='Enter')buscarImoveis()"/>
+        </label>
+        <div class="ps-status" role="group" aria-label="Status da obra">
+          <button type="button" class="ps-st on" data-st="" onclick="setStatusEmp(this,'')">Todos</button>
+          <button type="button" class="ps-st" data-st="na_planta" onclick="setStatusEmp(this,'na_planta')">Na planta</button>
+          <button type="button" class="ps-st" data-st="em_obras" onclick="setStatusEmp(this,'em_obras')">Em andamento</button>
+          <button type="button" class="ps-st" data-st="pronto" onclick="setStatusEmp(this,'pronto')">Prontos</button>
+        </div>
+        <button type="button" class="btn btn-gold" onclick="buscarImoveis()">🔎 Buscar</button>
+      </div>
     </div>
-    <div class="chip-row" role="group" aria-label="Sugestões de busca">
-      <button class="qchip" onclick="quickHero('Quero uma casa de alto padrão no Boa Vista')">🏠 Casa no Boa Vista</button>
-      <button class="qchip" onclick="quickHero('Procuro apartamento em Candeias')">🏢 Apê em Candeias</button>
-      <button class="qchip" onclick="quickHero('Tenho até 500 mil, o que tem?')">💰 Até R$ 500 mil</button>
-      <button class="qchip" onclick="quickHero('Quero um ponto comercial pra alugar')">🏬 Ponto comercial</button>
-    </div>
-    <div class="ana-answer" id="heroAnswer"><div class="who">✦ Ana responde</div><span id="heroAnswerTxt"></span></div>
+    <div class="ps-busca-aviso" id="buscaAviso" role="status"></div>
+    <p class="search-hint">Prefere conversar? <a onclick="openChat()" tabindex="0" onkeydown="if(event.key==='Enter')openChat()">Fale com a Ana</a> e ela acha pra você.</p>
     <div class="cta-row">
-      <a class="btn btn-ghost" href="#imoveis">Ver imóveis</a>
+      <a class="btn btn-ghost" href="#imoveis">Ver todos os imóveis</a>
     </div>
     </div><!-- /inner -->
     <div class="hero-media reveal">
@@ -497,6 +540,8 @@ let history=[];
 
 // ---- imóveis reais ----
 function fmt(v){return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+// normaliza texto: minúsculo + sem acento (pra casar bairro/tipo/busca)
+function normTxt(t){return (t||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
 fetch('/api/imoveis').then(r=>r.json()).then(d=>{
   const el=document.getElementById('bento'); el.innerHTML='';
   d.items.forEach(it=>{
@@ -506,6 +551,9 @@ fetch('/api/imoveis').then(r=>r.json()).then(d=>{
     const feat=it.quartos>0?`${it.quartos} quartos · ${it.area_util?Math.round(it.area_util)+'m²':''}`:`${it.area_util?Math.round(it.area_util)+'m²':''} · comercial`;
     const c=document.createElement('div'); c.className='card';
     c.dataset.op=(it.tipo==='Comercial'?'locacao':'venda');
+    c.dataset.tipo=normTxt(it.tipo||'');
+    c.dataset.bairro=normTxt(it.bairro||'');
+    c.dataset.busca=normTxt([it.titulo,it.bairro,it.descricao,it.caracteristicas].filter(Boolean).join(' '));
     c.innerHTML=`<img class="bg" src="${img}" alt="${it.titulo}" loading="lazy"/>
       <span class="badge">${it.bairro.trim()}</span><div class="ov"></div>
       <div class="meta"><h3>${it.titulo.trim()}</h3><div class="price">${venda}</div><div class="feat">${feat}</div></div>`;
@@ -514,21 +562,63 @@ fetch('/api/imoveis').then(r=>r.json()).then(d=>{
   });
 }).catch(()=>{document.getElementById('bento').innerHTML='<p style="color:var(--muted)">Não consegui carregar os imóveis agora.</p>';});
 
-// ---- busca no hero (Ana real) ----
-function askHero(){
-  const q=document.getElementById('heroSearch').value.trim(); if(!q)return;
-  const box=document.getElementById('heroAnswer'), txt=document.getElementById('heroAnswerTxt');
-  box.classList.add('show'); txt.textContent='A Ana está pensando…';
-  fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,history:[]})})
-   .then(r=>r.json()).then(d=>{txt.textContent=d.resposta||'...';})
-   .catch(()=>{txt.textContent='Opa, não consegui agora — me chama no WhatsApp que eu te respondo rapidinho!';});
+// ---- busca estruturada (estilo portal) ----
+let BUSCA_OP='venda', EMP_STATUS='';
+function setBuscaAba(op){
+  BUSCA_OP=op;
+  document.querySelectorAll('.ps-tab[data-busca-op]').forEach(t=>{
+    const on=t.dataset.buscaOp===op;
+    t.classList.toggle('on',on);
+    t.setAttribute('aria-selected',on?'true':'false');
+  });
+  // aba Empreendimentos: troca tipo/texto pelo status da obra (planta/andamento/prontos)
+  const ps=document.querySelector('.portalsearch');
+  if(ps)ps.classList.toggle('emp',op==='empreendimentos');
 }
-
-// ---- chat flutuante ----
-function quickHero(t){document.getElementById('heroSearch').value=t;askHero();}
+function setStatusEmp(btn,st){
+  EMP_STATUS=st;
+  document.querySelectorAll('.ps-st').forEach(b=>b.classList.toggle('on',b===btn));
+}
+// filtra os cards do #bento por op + tipo + texto. retorna nº de cards visíveis.
+function filtrarBento(op,tipo,texto){
+  const tipoN=normTxt(tipo), txtN=normTxt(texto);
+  let n=0;
+  document.querySelectorAll('#bento .card').forEach(c=>{
+    const okOp=!op||c.dataset.op===op;
+    const okTipo=!tipoN||c.dataset.tipo===tipoN;
+    const okTxt=!txtN||(c.dataset.busca||'').indexOf(txtN)!==-1;
+    const show=okOp&&okTipo&&okTxt;
+    c.style.display=show?'':'none';
+    if(show)n++;
+  });
+  return n;
+}
+function buscarImoveis(){
+  if(BUSCA_OP==='empreendimentos'){location.href='empreendimentos.html'+(EMP_STATUS?('?status='+EMP_STATUS):'');return;}
+  const tipo=document.getElementById('buscaTipo').value;
+  const texto=document.getElementById('buscaTexto').value;
+  // sincroniza as sectortabs com a operação escolhida
+  document.querySelectorAll('.stab[data-op]').forEach(t=>t.classList.toggle('on',t.dataset.op===BUSCA_OP));
+  const n=filtrarBento(BUSCA_OP,tipo,texto);
+  const aviso=document.getElementById('buscaAviso');
+  if(n===0){
+    aviso.innerHTML='Não achei imóvel com esses filtros 😕 — <a href="https://wa.me/5577999395511" target="_blank">fala com a Priscila no WhatsApp</a> que ela acha pra você.';
+    aviso.classList.add('show');
+  }else{
+    aviso.classList.remove('show');
+  }
+  const alvo=document.getElementById('imoveis');
+  if(alvo)alvo.scrollIntoView({behavior:'smooth',block:'start'});
+}
+// ---- sectortabs (compra/aluguel) — só por operação, limpa filtros de tipo/texto ----
 function setOp(op){
+  BUSCA_OP=op;
+  const tt=document.getElementById('buscaTipo'); if(tt)tt.value='';
+  const tx=document.getElementById('buscaTexto'); if(tx)tx.value='';
+  setBuscaAba(op);
   document.querySelectorAll('.stab[data-op]').forEach(t=>t.classList.toggle('on',t.dataset.op===op));
-  document.querySelectorAll('#bento .card').forEach(c=>{c.style.display=(c.dataset.op===op)?'':'none';});
+  document.querySelectorAll('.ps-busca-aviso').forEach(a=>a.classList.remove('show'));
+  filtrarBento(op,'','');
 }
 function quickChat(t){const c=document.getElementById('chatChips');if(c)c.remove();openChat();document.getElementById('chatInput').value=t;sendChat();}
 function toggleChat(){document.getElementById('chatwin').classList.toggle('open');}

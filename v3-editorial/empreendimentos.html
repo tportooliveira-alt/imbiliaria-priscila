@@ -204,7 +204,9 @@ function capa(it){
 fetch('/api/empreendimentos').then(function(r){return r.json();}).then(function(d){
   var el=document.getElementById('grid');
   var items=(d&&d.items)||[];
-  if(!items.length){el.innerHTML='<p class="empty">Nenhum empreendimento disponível no momento. Me chama no WhatsApp que eu te aviso dos próximos lançamentos! 😊</p>';return;}
+  var fst=new URLSearchParams(location.search).get('status')||'';
+  if(fst){items=items.filter(function(it){return (it.status_obra||'na_planta')===fst;});}
+  if(!items.length){el.innerHTML='<p class="empty">'+(fst?'Nenhum empreendimento nesse status agora.':'Nenhum empreendimento disponível no momento.')+' Me chama no WhatsApp que eu te aviso dos próximos lançamentos! 😊</p>';return;}
   el.innerHTML='';
   items.forEach(function(it){
     var st=(it.status_obra||'na_planta');
