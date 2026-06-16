@@ -253,7 +253,7 @@ def test_webhook_auto_reply_chama_dispatcher(cliente, monkeypatch):
 
     chamadas = {"dispatcher": 0, "envio": 0}
 
-    def fake_responder(mensagem, *, historico=None, tem_imagem=False):
+    def fake_responder(mensagem, **kwargs):  # **kwargs: robusto a novos params (ex.: nome_cliente)
         chamadas["dispatcher"] += 1
         return {"resposta": "Oi! Sim, tenho opcoes em Candeias.", "modelo": "fake", "rota": "atendimento"}
 

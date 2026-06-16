@@ -109,10 +109,11 @@ def test_funnel_responde_200(client: TestClient) -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 # Estáticos
 # ─────────────────────────────────────────────────────────────────────────────
-def test_root_redireciona_para_v3(client: TestClient) -> None:
+def test_root_serve_home(client: TestClient) -> None:
+    # URL limpa: / serve a home direto (sem redirect p/ /v3-editorial/)
     r = client.get("/", follow_redirects=False)
-    assert r.status_code in (307, 308)
-    assert "/v3-editorial/" in r.headers["location"]
+    assert r.status_code == 200
+    assert "text/html" in r.headers.get("content-type", "")
 
 
 def test_v3_index_serve_html(client: TestClient) -> None:
