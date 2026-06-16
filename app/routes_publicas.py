@@ -725,7 +725,7 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
                 pass
             return {"secretaria": True, "ok": res.get("ok"), "detalhe": res.get("mensagem")}
     except Exception:
-        pass
+        _log.exception("secretaria (Joao) falhou ao processar mensagem de %s", remote)
 
     lead_id = leads_repo.upsert_lead(
         nome=push_name,
@@ -777,7 +777,7 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
                     daemon=True,
                 ).start()
     except Exception:
-        pass  # qualificacao nunca pode quebrar a captura do lead
+        _log.exception("qualificacao do lead %s falhou (nao quebra a captura)", lead_id)
 
     # ─── W2.3: auto-resposta IA opcional ──────────────────────────────────
     import os as _os
