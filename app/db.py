@@ -410,6 +410,15 @@ def init_db() -> None:
         _migrar_coluna(conn, "simulacoes", "tipo_imovel", "TEXT")
         # W6: tour 360 por imovel
         _migrar_coluna(conn, "imoveis", "tour_360_url", "TEXT")
+        # Empreendimentos: ficha tecnica rica (condominio/obra grande)
+        for _col, _tipo in (
+            ("endereco", "TEXT"), ("area_total", "TEXT"),
+            ("num_torres", "INTEGER"), ("num_unidades", "INTEGER"), ("num_andares", "INTEGER"),
+            ("vagas_info", "TEXT"), ("data_lancamento", "TEXT"), ("tour_360_url", "TEXT"),
+            ("lazer", "TEXT"), ("diferenciais", "TEXT"),
+            ("proximidades", "TEXT"), ("condicoes_pagamento", "TEXT"),
+        ):
+            _migrar_coluna(conn, "empreendimentos", _col, _tipo)
         conn.commit()
 
 

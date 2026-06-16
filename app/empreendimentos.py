@@ -5,6 +5,7 @@ no empreendimento). Tipologias são One-to-Many e substituídas em bloco no salv
 """
 from __future__ import annotations
 
+import json
 import sqlite3
 from typing import Any
 
@@ -12,6 +13,29 @@ from app.db import db_session
 from app.imoveis import linha_para_dict, slugify
 
 STATUS_OBRA = {"na_planta", "em_obras", "pronto"}
+
+# campos extras da ficha técnica (condomínio/obra grande)
+_CAMPOS_TEXTO = ("endereco", "area_total", "vagas_info", "data_lancamento",
+                 "tour_360_url", "proximidades", "condicoes_pagamento")
+_CAMPOS_INT = ("num_torres", "num_unidades", "num_andares")
+_CAMPOS_LISTA = ("lazer", "diferenciais")  # JSON arrays (checklists)
+
+
+def _emp_dict(row: sqlite3.Row | None) -> dict | None:
+    """Como linha_para_dict, mas também converte lazer/diferenciais (JSON) em listas."""
+    d = linha_para_dict(row)
+    if d is None:
+        return None
+    for campo in _CAMPOS_LISTA:
+        v = d.get(campo)
+        if isinstance(v, str):
+            try:
+                d[campo] = json.loads(v) if v else []
+            except (TypeError, ValueError):
+                d[campo] = []
+        elif v is None:
+            d[campo] = []
+    return d
 
 
 def slug_unico(base: str) -> str:
@@ -42,24 +66,31 @@ def listar_empreendimentos(*, somente_ativos: bool = True) -> list[dict]:
     sql += " ORDER BY destaque DESC, atualizado_em DESC"
     with db_session() as conn:
         rows = conn.execute(sql).fetchall()
-    return [linha_para_dict(r) for r in rows]
+    return [_emp_dict(r) for r in rows]
 
 
 def buscar_por_id(emp_id: int) -> dict | None:
     with db_session() as conn:
         row = conn.execute("SELECT * FROM empreendimentos WHERE id = ?", (emp_id,)).fetchone()
-    return linha_para_dict(row)
+    return _emp_dict(row)
 
 
 def buscar_por_slug(slug: str) -> dict | None:
     with db_session() as conn:
         row = conn.execute("SELECT * FROM empreendimentos WHERE slug = ?", (slug,)).fetchone()
-    return linha_para_dict(row)
+    return _emp_dict(row)
 
 
 def _normalizar_status(valor: Any) -> str:
     v = str(valor or "na_planta").strip().lower()
     return v if v in STATUS_OBRA else "na_planta"
+
+
+def _int_ou_none(v: Any) -> int | None:
+    try:
+        return int(v) if str(v).strip() not in ("", "None") else None
+    except (TypeError, ValueError):
+        return None
 
 
 def criar_empreendimento(dados: dict) -> dict:
@@ -68,8 +99,11 @@ def criar_empreendimento(dados: dict) -> dict:
         cur = conn.execute(
             """INSERT INTO empreendimentos
                 (slug, nome, construtora, bairro, descricao, video_url,
-                 status_obra, entrega_prevista, destaque, ativo)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                 status_obra, entrega_prevista, destaque, ativo,
+                 endereco, area_total, num_torres, num_unidades, num_andares,
+                 vagas_info, data_lancamento, tour_360_url, lazer, diferenciais,
+                 proximidades, condicoes_pagamento)
+               VALUES (?,?,?,?,?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?)""",
             (
                 slug,
                 dados["nome"],
@@ -81,6 +115,18 @@ def criar_empreendimento(dados: dict) -> dict:
                 dados.get("entrega_prevista", ""),
                 int(bool(dados.get("destaque", False))),
                 int(bool(dados.get("ativo", True))),
+                dados.get("endereco", ""),
+                dados.get("area_total", ""),
+                _int_ou_none(dados.get("num_torres")),
+                _int_ou_none(dados.get("num_unidades")),
+                _int_ou_none(dados.get("num_andares")),
+                dados.get("vagas_info", ""),
+                dados.get("data_lancamento", ""),
+                dados.get("tour_360_url"),
+                json.dumps(dados.get("lazer") or [], ensure_ascii=False),
+                json.dumps(dados.get("diferenciais") or [], ensure_ascii=False),
+                dados.get("proximidades", ""),
+                dados.get("condicoes_pagamento", ""),
             ),
         )
         novo_id = int(cur.lastrowid)
@@ -95,13 +141,21 @@ def atualizar_empreendimento(emp_id: int, dados: dict) -> dict | None:
     campos_permitidos = {
         "nome", "construtora", "bairro", "descricao", "video_url",
         "entrega_prevista", "destaque", "ativo",
-    }
+    } | set(_CAMPOS_TEXTO)
     sets: list[str] = []
     params: list[Any] = []
     for k, v in dados.items():
         if k in campos_permitidos:
             sets.append(f"{k} = ?")
             params.append(int(v) if isinstance(v, bool) else v)
+    for k in _CAMPOS_INT:
+        if k in dados:
+            sets.append(f"{k} = ?")
+            params.append(_int_ou_none(dados[k]))
+    for k in _CAMPOS_LISTA:
+        if k in dados:
+            sets.append(f"{k} = ?")
+            params.append(json.dumps(dados[k] or [], ensure_ascii=False))
     if "status_obra" in dados:
         sets.append("status_obra = ?")
         params.append(_normalizar_status(dados["status_obra"]))

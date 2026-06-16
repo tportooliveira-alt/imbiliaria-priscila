@@ -84,6 +84,19 @@ class EmpreendimentoPayload(BaseModel):
     entrega_prevista: str = ""
     destaque: bool = False
     ativo: bool = True
+    # ficha técnica (condomínio/obra grande)
+    endereco: str = ""
+    area_total: str = ""
+    num_torres: int | None = None
+    num_unidades: int | None = None
+    num_andares: int | None = None
+    vagas_info: str = ""
+    data_lancamento: str = ""
+    tour_360_url: str | None = None
+    lazer: list[str] = Field(default_factory=list)
+    diferenciais: list[str] = Field(default_factory=list)
+    proximidades: str = ""
+    condicoes_pagamento: str = ""
     tipologias: list[TipologiaPayload] = Field(default_factory=list)
 
 
@@ -97,6 +110,18 @@ class EmpreendimentoUpdate(BaseModel):
     entrega_prevista: str | None = None
     destaque: bool | None = None
     ativo: bool | None = None
+    endereco: str | None = None
+    area_total: str | None = None
+    num_torres: int | None = None
+    num_unidades: int | None = None
+    num_andares: int | None = None
+    vagas_info: str | None = None
+    data_lancamento: str | None = None
+    tour_360_url: str | None = None
+    lazer: list[str] | None = None
+    diferenciais: list[str] | None = None
+    proximidades: str | None = None
+    condicoes_pagamento: str | None = None
     tipologias: list[TipologiaPayload] | None = None
 
 
