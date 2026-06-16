@@ -1,6 +1,6 @@
 // Service worker minimalista — cache "stale-while-revalidate" para shell estático.
 // NÃO faz cache de /api/* (sempre rede) — o site precisa de dados frescos pra leads.
-const CACHE_NAME = "pv-shell-43226d5c";
+const CACHE_NAME = "pv-shell-265fe6e1";
 const SHELL_URLS = [
   "./",
   "./index.html",

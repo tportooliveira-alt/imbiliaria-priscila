@@ -17,6 +17,12 @@
   --grad:linear-gradient(120deg,#16284B 0%,#2c4a82 55%,#5C7CB8 100%);
   --shadow:0 18px 50px -20px rgba(22,40,75,.35);
   --r:20px;
+  /* ── escalas do sistema de design (grid 8pt) ── */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px; --space-20:80px;
+  --radius-sm:6px; --radius-md:12px; --radius-lg:20px; --radius-pill:999px;
+  --shadow-1:0 1px 2px rgba(22,40,75,.06); --shadow-2:0 4px 12px rgba(22,40,75,.10); --shadow-3:0 18px 50px -20px rgba(22,40,75,.35);
+  --container:1180px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -55,7 +61,7 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rg
 }
 
 /* hero */
-.hero{position:relative;padding:72px 0 56px;overflow:hidden}
+.hero{position:relative;padding:80px 0 64px;overflow:hidden}
 .hero:before{content:"";position:absolute;width:520px;height:520px;right:-160px;top:-180px;background:radial-gradient(circle,rgba(92,124,184,.28),transparent 70%);border-radius:50%}
 .hero:after{content:"";position:absolute;width:420px;height:420px;left:-160px;bottom:-200px;background:radial-gradient(circle,rgba(22,40,75,.14),transparent 70%);border-radius:50%}
 .hero .inner{position:relative;z-index:2;max-width:760px}
@@ -838,6 +844,6 @@ function simular(){
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=43226d5c").catch(function(){});});}</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=265fe6e1").catch(function(){});});}</script>
 </body>
 </html>
