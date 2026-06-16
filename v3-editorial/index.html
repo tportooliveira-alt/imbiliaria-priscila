@@ -86,6 +86,37 @@ header{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rg
 .ps-busca-aviso a{color:var(--gold);font-weight:700}
 .search-hint{font-size:.82rem;color:var(--muted);margin:.7rem 2px}
 .search-hint a{color:var(--peri);font-weight:600;text-decoration:underline;cursor:pointer}
+/* ── filtros avançados + ordenação ── */
+.advbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.advtoggle{display:inline-flex;align-items:center;gap:.45rem;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:.6rem 1.1rem;font-family:'Inter';font-weight:600;font-size:.9rem;color:var(--navy);cursor:pointer;min-height:44px;transition:.18s}
+.advtoggle:hover{border-color:var(--peri);color:var(--peri)}
+.advtoggle .arr{transition:transform .2s}
+.advtoggle[aria-expanded="true"] .arr{transform:rotate(180deg)}
+.ordbox{display:inline-flex;align-items:center;gap:.5rem;font-family:'Inter';font-weight:600;font-size:.88rem;color:var(--muted)}
+.ordbox select{border:1.5px solid var(--line);border-radius:999px;background:#fff;font-family:'Inter';font-weight:600;font-size:.9rem;color:var(--navy);padding:.55rem 2rem .55rem 1rem;cursor:pointer;appearance:none;-webkit-appearance:none;min-height:44px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235d6b86' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right .9rem center}
+.advpanel{display:none;background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:22px}
+.advpanel.open{display:block;animation:fade .25s}
+.advgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 26px}
+.advfield .lbl{display:block;font-family:'Inter';font-weight:700;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.segrow{display:flex;gap:6px;flex-wrap:wrap}
+.segrow button{flex:1 1 auto;min-width:56px;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-family:'Inter';font-weight:600;font-size:.86rem;padding:.5rem .6rem;border-radius:10px;cursor:pointer;transition:.16s;min-height:40px}
+.segrow button:hover{border-color:var(--peri);color:var(--navy)}
+.segrow button.on{border-color:var(--gold);background:rgba(201,148,58,.14);color:var(--navy)}
+.advfield .nums{display:flex;gap:10px;align-items:center}
+.advfield input[type=number]{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:.55rem .7rem;font-family:'Inter';font-size:.95rem;color:var(--ink);outline:none;min-height:40px}
+.advfield input[type=number]:focus{border-color:var(--peri)}
+.advfield .sep{color:var(--muted);font-weight:600}
+.advactions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.advactions .btn{flex:0 0 auto}
+.btn-clear{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
+.btn-clear:hover{border-color:var(--peri);color:var(--peri)}
+@media(max-width:560px){
+  .advgrid{grid-template-columns:1fr}
+  .advbar{flex-direction:column;align-items:stretch}
+  .ordbox{justify-content:space-between}
+  .ordbox select{flex:1}
+  .advactions .btn{flex:1;justify-content:center}
+}
 @media(max-width:560px){
   .ps-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .ps-tab{padding:.7rem .9rem;font-size:.86rem}
@@ -363,6 +394,65 @@ footer a{color:#cdd9f0}footer a:hover{color:#fff}
     <span class="eyebrow reveal">Seleção curada</span>
     <h2 class="h2 reveal">Imóveis de alto padrão</h2>
     <p class="lead reveal">Poucos imóveis, escolhidos a dedo — apresentados como merecem.</p>
+
+    <!-- FILTROS AVANÇADOS + ORDENAÇÃO -->
+    <div class="advbar reveal">
+      <button type="button" class="advtoggle" id="advToggle" aria-expanded="false" aria-controls="advPanel" onclick="toggleAdv()">
+        <span>⚙️ Filtros avançados</span><span class="arr" aria-hidden="true">▾</span>
+      </button>
+      <label class="ordbox" for="ordenar">
+        <span>Ordenar por</span>
+        <select id="ordenar" aria-label="Ordenar imóveis" onchange="ordenarBento(this.value)">
+          <option value="recentes">Mais recentes</option>
+          <option value="preco_asc">Menor preço</option>
+          <option value="preco_desc">Maior preço</option>
+          <option value="area_desc">Maior área</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="advpanel reveal" id="advPanel" role="region" aria-label="Filtros avançados">
+      <div class="advgrid">
+        <div class="advfield">
+          <span class="lbl" id="lblQuartos">Quartos (mínimo)</span>
+          <div class="segrow" role="group" aria-labelledby="lblQuartos" id="fltQuartos">
+            <button type="button" class="on" data-v="0" onclick="setSeg(this)" aria-pressed="true">Qualquer</button>
+            <button type="button" data-v="1" onclick="setSeg(this)" aria-pressed="false">1+</button>
+            <button type="button" data-v="2" onclick="setSeg(this)" aria-pressed="false">2+</button>
+            <button type="button" data-v="3" onclick="setSeg(this)" aria-pressed="false">3+</button>
+            <button type="button" data-v="4" onclick="setSeg(this)" aria-pressed="false">4+</button>
+          </div>
+        </div>
+        <div class="advfield">
+          <span class="lbl" id="lblVagas">Vagas (mínimo)</span>
+          <div class="segrow" role="group" aria-labelledby="lblVagas" id="fltVagas">
+            <button type="button" class="on" data-v="0" onclick="setSeg(this)" aria-pressed="true">Qualquer</button>
+            <button type="button" data-v="1" onclick="setSeg(this)" aria-pressed="false">1+</button>
+            <button type="button" data-v="2" onclick="setSeg(this)" aria-pressed="false">2+</button>
+            <button type="button" data-v="3" onclick="setSeg(this)" aria-pressed="false">3+</button>
+          </div>
+        </div>
+        <div class="advfield">
+          <span class="lbl">Faixa de preço (R$)</span>
+          <div class="nums">
+            <input id="fltPrecoMin" type="number" inputmode="numeric" min="0" step="10000" placeholder="Mínimo" aria-label="Preço mínimo"/>
+            <span class="sep">—</span>
+            <input id="fltPrecoMax" type="number" inputmode="numeric" min="0" step="10000" placeholder="Máximo" aria-label="Preço máximo"/>
+          </div>
+        </div>
+        <div class="advfield">
+          <span class="lbl">Área mínima (m²)</span>
+          <div class="nums">
+            <input id="fltArea" type="number" inputmode="numeric" min="0" step="10" placeholder="Ex.: 80" aria-label="Área mínima em metros quadrados"/>
+          </div>
+        </div>
+      </div>
+      <div class="advactions">
+        <button type="button" class="btn btn-gold" onclick="aplicarFiltros()">Aplicar filtros</button>
+        <button type="button" class="btn btn-clear" onclick="limparFiltros()">Limpar</button>
+      </div>
+    </div>
+
     <div class="bento reveal" id="bento"><p style="color:var(--muted)">Carregando imóveis reais…</p></div>
   </div>
 </section>
@@ -546,7 +636,7 @@ function fmt(v){return Number(v).toLocaleString('pt-BR',{style:'currency',curren
 function normTxt(t){return (t||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();}
 fetch('/api/imoveis').then(r=>r.json()).then(d=>{
   const el=document.getElementById('bento'); el.innerHTML='';
-  d.items.forEach(it=>{
+  d.items.forEach((it,idx)=>{
     const caps=(it.imagens||[]); const capa=(caps.find(i=>i.tipo==='capa')||caps[0]||{}).arquivo;
     const img=capa?`/assets/${capa}/1200.webp`:'/assets/priscila-hero.jpg';
     const venda=it.tipo==='Comercial'?fmt(it.preco)+'/mês':fmt(it.preco);
@@ -556,6 +646,11 @@ fetch('/api/imoveis').then(r=>r.json()).then(d=>{
     c.dataset.tipo=normTxt(it.tipo||'');
     c.dataset.bairro=normTxt(it.bairro||'');
     c.dataset.busca=normTxt([it.titulo,it.bairro,it.descricao,it.caracteristicas].filter(Boolean).join(' '));
+    c.dataset.idx=idx;                       // ordem original da API (destaque+atualizado)
+    c.dataset.quartos=(+it.quartos||0);
+    c.dataset.vagas=(+it.vagas||0);
+    c.dataset.preco=(+it.preco||0);
+    c.dataset.area=(+it.area_util||0);
     c.innerHTML=`<img class="bg" src="${img}" alt="${it.titulo}" loading="lazy"/>
       <span class="badge">${it.bairro.trim()}</span><div class="ov"></div>
       <div class="meta"><h3>${it.titulo.trim()}</h3><div class="price">${venda}</div><div class="feat">${feat}</div></div>`;
@@ -581,7 +676,9 @@ function setStatusEmp(btn,st){
   EMP_STATUS=st;
   document.querySelectorAll('.ps-st').forEach(b=>b.classList.toggle('on',b===btn));
 }
-// filtra os cards do #bento por op + tipo + texto. retorna nº de cards visíveis.
+// estado dos filtros avançados (mínimos / faixa)
+let ADV={quartos:0,vagas:0,precoMin:null,precoMax:null,area:0};
+// filtra os cards do #bento por op + tipo + texto + filtros avançados (ADV). retorna nº de cards visíveis.
 function filtrarBento(op,tipo,texto){
   const tipoN=normTxt(tipo), txtN=normTxt(texto);
   let n=0;
@@ -589,11 +686,93 @@ function filtrarBento(op,tipo,texto){
     const okOp=!op||c.dataset.op===op;
     const okTipo=!tipoN||c.dataset.tipo===tipoN;
     const okTxt=!txtN||(c.dataset.busca||'').indexOf(txtN)!==-1;
-    const show=okOp&&okTipo&&okTxt;
+    const q=+c.dataset.quartos||0, vg=+c.dataset.vagas||0, pr=+c.dataset.preco||0, ar=+c.dataset.area||0;
+    const okQ=q>=ADV.quartos;
+    const okV=vg>=ADV.vagas;
+    const okPMin=ADV.precoMin==null||pr>=ADV.precoMin;
+    const okPMax=ADV.precoMax==null||pr<=ADV.precoMax;
+    const okArea=ar>=ADV.area;
+    const show=okOp&&okTipo&&okTxt&&okQ&&okV&&okPMin&&okPMax&&okArea;
     c.style.display=show?'':'none';
     if(show)n++;
   });
+  // reaplica a ordenação escolhida sobre os cards que ficaram visíveis
+  const ord=document.getElementById('ordenar');
+  if(ord)ordenarBento(ord.value);
   return n;
+}
+// ---- filtros avançados (painel recolhível) ----
+function toggleAdv(){
+  const p=document.getElementById('advPanel'), t=document.getElementById('advToggle');
+  const open=p.classList.toggle('open');
+  t.setAttribute('aria-expanded',open?'true':'false');
+}
+// segmento de botões (quartos/vagas): marca o clicado, desmarca os irmãos
+function setSeg(btn){
+  const grp=btn.parentElement;
+  grp.querySelectorAll('button').forEach(b=>{
+    const on=b===btn;
+    b.classList.toggle('on',on);
+    b.setAttribute('aria-pressed',on?'true':'false');
+  });
+}
+function segVal(id){
+  const on=document.querySelector('#'+id+' button.on');
+  return on?(+on.dataset.v||0):0;
+}
+// lê os campos do painel, atualiza ADV e refiltra (respeitando op/tipo/texto atuais)
+function aplicarFiltros(){
+  const pmin=document.getElementById('fltPrecoMin').value;
+  const pmax=document.getElementById('fltPrecoMax').value;
+  ADV.quartos=segVal('fltQuartos');
+  ADV.vagas=segVal('fltVagas');
+  ADV.precoMin=pmin!==''?+pmin:null;
+  ADV.precoMax=pmax!==''?+pmax:null;
+  ADV.area=+document.getElementById('fltArea').value||0;
+  const tipo=document.getElementById('buscaTipo').value;
+  const texto=document.getElementById('buscaTexto').value;
+  document.querySelectorAll('.stab[data-op]').forEach(t=>t.classList.toggle('on',t.dataset.op===BUSCA_OP));
+  const n=filtrarBento(BUSCA_OP,tipo,texto);
+  const aviso=document.getElementById('buscaAviso');
+  if(n===0){
+    aviso.innerHTML='Não achei imóvel com esses filtros 😕 — <a href="https://wa.me/5577999395511" target="_blank">fala com a Priscila no WhatsApp</a> que ela acha pra você.';
+    aviso.classList.add('show');
+  }else{
+    aviso.classList.remove('show');
+  }
+  const alvo=document.getElementById('imoveis');
+  if(alvo)alvo.scrollIntoView({behavior:'smooth',block:'start'});
+}
+// zera só os filtros avançados (mantém op/tipo/texto do portal)
+function limparFiltros(){
+  ADV={quartos:0,vagas:0,precoMin:null,precoMax:null,area:0};
+  ['fltQuartos','fltVagas'].forEach(id=>{
+    document.querySelectorAll('#'+id+' button').forEach((b,i)=>{
+      const on=i===0;
+      b.classList.toggle('on',on);
+      b.setAttribute('aria-pressed',on?'true':'false');
+    });
+  });
+  document.getElementById('fltPrecoMin').value='';
+  document.getElementById('fltPrecoMax').value='';
+  document.getElementById('fltArea').value='';
+  const tipo=document.getElementById('buscaTipo').value;
+  const texto=document.getElementById('buscaTexto').value;
+  filtrarBento(BUSCA_OP,tipo,texto);
+  document.getElementById('buscaAviso').classList.remove('show');
+}
+// ---- ordenação dos cards visíveis do #bento ----
+function ordenarBento(modo){
+  const bento=document.getElementById('bento');
+  if(!bento)return;
+  const cards=Array.prototype.slice.call(bento.querySelectorAll('.card'));
+  cards.sort((a,b)=>{
+    if(modo==='preco_asc') return (+a.dataset.preco||0)-(+b.dataset.preco||0);
+    if(modo==='preco_desc')return (+b.dataset.preco||0)-(+a.dataset.preco||0);
+    if(modo==='area_desc') return (+b.dataset.area||0)-(+a.dataset.area||0);
+    return (+a.dataset.idx||0)-(+b.dataset.idx||0); // recentes = ordem original da API
+  });
+  cards.forEach(c=>bento.appendChild(c));
 }
 function buscarImoveis(){
   if(BUSCA_OP==='empreendimentos'){location.href='empreendimentos.html'+(EMP_STATUS?('?status='+EMP_STATUS):'');return;}
@@ -617,6 +796,15 @@ function setOp(op){
   BUSCA_OP=op;
   const tt=document.getElementById('buscaTipo'); if(tt)tt.value='';
   const tx=document.getElementById('buscaTexto'); if(tx)tx.value='';
+  if(typeof limparFiltros==='function'){
+    // zera os filtros avançados sem refiltrar (o filtrarBento abaixo já refaz)
+    ADV={quartos:0,vagas:0,precoMin:null,precoMax:null,area:0};
+    ['fltQuartos','fltVagas'].forEach(id=>{
+      const g=document.getElementById(id);
+      if(g)g.querySelectorAll('button').forEach((b,i)=>{const on=i===0;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
+    });
+    ['fltPrecoMin','fltPrecoMax','fltArea'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  }
   setBuscaAba(op);
   document.querySelectorAll('.stab[data-op]').forEach(t=>t.classList.toggle('on',t.dataset.op===op));
   document.querySelectorAll('.ps-busca-aviso').forEach(a=>a.classList.remove('show'));
@@ -667,6 +855,6 @@ function simular(){
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=ad3d4cf3").catch(function(){});});}</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=da282cee").catch(function(){});});}</script>
 </body>
 </html>
