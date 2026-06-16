@@ -30,7 +30,10 @@ Branch: `feat/calibracao-design-skills` (nunca push na `main`). Tudo commitado e
 - _STATUS: rodando quando este doc foi escrito. Resultados (ou falha) serão anexados abaixo ao terminarem._
   ⚠️ A deep-research de notícias FALHOU antes (erro `StructuredOutput` na síntese) — risco de estas falharem igual.
 
-<!-- RESULTADO-PESQUISAS: preencher ao terminar -->
+**RESULTADO:**
+- ✅ `w90xuv68s` (arquitetura de design) — **CONCLUÍDA** → `docs/PESQUISA-DESIGN-ARQUITETURA.md`; skill `design-priscila`
+  enriquecida (dado: simplificar hero = +46% conversão; whitespace = hierarquia primária; ref GitHub `codewithsadee/homeverse`).
+- ⏳ `wg9yzg74o` (skills de design no GitHub) — ainda rodando; anexar quando terminar.
 
 ## 🔜 PENDENTE (pro próximo agente / Thiago)
 **Quick wins de arquitetura (do `ESTUDO-ARQUITETURA.md`) — faltam 3:**

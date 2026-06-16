@@ -60,5 +60,16 @@ Cards inconsistentes → 1 componente, 1 proporção. Botões "quase iguais" →
 3. Ao terminar, passar a tela pelo **checklist** (`reference/checklist.md`) — é o gate. Se algo usa valor cru, corrige.
 4. Mudança global (cor, raio) = trocar no `:root`, propaga pro site todo. É assim que o sistema se mantém sozinho.
 
-_Fontes: Material 3, IBM Carbon, Atlassian, Shopify Polaris, Radix (organização de tokens) + UX imobiliário (conversão).
-Duas deep-research em andamento vão enriquecer esta skill (arquitetura + skills de design no GitHub)._
+## 📊 Evidências verificadas (deep-research 16/06 — ver `docs/PESQUISA-DESIGN-ARQUITETURA.md`)
+- **Simplificar o hero (1 ação primária, menos clutter) = +46% de conversão** (A/B Carrot; venceu em 3 sites). É o
+  argumento mais forte: above-the-fold limpo converte.
+- **Whitespace é o mecanismo PRIMÁRIO de hierarquia** (Gestalt/proximidade) — variar o espaço ao redor agrupa/separa.
+  Antes de cor/borda, use ESPAÇO pra criar hierarquia.
+- **Mobile:** a busca deve ficar na **faixa inferior** do hero (alcance do polegar).
+- **Tipografia:** line-heights escalam de **4 em 4** (baseline 4pt), não de 8 — passos de 8 ficam distantes demais.
+- **Erro nº1 de "desordenado":** excesso de ícones nas características do imóvel → use ícones com parcimônia.
+- **Referência HTML/CSS pura no GitHub:** `codewithsadee/homeverse` (imobiliário, 100% HTML/CSS/JS, type scale de 7 passos).
+- _Mito derrubado:_ "8pt porque telas são divisíveis por 8" é falso — use 8pt pelo equilíbrio variáveis × distinção.
+
+_Fontes: Material 3, IBM Carbon, Atlassian, Shopify Polaris (organização de tokens) + UX imobiliário (conversão) +
+deep-research verificada (107 agentes). A 2ª deep-research (skills de design no GitHub) será anexada quando terminar._
