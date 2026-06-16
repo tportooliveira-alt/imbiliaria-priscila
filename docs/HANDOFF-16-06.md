@@ -38,12 +38,13 @@ Branch: `feat/calibracao-design-skills` (nunca push na `main`). Tudo commitado e
 - ✅ **Ambas as deep-research de design concluídas e salvas. Workflows encerrados.**
 
 ## 🔜 PENDENTE (pro próximo agente / Thiago)
-**Quick wins de arquitetura (do `ESTUDO-ARQUITETURA.md`) — faltam 3:**
-- #3 **Consertar 9 testes falhando** (isolar env no `tests/conftest.py` — limpar chaves). ⚠️ a suíte completa é LENTA
-  headless (timeout); rodar por arquivo. Falham por *env leakage* (`.env` real carregado), não por bug de lógica.
-- #4 Rodar `pytest`/`py_compile` no `deploy.sh` antes do restart.
-- #5 Limpar código morto: `FUNIL_COUNTER`/`funnel_summary` (`lead.py`), `detalhe_por_id` hasattr (`routes_admin.py`),
-  `CORS_ORIGINS` não-lido, `.bak` no diretório. + `datetime.utcnow()`→`timezone.utc` (279 warnings).
+**Quick wins de arquitetura — ✅ A1/A2/A3 FEITOS (16/06):**
+- ✅ #3 9 testes consertados (`tests/conftest.py` isola env + neutraliza load_dotenv; 2 testes desatualizados ajustados). Commit `33fa2e9`.
+- ✅ #4 Gate `py_compile` no `deploy.sh` (aborta se erro de sintaxe). Commit `8068d00`.
+- ✅ #5 Código morto: `detalhe_por_id`→`buscar_por_id`, `funnel_summary` removido, `.bak` fora do repo. Commit `4d24b52`.
+  (`track_stage`/`FUNIL_COUNTER` MANTIDOS — o dispatcher usa.)
+- ⏳ FALTA (deixado de propósito, risco): `datetime.utcnow()`→`datetime.now(timezone.utc)` — muda `isoformat()` (+00:00),
+  pode quebrar parsing de timestamps salvos. Avaliar com teste antes.
 **Design (Thiago adiou pra "amanhã"):**
 - Aplicar a skill `design-priscila` no `preview.html` (padronizar espaços/type scale) — PRECISA de print do que está
   "desordenado" (não mexer às cegas). Fundação (tokens no `:root`) já aplicada.
