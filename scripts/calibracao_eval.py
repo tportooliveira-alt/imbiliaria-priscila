@@ -117,6 +117,47 @@ CAMPOS = ["rodada", "bairro", "titulo", "tipo", "area_util", "area_terreno", "qu
           "estimativa", "valor_min", "valor_max", "erro_pct", "dentro_faixa"]
 
 
+import glob
+import json
+
+# nomes de bairro (normalizados) -> chave do m2_vdc
+_BAIRRO_ALIAS = {
+    "alto_da_boa_vista": "boa_vista", "loteamento_alto_da_boa_vista": "boa_vista",
+    "terras_alphaville": "alphaville", "haras_camping_club": "haras",
+}
+
+
+def _norm_b(b: str) -> str:
+    k = (b or "").strip().lower()
+    for a, x in (("í", "i"), ("ó", "o"), ("ã", "a"), ("ô", "o"), ("â", "a"), ("é", "e"), ("ç", "c"), ("ê", "e")):
+        k = k.replace(a, x)
+    k = k.replace(" ", "_").replace("-", "_")
+    return _BAIRRO_ALIAS.get(k, k)
+
+
+def carregar_lotes() -> list[tuple]:
+    """Le calibracao/*.json (chaves curtas) -> tuplas no mesmo formato das RODADAS."""
+    out: list[tuple] = []
+    for fp in sorted(glob.glob("calibracao/*.json")):
+        with open(fp, encoding="utf-8") as f:
+            data = json.load(f)
+        for a in data.get("anuncios", []):
+            if not a.get("a") or not a.get("pr"):
+                continue
+            tipo = a.get("t") or "casa"
+            if tipo == "sobrado":
+                tipo = "casa"
+            if tipo not in ("casa", "apartamento", "cobertura", "terreno", "comercial"):
+                tipo = "casa"
+            out.append((
+                _norm_b(a.get("b", "")), (a.get("ti") or "")[:42], tipo, a["a"], a.get("at"),
+                a.get("q") or 2, a.get("s") or 0, a.get("v") or 0,
+                a.get("p") or "medio", a.get("e") or "bom", a.get("i"),
+                bool(a.get("r")), a["pr"], a.get("f", ""),
+            ))
+    return out
+
+
 def avalia_item(it):
     (bairro, titulo, tipo, area, area_ter, q, ste, vg, padrao, estado, idade, recem, preco, fonte) = it
     idade_f = idade or ("novo" if recem else "0_10")
@@ -132,10 +173,15 @@ def avalia_item(it):
 
 
 def main():
+    combinados = [(n, it) for n, lst in [(1, RODADA_1), (2, RODADA_2), (3, RODADA_3)] for it in lst]
+    combinados += [("A", it) for it in carregar_lotes()]
     rows = []
-    todas = [(1, RODADA_1), (2, RODADA_2), (3, RODADA_3)]
-    for nrod, lista in todas:
-      for it in lista:
+    seen = set()
+    for nrod, it in combinados:
+        chave = (it[0], it[2], round(float(it[3])), it[12])  # bairro,tipo,area,preco -> dedup
+        if chave in seen:
+            continue
+        seen.add(chave)
         est, vmin, vmax, erro, dentro = avalia_item(it)
         (bairro, titulo, tipo, area, area_ter, q, ste, vg, padrao, estado, idade, recem, preco, fonte) = it
         rows.append({

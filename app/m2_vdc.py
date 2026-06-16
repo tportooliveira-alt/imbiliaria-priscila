@@ -34,6 +34,10 @@ M2_VDC: dict[str, float] = {
     "bateias": 2800,     # mantido
     "vila_serrana": 1600,# [amostra pequena]
     "patagonia": 2600,   # recalibrado 16/06 (era 1900): backtest casas reais ~2969/m² (estava subestimado)
+    "alphaville": 4600,  # add 16/06: Terras AlphaVille (condominio de luxo; casas alto/luxo)
+    "universidade": 3800,# add 16/06
+    "sao_pedro": 3200,   # add 16/06
+    "haras": 4500,       # add 16/06: Haras Camping Club (chacaras/luxo)
     "outro": 3800,       # fallback
 }
 
@@ -113,8 +117,8 @@ FATOR_VISTA: dict[Vista, float] = {
 # Multiplicador de CASA por bairro (relacao casa/apto NAO e constante: 0,62 a 1,29).
 # casaMult = mediana casa R$/m² ÷ base apto do bairro (OLX jun/2026, 812 anuncios).
 M2_CASA_MULT: dict[str, float] = {
-    "boa_vista": 1.286,  # casas valem MAIS que aptos aqui [n=42]
-    "felicia": 1.051,
+    "boa_vista": 1.15,   # recalibrado 16/06 (era 1.286): backtest n=17 casas reais ~6500/m² (1.286 estourava)
+    "felicia": 0.88,     # recalibrado 16/06 (era 1.051): backtest casa real ~3016 < apto ~3839
     "candeias": 1.022,
     "brasil": 0.870,
     "alto_maron": 0.751,
