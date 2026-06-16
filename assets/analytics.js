@@ -6,6 +6,12 @@
   var fila = [];
   window.track = function (evento, params) { fila.push([evento, params || {}]); };
 
+  // Dispara clique_whatsapp em QUALQUER link wa.me (delegação global — pega todos os botões de WhatsApp do site)
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href*="wa.me"]');
+    if (a) { try { window.track('clique_whatsapp', {}); } catch (_) {} }
+  }, true);
+
   fetch('/api/config').then(function (r) { return r.json(); }).then(function (cfg) {
     var temMeta = cfg && cfg.meta_pixel_id;
     var temGA = cfg && cfg.ga4_id;

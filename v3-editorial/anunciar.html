@@ -217,6 +217,7 @@ function montarBody(){
 function avaliar(){
   const area=parseFloat(val('area'));
   if(!area){alert('Me diz a área (m²) do imóvel 😊');return;}
+  try{window.track&&window.track('calculadora_concluida',{bairro:val('bairro')||''});}catch(e){}
   LAST=montarBody();
   document.getElementById('result').classList.remove('show');
   document.getElementById('okmsg').classList.remove('show');
