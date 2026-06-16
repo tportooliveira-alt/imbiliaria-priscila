@@ -1,0 +1,39 @@
+bairro|rua|tipo|area_m2|quartos|suites|vagas|padrao|acab|comercial|preco|data|fonte|titulo
+Boa Vista|Av Gilenilda Alves|casa|560|5|5|5|luxo|pronto|nao|5490000|06/2026|OLX|Duplex Bosque dos Pinheiros 560m2
+Boa Vista|Av Gilenilda Alves|apartamento|250|4|4|5|luxo|pronto|nao|2100000|04/2026|OLX|Apt 4 suites Bosque dos Pinheiros
+Boa Vista|Av Gilenilda Alves|casa|360|4|2|4|alto|pronto|nao|1565000|04/2026|OLX|Casa Parque dos Ipes II 360m2
+Boa Vista|Av Gilenilda Alves|casa|267|4|2|5|alto|pronto|nao|1450000|04/2026|OLX|Casa Parque dos Ipes II 267m2
+Boa Vista|Av Gilenilda Alves|casa|225|3|2|3|alto|pronto|nao|1650000|05/2026|OLX|Casa Parque dos Ipes II 225m2
+Boa Vista|Av Gilenilda Alves|casa|194|3|2|3|alto|pronto|nao|1003000|05/2026|OLX|Casa Parque dos Ipes II 194m2
+Boa Vista|Rua TG-02|casa|205|3|2|3|alto|pronto|nao|790000|06/2026|claudiocardoso|Casa Alto da Boa Vista TG-02 205m2
+Boa Vista|Cond San Salvatore|casa|200|4|2|5|alto|pronto|nao|1300000|05/2026|OLX|Casa San Salvatore 200m2
+Boa Vista|Cond Cidade das Flores|casa|100|3|2|2|alto|pronto|nao|990000|04/2026|OLX|Casa Cidade das Flores 100m2
+Boa Vista|Cond Lord Residence|casa|110|3|1|2|alto|pronto|nao|850000|04/2026|OLX|Casa Lord Residence 110m2
+Boa Vista|Cond Maison Bordeaux|casa|147|3|3|4|alto|pronto|nao|990000|06/2026|OLX|Maison Bordeaux 3/4 147m2
+Boa Vista|Cond Maison Bordeaux|casa|187|4|4|5|alto|pronto|nao|1290000|06/2026|OLX|Maison Bordeaux 4/4 187m2
+Boa Vista|Cond Bosque dos Pinheiros|cobertura|185|3|4|4|luxo|pronto|nao|1301000|06/2026|OLX|Cobertura area nobre 185m2
+Boa Vista|Cond Bosque dos Pinheiros|cobertura|185|3|4|4|luxo|pronto|nao|1365000|04/2026|OLX|Cobertura Buena Vista 185m2
+Boa Vista|Rua D|apartamento|95|3|2|3|alto|pronto|nao|470000|06/2026|OLX|Cond Hercilio Flores 95m2
+Boa Vista|Rua D|apartamento|94|3|2|2|medio|pronto|nao|435000|06/2026|VivaReal|Apt 94m2 Rua D Boa Vista
+Boa Vista|Av Joselito Ferreira Soares|apartamento|94|3|3|2|alto|pronto|nao|526335|06/2026|ChavesNaMao|Apt VOG Jardins 94m2
+Boa Vista|Rua H|apartamento|51|2|1|1|simples|pronto|nao|270000|06/2026|ImovelWeb|Apt Chamonix Residence Rua H 51m2
+Boa Vista|Rua H 100|apartamento|52|2|1|1|simples|pronto|nao|260000|06/2026|ChavesNaMao|Apt 2/4 Rua H 100 52m2
+Boa Vista|Rua TG-06|casa|130|3|1|1|medio|pronto|nao|509900|06/2026|humbertoalves|Casa Rua TG-06 130m2
+Boa Vista|Rua TG-08|terreno|500|||| medio|osso|nao|300000|06/2026|VivaReal|Terreno Rua TG-08 500m2
+Boa Vista|Av Gilenilda Alves|apartamento|92|3|2|2|alto|pronto|nao|350000|05/2026|OLX|Apt 3/4 Av Gilenilda 92m2
+Boa Vista|Av Gilenilda Alves|apartamento|92|3|2|2|alto|pronto|nao|430000|06/2026|Moreira|Apt Av Gilenilda 92m2
+Boa Vista|Cond Fabio Ferreira|apartamento|94|3|2|2|alto|pronto|nao|460000|06/2026|OLX|Apt Fabio Ferreira 94m2
+Boa Vista|Cond Fabio Ferreira|apartamento|94|3|2|3|alto|pronto|nao|480000|04/2026|OLX|Apt Fabio Ferreira porteira 94m2
+Boa Vista|Cond Provence|apartamento|74|3|1|2|medio|pronto|nao|295000|04/2026|OLX|Apt Provence 74m2 mobiliado
+Boa Vista|Cond VOG Jardins|apartamento|65|2|1|2|medio|pronto|nao|285000|05/2026|OLX|VOG Jardins porteira 65m2
+Boa Vista|Cond Sevilha Av Laura Nunes|apartamento|58|2|2|2|medio|pronto|nao|375000|05/2026|OLX|Apt Sevilha 58m2 mobiliado
+Boa Vista|Cond Princesa Leonor|apartamento|104|3|2|3|alto|pronto|nao|590000|04/2026|OLX|Apt Princesa Leonor 104m2
+Boa Vista|Cond Vitoria Ville|apartamento|94|3|2|2|alto|pronto|nao|539193|06/2026|OLX|Apt Vitoria Ville 94m2
+Boa Vista|Cond Vitoria Ville|apartamento|94|3|2|2|alto|pronto|nao|690000|04/2026|OLX|Apt Vitoria Ville 5 andar 94m2
+Boa Vista|Cond Edmundo Franca|apartamento|110|2|2|3|alto|pronto|nao|850000|04/2026|OLX|Apt Edmundo Franca 110m2 mobiliado
+Boa Vista|Lot Esplanada do Parque|casa|210|4|3|3|alto|pronto|nao|750000|04/2026|OLX|Duplex Esplanada do Parque 210m2
+Boa Vista|Lot Porto Seguro|casa|120|3|2|3|medio|pronto|nao|460000|04/2026|OLX|Duplex Porto Seguro 120m2
+Boa Vista|Cond Ipes II|casa|360|4|4|5|luxo|osso|nao|1610000|05/2026|OLX|Duplex acabamento Ipes II 360m2
+Boa Vista|Cond Adilson Fontes|apartamento|61|3|1|2|medio|pronto|nao|327000|06/2026|OLX|Apt Adilson Fontes 61m2
+Boa Vista|Cond Jardim Guanabara|apartamento|70|2|1|2|medio|pronto|nao|338000|06/2026|OLX|Apt Jardim Guanabara 70m2
+Boa Vista|Cond Maria Eduarda|casa|130|3|2|2|alto|pronto|nao|507000|04/2026|OLX|Casa Maria Eduarda 130m2

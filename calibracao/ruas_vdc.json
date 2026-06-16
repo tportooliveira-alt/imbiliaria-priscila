@@ -14,6 +14,13 @@
       "popular": ["Rua D (Alto das Araras)"],
       "comercial": ["Avenida Olivia Flores", "Avenida Luis Eduardo Magalhaes", "Rua Jacy Santos Flores"],
       "obs": "Bairro nobre Zona Leste. Olivia Flores = eixo nobre E comercial. (a confirmar com deep-research)"
+    },
+    "boa_vista": {
+      "perfil": "nobre_bimodal",
+      "premium": ["Avenida Gilenilda Alves", "Rua TG-02", "Cond Parque dos Ipes II", "Cond Bosque dos Pinheiros", "Cond San Salvatore", "Cond Cidade das Flores"],
+      "popular": ["Rua H", "Rua D", "Rua TG-06", "Rua TG-08", "Rua TG-11", "Rua TG-13"],
+      "comercial": ["Avenida Gilenilda Alves", "Avenida Joselito Ferreira Soares"],
+      "obs": "Av Gilenilda Alves = maior R$/m2 do bairro: Bosque dos Pinheiros duplex R$9.800/m2, apt R$8.400/m2. Rua TG-02 casa R$3.850/m2. Ruas H/D populares ~R$4.600-5.000/m2. Gilenilda tambem corredor comercial."
     }
   }
 }
