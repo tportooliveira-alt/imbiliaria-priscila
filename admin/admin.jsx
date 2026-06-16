@@ -749,12 +749,22 @@ const ESTAGIO_LABEL = {
   visita: "Visita", proposta: "Proposta", fechado: "Fechado", perdido: "Perdido",
 };
 
+// Rótulos do funil AUTOMÁTICO de conversas do site (temperatura classificada pela IA).
+// ⚠️ RESSALVA (16/06): é um painel de ANÁLISE, distinto do "Funil por estágio" (pipeline operacional dos leads).
+//    Encaixado a pedido; sujeito a mudança/remoção quando a Priscila avaliar se usa na prática.
+const CONVERSA_STAGE_LABEL = {
+  frio: "Frio", morno: "Morno", quente: "Quente",
+  pronto_visita: "Pronto p/ visita", pronto_proposta: "Pronto p/ proposta",
+};
+
 function Dashboard() {
   const [d, setD] = React.useState(null);
+  const [conv, setConv] = React.useState(null); // funil de conversas (IA) — /api/funnel
   const [erro, setErro] = React.useState("");
 
   React.useEffect(() => {
     api("/api/admin/dashboard").then(setD).catch(e => setErro(e.message));
+    api("/api/funnel").then(setConv).catch(() => setConv(null)); // não crítico: se falhar, só não mostra
   }, []);
 
   if (erro) return <div className="alerta">{erro}</div>;
@@ -791,6 +801,30 @@ function Dashboard() {
           </div>
         ))}
       </div>
+
+      {conv && conv.total > 0 && (
+        <div>
+          <h3 style={{marginTop: 32}}>
+            Funil de conversas (IA){" "}
+            <span style={{fontSize: 12, fontWeight: 400, color: "#5C7CB8"}}>
+              · análise automática · provisório
+            </span>
+          </h3>
+          <p style={{fontSize: 13, color: "#6b7280", margin: "4px 0 10px"}}>
+            Temperatura das conversas do site classificada pela IA ({conv.total} no total).
+            Painel de análise — pode mudar.
+          </p>
+          <div className="funil">
+            {Object.keys(CONVERSA_STAGE_LABEL).map(k => (
+              <div key={k} className="funil-item">
+                <span className="funil-label">{CONVERSA_STAGE_LABEL[k]}</span>
+                <span className="funil-bar"><span style={{width: `${conv.total ? Math.min(100, ((conv.stages?.[k] || 0) / conv.total) * 100) : 0}%`}} /></span>
+                <span className="funil-n">{conv.stages?.[k] || 0}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <h3 style={{marginTop: 32}}>Ultimos leads</h3>
       <table className="tab">
