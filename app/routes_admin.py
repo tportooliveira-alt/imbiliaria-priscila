@@ -436,7 +436,7 @@ def auto_organizar_imagens(imovel_id: int, _: dict = Depends(requer_admin)) -> d
     """
     from app import visao
 
-    imovel = imoveis.detalhe_por_id(imovel_id) if hasattr(imoveis, "detalhe_por_id") else None
+    imovel = imoveis.buscar_por_id(imovel_id)
     if imovel is None:
         # fallback: confirma existencia checando se ha imagens
         if not imoveis.listar_imagens(imovel_id):

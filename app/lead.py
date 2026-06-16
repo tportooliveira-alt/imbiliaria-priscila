@@ -177,12 +177,3 @@ def qualify_lead(message: str, history: list[dict] | None = None) -> LeadSnapsho
 
 def track_stage(stage: str) -> None:
     FUNIL_COUNTER[stage] += 1
-
-
-def funnel_summary() -> dict:
-    stages = ["frio", "morno", "quente", "pronto_visita", "pronto_proposta"]
-    total = sum(FUNIL_COUNTER.values())
-    return {
-        "total": total,
-        "stages": {s: int(FUNIL_COUNTER.get(s, 0)) for s in stages},
-    }
