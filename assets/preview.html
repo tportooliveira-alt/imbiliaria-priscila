@@ -179,6 +179,8 @@ section.blk{padding:80px 0}
 .card .meta h3{font-size:1.2rem;font-weight:700;margin-bottom:.25rem}
 .card .meta .price{font-family:'Inter';font-weight:700;font-size:1.25rem;color:#fff}
 .card .meta .feat{font-size:.84rem;opacity:.88;margin-top:.3rem}
+.card .meta .card-cta{display:inline-flex;align-items:center;gap:.4rem;margin-top:12px;background:var(--grad-gold);color:#fff;font-family:'Inter';font-weight:600;font-size:.8rem;padding:.5rem .9rem;border-radius:999px;box-shadow:0 6px 16px rgba(201,148,58,.3);transition:.2s}
+.card .meta .card-cta:hover{filter:brightness(1.07)}
 @media(max-width:720px){.bento{grid-template-columns:1fr}.card:first-child{grid-row:auto;min-height:300px}}
 
 /* ana dark */
@@ -648,7 +650,8 @@ fetch('/api/imoveis').then(r=>r.json()).then(d=>{
     c.dataset.area=(+it.area_util||0);
     c.innerHTML=`<img class="bg" src="${img}" alt="${it.titulo}" loading="lazy"/>
       <span class="badge">${it.bairro.trim()}</span><div class="ov"></div>
-      <div class="meta"><h3>${it.titulo.trim()}</h3><div class="price">${venda}</div><div class="feat">${feat}</div></div>`;
+      <div class="meta"><h3>${it.titulo.trim()}</h3><div class="price">${venda}</div><div class="feat">${feat}</div>
+      <a class="card-cta" href="/v3-editorial/agendar-visita.html?slug=${it.slug}" onclick="event.stopPropagation()">📅 Marcar visita</a></div>`;
     c.onclick=()=>{location.href='/assets/imovel.html?slug='+it.slug;};
     el.appendChild(c);
   });
