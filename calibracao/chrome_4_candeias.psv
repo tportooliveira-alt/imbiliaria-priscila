@@ -1,0 +1,101 @@
+bairro|rua|tipo|area_m2|quartos|suites|vagas|padrao|acab|comercial|preco|data|fonte|titulo
+Candeias|Avenida Jesiel Norberto|apartamento|118|3|2|2|alto|pronto|nao|784300|05/2026|ImovelWeb|Apt Morada Nobre da Colina
+Candeias|Rua Um 1055|casa|148|4|4|2|alto|pronto|nao|775590|05/2026|ImovelWeb|Casa duplex Bella Citta 4 suites
+Candeias|Rua Claudia Botelho 775|apartamento|60|3||1|simples|pronto|nao|260000|05/2026|ImovelWeb|Apt Mirante da Vitoria 60m2
+Candeias|Avenida Fortaleza|apartamento|92|3|2|2|medio|pronto|nao|560000|05/2026|ImovelWeb|Apt Raimundo Santana Av Fortaleza
+Candeias|Rua D 30 Alto das Araras|apartamento|90|2|1|1|simples|pronto|nao|220000|05/2026|ImovelWeb|Apt terreo 2q Alto das Araras
+Candeias|Rua Roberto dos Santos Flores|apartamento|66|2||1|medio|pronto|nao|460000|05/2026|ImovelWeb|Apt 2/4 varanda gourmet novo
+Candeias|Avenida Presidente Vargas|apartamento|51|2|1|1|simples|pronto|nao|260000|05/2026|ImovelWeb|Apt 2q cond lazer Pres Vargas
+Candeias|Rua Sao Francisco de Assis 160|apartamento|64|2|1|1|simples|pronto|nao|175000|05/2026|ImovelWeb|Apt Res Mario Quintana 64m2
+Candeias|Avenida Jesiel Norberto 1991|casa|247|4|2|3|alto|pronto|nao|800000|05/2026|ImovelWeb|Triplex 4q Av Jesiel Norberto
+Candeias|Rua Jacy Santos Flores 10|comercial|480|4|4||alto|pronto|sim|2200000|05/2026|ImovelWeb|Residencial comercial 2 pav
+Candeias|Avenida Fortaleza 850|apartamento|190|3|3|3|alto|pronto|nao|660000|05/2026|ImovelWeb|Apt Henri Matisse 3 suites 190m2
+Candeias|Rua A Chacaras Candeias|casa|142|4|4|2|alto|pronto|nao|549900|05/2026|ImovelWeb|Casa duplex 4 suites Chacaras
+Candeias|Av Olivia Flores|apartamento|117|3|1|2|medio|pronto|nao|430000|05/2026|ImovelWeb|Apt 117m2 20m da Olivia Flores
+Candeias|Av Olivia Flores|apartamento|65|2|1|1|medio|pronto|nao|430000|05/2026|ImovelWeb|Apt 2/4 suite Olivia Flores
+Candeias|Rua Pastor Valdomiro Oliveira|casa|107|3||1|medio|pronto|nao|650000|06/2026|ZAP|Casa 107m2 cond 200
+Candeias||apartamento|87|3|1|2|medio|pronto|nao|460000|05/2026|OLX|Apt 3q 1 suite Premium
+Candeias||casa|80|5|2|2|alto|pronto|nao|1500000|06/2026|OLX|Casa 6/4 2 suites Candeias 80m2
+Candeias||casa|300|5|3|2|luxo|pronto|nao|2500000|11/2025|OLX|Mansao 5q Candeias 300m2
+Candeias||casa|864|4|4|4|luxo|pronto|nao|2500000|05/2026|OLX|Casa Candeias 864m2
+Candeias||apartamento|70|2|1|2|simples|pronto|nao|260000|06/2026|OLX|Apt 2q px FAINOR 70m2
+Candeias||casa|340|3|||alto|pronto|nao|1590000|06/2026|OLX|Casa excelente Candeias 340m2
+Candeias||apartamento|73|3|1||simples|pronto|nao|370000|06/2026|OLX|Apt 73m2 Candeias 3q
+Candeias||apartamento|48|2|2|2|simples|pronto|nao|195000|05/2026|OLX|Apt 48m2 Premium 2q
+Candeias||apartamento|77|3|1|2|simples|pronto|nao|330000|05/2026|OLX|Apt 77m2 Res Gustavo
+Candeias||apartamento|49|2|1|2|simples|pronto|nao|210000|04/2026|OLX|Apt Premium 49m2
+Candeias||casa|180|3|2|4|alto|pronto|nao|1310000|02/2026|OLX|Casa 3 suites 2 pav 180m2
+Candeias||apartamento|76|3|1|2|simples|pronto|nao|435000|01/2026|OLX|Apt Paulo Portiolli 76m2
+Candeias||apartamento|93|3|1|2|medio|pronto|nao|530000|01/2026|OLX|Apt Raimundo Santana 93m2
+Candeias||apartamento|90|3|1|3|simples|pronto|nao|366500|01/2026|OLX|Apt 90m2 px Fainor
+Candeias||apartamento|136|3|2|2|medio|pronto|nao|715000|01/2026|OLX|Apt Paul Cezanne 136m2
+Candeias||apartamento|167|3|3|4|alto|pronto|nao|800000|12/2025|OLX|Apt Henri Matisse 167m2
+Candeias||casa|213|3|3|3|medio|pronto|nao|680000|10/2025|OLX|Casa Jardim Candeias 213m2
+Candeias||apartamento|75|3|2|2|simples|pronto|nao|295000|09/2025|OLX|Apt 75m2 Candeias 3q
+Candeias||apartamento|84|3|1|2|simples|pronto|nao|270000|07/2025|OLX|Apt 84m2 Candeias 3q
+Candeias||apartamento|170|4|4|3|alto|pronto|nao|700000|07/2025|OLX|Apt 170m2 4q Candeias
+Candeias||casa|83|2|1|3|simples|pronto|nao|330000|07/2025|OLX|Casa 83m2 Candeias 2q
+Candeias||casa|186|5|4|3|alto|pronto|nao|1000000|07/2025|OLX|Casa 186m2 5q Candeias
+Candeias||apartamento|156|3|2|4|alto|pronto|nao|680000|05/2026|OLX|Apt 156m2 3q Candeias
+Candeias|Av Olivia Flores|apartamento|68|2|1|2|simples|pronto|nao|300000|06/2025|OLX|Apt 2q px Olivia Flores 68m2
+Candeias||apartamento|94|3|1|2|simples|pronto|nao|338000|06/2026|OLX|Apt 94m2 reformado
+Candeias|Av Olivia Flores|apartamento|44|2|1|1|simples|osso|nao|221900|06/2025|OLX|Lancamento 2q Olivia Flores
+Candeias||apartamento|147|3|2|3|alto|pronto|nao|850000|06/2026|OLX|Apt Alto do Candeias 147m2
+Candeias||casa|250|3|3|3|alto|pronto|nao|940000|06/2026|OLX|Casa Jardim Candeias 250m2
+Candeias||apartamento|95|3|2|3|medio|pronto|nao|380000|05/2026|OLX|Apt 95m2 cond
+Candeias||casa|500|4|3|4|alto|pronto|nao|1200000|04/2026|OLX|Casa cond fechado 500m2
+Candeias||apartamento|72|2|4|2|simples|pronto|nao|360000|06/2026|OLX|Apt 72m2 Candeias 2q
+Candeias||apartamento|74|3|2|2|medio|pronto|nao|549000|06/2026|OLX|Apt 74m2 cond 357
+Candeias||casa|140|3|2||medio|pronto|nao|550000|06/2026|OLX|Casa Jardim Candeias 140m2
+Candeias||casa|102|3|||medio|pronto|nao|420000|06/2026|OLX|Casa Jardim Candeias 102m2
+Candeias||cobertura|353|5|4|5|luxo|pronto|nao|1450000|06/2026|OLX|Cobertura 4 suites Candeias
+Candeias||casa|86|3|2|4|medio|pronto|nao|489000|06/2026|OLX|Casa 3 suites Duque Du Lest 86m2
+Candeias||apartamento|35|1||1|simples|pronto|nao|130000|06/2026|OLX|Vendo/troco 35m2
+Candeias||casa|170|4|2|5|medio|pronto|nao|660000|06/2026|OLX|Casa 4q 170m2 garagem
+Candeias||casa|147|4|3|5|alto|pronto|nao|775000|06/2026|OLX|Bella Citta 4 suites
+Candeias||casa|105|3|2|4|medio|pronto|nao|450000|06/2026|OLX|Casa 3/4 Urbis1 105m2
+Candeias||casa|187|3|2|2|alto|pronto|nao|760000|06/2026|OLX|Casa Cidade Jardim 187m2
+Candeias||apartamento|47|2|1|2|simples|pronto|nao|230000|06/2026|OLX|Apt Alphina 47m2
+Candeias||apartamento|56|2|1|1|simples|pronto|nao|180000|06/2026|OLX|Apt 56m2 2q
+Candeias||casa|140|3|2|2|medio|pronto|nao|420000|06/2026|OLX|Casa px Shopping 140m2
+Candeias||casa|360|4|4|5|luxo|pronto|nao|1890000|06/2026|OLX|Casa Alphaville 2 360m2
+Candeias||casa|120|3|2|4|medio|pronto|nao|589000|06/2026|OLX|Casa Verso Residence
+Candeias||apartamento|70|2|1|2|simples|pronto|nao|338000|06/2026|OLX|Apt terreo 70m2
+Candeias||casa|104|4|2|4|medio|pronto|nao|424000|06/2026|OLX|Vog Premier casas 4q
+Candeias||casa|68|3|1|2|simples|pronto|nao|249900|06/2026|OLX|Casa Conveima1 68m2
+Candeias||casa|76|3|2|2|simples|pronto|nao|255000|06/2026|OLX|Cond Vivendas Bosque 76m2
+Candeias||cobertura|162|4|1|3|medio|pronto|nao|317000|06/2026|OLX|Cobertura 4q 162m2
+Candeias||apartamento|67|3|1|2|simples|pronto|nao|345000|06/2026|OLX|Solarium 3/4 67m2
+Candeias||apartamento|61|3|1|2|simples|pronto|nao|327000|06/2026|OLX|Apt Adilson Fontes 3q
+Candeias||apartamento|80|3|2|2|medio|pronto|nao|450000|12/2025|OLX|Apt 80m2 Candeias 3q
+Candeias||apartamento|127|3|2|2|medio|pronto|nao|420000|11/2025|OLX|Apt 127m2 Candeias 3q
+Candeias||casa|68|3|2|2|simples|pronto|nao|375000|11/2025|OLX|Casa 68m2 cond
+Candeias||apartamento|135|3|3|4|alto|pronto|nao|1300000|09/2025|OLX|Apt 135m2 3 suites
+Candeias||casa|380|4|2|3|alto|pronto|nao|1500000|08/2025|OLX|Duplex Jardim Candeias 380m2
+Candeias||apartamento|93|2|1|2|simples|pronto|nao|285000|07/2025|OLX|Apt 93m2 2q
+Candeias|Av Olivia Flores|apartamento|155|3|3|5|alto|pronto|nao|1200000|03/2026|OLX|Apt alto padrao px Olivia Flores
+Candeias|Av Luis Eduardo Magalhaes|apartamento|82|3|1|2|simples|pronto|nao|295000|06/2025|OLX|Apt terreo Av Luis Eduardo
+Candeias||casa|432|3|2|2|alto|pronto|nao|950000|04/2026|OLX|Casa solta 432m2
+Candeias||casa|440|5|5|5|luxo|pronto|nao|1590000|04/2026|OLX|Triplex Candeias 440m2
+Candeias||apartamento|158|4|3||alto|pronto|nao|730000|11/2025|OLX|Apt 4q 158m2
+Candeias||apartamento|169|3|3|4|alto|pronto|nao|1200000|01/2026|OLX|Apt 3 suites alto padrao
+Candeias||apartamento|130|4|3|4|alto|pronto|nao|660000|09/2025|OLX|Apt 4q 3 suites
+Candeias||casa|360|4|4|2|alto|pronto|nao|1800000|12/2025|OLX|Casa Duplex 4q 360m2
+Candeias||apartamento|113|3|3|5|alto|pronto|nao|790000|06/2026|OLX|Apt 3 suites 113m2
+Candeias||apartamento|100|3|2|2|medio|pronto|nao|565000|06/2026|OLX|Apt Vog semimobiliado
+Candeias||apartamento|81|2|1|3|simples|pronto|nao|350000|06/2026|OLX|Apt 2q dep Fainor 81m2
+Candeias||apartamento|115|3|2|4|alto|pronto|nao|839930|05/2026|OLX|Apt 3q 2 suites 115m2
+Candeias||apartamento|50|2|2|2|simples|pronto|nao|220000|05/2026|OLX|Apt 2q suite 50m2
+Candeias||apartamento|190|3|3|5|alto|pronto|nao|650000|05/2026|OLX|Apt 3q 190m2
+Candeias||casa|225|4|1|3|alto|pronto|nao|850000|05/2026|OLX|Casa solta 4q 225m2
+Candeias||apartamento|55|2|1|2|simples|pronto|nao|350000|05/2026|OLX|Apt 2q mobiliado 55m2
+Candeias||casa|220|3|3|3|luxo|pronto|nao|2600000|05/2026|OLX|Casa 3q 220m2 alto cond
+Candeias||casa|408|4|2|1|luxo|pronto|nao|4800000|05/2026|OLX|Casa 4q 408m2
+Candeias||apartamento|140|3|4||alto|pronto|nao|1100000|05/2026|OLX|Apt 3q 140m2
+Candeias||casa|360|4|4|4|luxo|pronto|nao|1900000|04/2026|OLX|Casa Duplex Jardim 360m2
+Candeias||apartamento|196|3|2|3|alto|pronto|nao|980000|04/2026|OLX|Apt 3 suites 196m2
+Candeias||apartamento|130|3|2|5|alto|pronto|nao|900000|04/2026|OLX|Apt 3 suites 130m2
+Candeias||apartamento|100|3|1|1|medio|pronto|nao|640000|04/2026|OLX|Conde Residencial II 100m2
+Candeias||casa|197|3|4|3|alto|pronto|nao|1310000|06/2026|OLX|Casa Duplex 3 suites 197m2
+Candeias||apartamento|158|4|3||alto|pronto|nao|730000|11/2025|OLX|Apt Padrao 4q 158m2
+Candeias||casa|170|3|3||medio|pronto|nao|599000|06/2026|OLX|Casa 3q 1 suite 170m2

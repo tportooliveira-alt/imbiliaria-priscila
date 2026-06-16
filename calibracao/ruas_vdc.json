@@ -1,0 +1,19 @@
+{
+  "_doc": "Dicionario de ruas por bairro de VDC p/ fator de avaliacao por rua. Niveis: premium (caras), popular (baratas), comercial (ponto comercial valorizado). Preenchido com a pesquisa do Chrome (Thiago) + deep-research (wstk0g26r). perfil = carater geral do bairro.",
+  "bairros": {
+    "pequis": {
+      "perfil": "popular_mcmv",
+      "premium": [],
+      "popular": ["Rua do Sovi", "Rua Abimael Andrade Matos"],
+      "comercial": [],
+      "obs": "100% MCMV (Residencial Pequis 597un CAIXA/FAR; Solar dos Pequis; Cond Pequis). R$/m2 ~3200-5700; precos R$145-290k. Baixa liquidez no mercado formal (ZAP/Viva nao indexam)."
+    },
+    "candeias": {
+      "perfil": "nobre",
+      "premium": ["Avenida Olivia Flores", "Avenida Jesiel Norberto", "Avenida Fortaleza"],
+      "popular": ["Rua D (Alto das Araras)"],
+      "comercial": ["Avenida Olivia Flores", "Avenida Luis Eduardo Magalhaes", "Rua Jacy Santos Flores"],
+      "obs": "Bairro nobre Zona Leste. Olivia Flores = eixo nobre E comercial. (a confirmar com deep-research)"
+    }
+  }
+}
