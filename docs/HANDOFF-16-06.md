@@ -33,7 +33,9 @@ Branch: `feat/calibracao-design-skills` (nunca push na `main`). Tudo commitado e
 **RESULTADO:**
 - ✅ `w90xuv68s` (arquitetura de design) — **CONCLUÍDA** → `docs/PESQUISA-DESIGN-ARQUITETURA.md`; skill `design-priscila`
   enriquecida (dado: simplificar hero = +46% conversão; whitespace = hierarquia primária; ref GitHub `codewithsadee/homeverse`).
-- ⏳ `wg9yzg74o` (skills de design no GitHub) — ainda rodando; anexar quando terminar.
+- ✅ `wg9yzg74o` (skills de design no GitHub) — **CONCLUÍDA** → `docs/PESQUISA-DESIGN-SKILLS-GITHUB.md`; skill ganhou
+  `reference/ferramentas-github.md` (Radix Colors/uicolors p/ escalas, Style Dictionary, plugin frontend-design da Anthropic, homeverse).
+- ✅ **Ambas as deep-research de design concluídas e salvas. Workflows encerrados.**
 
 ## 🔜 PENDENTE (pro próximo agente / Thiago)
 **Quick wins de arquitetura (do `ESTUDO-ARQUITETURA.md`) — faltam 3:**

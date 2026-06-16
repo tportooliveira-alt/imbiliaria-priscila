@@ -71,5 +71,8 @@ Cards inconsistentes → 1 componente, 1 proporção. Botões "quase iguais" →
 - **Referência HTML/CSS pura no GitHub:** `codewithsadee/homeverse` (imobiliário, 100% HTML/CSS/JS, type scale de 7 passos).
 - _Mito derrubado:_ "8pt porque telas são divisíveis por 8" é falso — use 8pt pelo equilíbrio variáveis × distinção.
 
+**Ferramentas pra gerar tokens/cores + referências de GitHub:** ver `reference/ferramentas-github.md`
+(Radix Colors/uicolors p/ escalas navy+dourado, Style Dictionary, plugin `frontend-design` da Anthropic, `homeverse`).
+
 _Fontes: Material 3, IBM Carbon, Atlassian, Shopify Polaris (organização de tokens) + UX imobiliário (conversão) +
-deep-research verificada (107 agentes). A 2ª deep-research (skills de design no GitHub) será anexada quando terminar._
+2 deep-research verificadas (107 + 105 agentes) → `docs/PESQUISA-DESIGN-ARQUITETURA.md` e `docs/PESQUISA-DESIGN-SKILLS-GITHUB.md`._
