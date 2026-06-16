@@ -651,8 +651,8 @@ fetch('/api/imoveis').then(r=>r.json()).then(d=>{
     c.innerHTML=`<img class="bg" src="${img}" alt="${it.titulo}" loading="lazy"/>
       <span class="badge">${it.bairro.trim()}</span><div class="ov"></div>
       <div class="meta"><h3>${it.titulo.trim()}</h3><div class="price">${venda}</div><div class="feat">${feat}</div>
-      <a class="card-cta" href="/v3-editorial/agendar-visita.html?slug=${it.slug}" onclick="event.stopPropagation()">📅 Marcar visita</a></div>`;
-    c.onclick=()=>{location.href='/assets/imovel.html?slug='+it.slug;};
+      <a class="card-cta" href="/agendar-visita.html?slug=${it.slug}" onclick="event.stopPropagation()">📅 Marcar visita</a></div>`;
+    c.onclick=()=>{location.href='/imovel.html?slug='+it.slug;};
     el.appendChild(c);
   });
 }).catch(()=>{document.getElementById('bento').innerHTML='<p style="color:var(--muted)">Não consegui carregar os imóveis agora.</p>';});

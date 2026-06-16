@@ -653,8 +653,8 @@ fetch('/api/imoveis').then(r=>r.json()).then(d=>{
     c.innerHTML=`<img class="bg" src="${img}" alt="${it.titulo}" loading="lazy"/>
       <span class="badge">${it.bairro.trim()}</span><div class="ov"></div>
       <div class="meta"><h3>${it.titulo.trim()}</h3><div class="price">${venda}</div><div class="feat">${feat}</div>
-      <a class="card-cta" href="/v3-editorial/agendar-visita.html?slug=${it.slug}" onclick="event.stopPropagation()">📅 Marcar visita</a></div>`;
-    c.onclick=()=>{location.href='imovel.html?slug='+it.slug;};
+      <a class="card-cta" href="/agendar-visita.html?slug=${it.slug}" onclick="event.stopPropagation()">📅 Marcar visita</a></div>`;
+    c.onclick=()=>{location.href='/imovel.html?slug='+it.slug;};
     el.appendChild(c);
   });
 }).catch(()=>{document.getElementById('bento').innerHTML='<p style="color:var(--muted)">Não consegui carregar os imóveis agora.</p>';});
@@ -847,6 +847,6 @@ function simular(){
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=5f1e022d").catch(function(){});});}</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=88658471").catch(function(){});});}</script>
 </body>
 </html>

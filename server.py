@@ -18,14 +18,15 @@ Uso:
 from __future__ import annotations
 
 import os
+import re
 import time
 from html import escape as html_escape
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -284,32 +285,46 @@ if admin_dir.exists():
     app.mount("/admin", StaticFiles(directory=admin_dir, html=True), name="admin_ui")
 
 
-# Site NO AR (soft-launch): / e os links curtos redirecionam pra v3-editorial.
-# O X-Robots-Tag noindex GLOBAL (no middleware acima) segura o Google ate o lancamento
-# oficial — quando a Priscila aprovar tudo, remover aquele noindex global pra indexar.
+# Site NO AR na RAIZ (URL limpa, sem /v3-editorial/). O mount /v3-editorial continua
+# funcionando (links/bookmarks antigos nao quebram). X-Robots-Tag noindex GLOBAL segura
+# o Google ate o lancamento oficial — remover aquele noindex quando a Priscila aprovar.
+_V3 = ROOT / "v3-editorial"
+
+
 @app.get("/")
-def index() -> RedirectResponse:
-    return RedirectResponse(url="/v3-editorial/")
+def index() -> FileResponse:
+    return FileResponse(_V3 / "index.html")
+
+
+@app.get("/{page}.html", include_in_schema=False)
+def pagina_html(page: str) -> FileResponse:
+    """Serve as paginas do site na RAIZ (ex.: /imovel.html, /empreendimentos.html, /agendar-visita.html)."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", page):
+        raise HTTPException(status_code=404, detail="nao encontrado")
+    arq = _V3 / f"{page}.html"
+    if not arq.is_file():
+        raise HTTPException(status_code=404, detail="nao encontrado")
+    return FileResponse(arq)
 
 
 @app.get("/anunciar")
 @app.get("/avaliar")
 def anunciar_redirect() -> RedirectResponse:
     """Link curto p/ captacao (placas, Instagram, WhatsApp)."""
-    return RedirectResponse(url="/v3-editorial/anunciar.html")
+    return RedirectResponse(url="/anunciar.html")
 
 
 @app.get("/mercado")
 @app.get("/panorama")
 def mercado_redirect() -> RedirectResponse:
     """Link curto p/ a aba de Panorama do Mercado."""
-    return RedirectResponse(url="/v3-editorial/mercado.html")
+    return RedirectResponse(url="/mercado.html")
 
 
 @app.get("/ads")
 def ads_redirect() -> RedirectResponse:
     """Ferramenta INTERNA: calculadora de investimento em Ads (noindex)."""
-    return RedirectResponse(url="/v3-editorial/ads.html")
+    return RedirectResponse(url="/ads.html")
 
 
 if __name__ == "__main__":
