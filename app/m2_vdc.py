@@ -18,14 +18,14 @@ FaixaIdade = Literal["novo", "0_10", "10_20", "20_mais"]
 # Medianas de OFERTA dos portais imobiliarios + experiencia local (estudo 2024-2025).
 # Sao referencia de mercado (ask price) — a avaliacao final/de fechamento e da Priscila.
 M2_VDC: dict[str, float] = {
-    "recreio": 6060,     # OLX jun/2026 (812 anuncios): maior R$/m² de apto da cidade [n=32]
+    "recreio": 5000,     # recalibrado 16/06 (era 6060): backtest 11 anuncios reais, mediana apto ~4630/m² [estava ancorado no topo]
     "candeias": 5000,    # [n=43] bairro nobre Zona Leste
     "boa_vista": 4710,   # [n=33]
     "alto_maron": 4400,  # [n=11] (estava subestimado antes)
     "centro": 4330,      # [n=11]
     "brasil": 4270,      # [n=6] amostra menor
-    "ibirapuera": 4300,  # sem amostra OLX — mantido
-    "felicia": 3700,     # [n=25]
+    "ibirapuera": 2800,  # recalibrado 16/06 (era 4300): backtest 9 anuncios reais, mediana apto ~2870 / casa ~2530
+    "felicia": 3400,     # recalibrado 16/06 (era 3700): backtest mediana apto ~3535 / casa ~3175
     "primavera": 3700,   # sem amostra OLX — mantido
     "guarani": 3700,     # sem amostra OLX — mantido
     "panorama": 3400,    # mantido
@@ -33,7 +33,7 @@ M2_VDC: dict[str, float] = {
     "zabele": 2900,      # mantido
     "bateias": 2800,     # mantido
     "vila_serrana": 1600,# [amostra pequena]
-    "patagonia": 1900,   # [n=2] amostra pequena
+    "patagonia": 2600,   # recalibrado 16/06 (era 1900): backtest casas reais ~2969/m² (estava subestimado)
     "outro": 3800,       # fallback
 }
 
@@ -56,8 +56,8 @@ M2_TERRENO_VDC: dict[str, float] = {
 FATOR_PADRAO: dict[PadraoConstrucao, float] = {
     "simples": 0.78,
     "medio": 1.00,
-    "alto": 1.25,
-    "luxo": 1.55,
+    "alto": 1.12,   # recalibrado 16/06 (backtest 66 anuncios reais VDC: alto premium/m2 menor que 1.25)
+    "luxo": 1.30,   # recalibrado 16/06 (luxo grande NAO comanda +55%/m2 em VDC; era 1.55)
 }
 
 FATOR_ESTADO: dict[EstadoConservacao, float] = {
@@ -164,9 +164,9 @@ def fator_area(area: float) -> float:
     if area <= 150:
         return 1.01
     if area <= 200:
-        return 0.95
+        return 0.90   # recalibrado 16/06 (era 0.95): casas 150-200m2 sofrem mais desagio em VDC
     if area <= 300:
-        return 0.88
+        return 0.80   # recalibrado 16/06 (era 0.88): casas 200-300m2 com R$/m2 bem menor (backtest)
     if area <= 450:
         return 0.72
     return 0.60  # casarao/planta colossal: forte desagio (superadequacao)
