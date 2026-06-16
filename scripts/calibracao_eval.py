@@ -151,11 +151,14 @@ def carregar_lotes() -> list[tuple]:
                 tipo = "casa"
             if tipo not in ("casa", "apartamento", "cobertura", "terreno", "comercial"):
                 tipo = "casa"
+            # sanitiza enums (dados de varias fontes trazem valor no campo errado, ex. estado="novo")
+            p = a.get("p") if a.get("p") in ("simples", "medio", "alto", "luxo") else "medio"
+            e = a.get("e") if a.get("e") in ("reformado", "bom", "regular", "precisa_reforma") else "bom"
+            i = a.get("i") if a.get("i") in ("novo", "0_10", "10_20", "20_mais") else None
             out.append((
                 _norm_b(a.get("b", "")), (a.get("ti") or "")[:42], tipo, a["a"], a.get("at"),
                 a.get("q") or 2, a.get("s") or 0, a.get("v") or 0,
-                a.get("p") or "medio", a.get("e") or "bom", a.get("i"),
-                bool(a.get("r")), a["pr"], a.get("f", ""),
+                p, e, i, bool(a.get("r")), a["pr"], a.get("f", ""),
             ))
     return out
 
