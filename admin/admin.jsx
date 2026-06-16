@@ -409,6 +409,58 @@ const STATUS_OBRA = [
   ["pronto", "Pronto"],
 ];
 
+const LAZER_OPCOES = [
+  "Piscina", "Piscina infantil", "Academia", "Salão de festas", "Salão de jogos",
+  "Espaço gourmet", "Churrasqueira", "Playground", "Quadra poliesportiva", "Quadra de tênis",
+  "Espaço pet", "Brinquedoteca", "Coworking", "Sauna", "Spa", "Cinema", "Lounge",
+  "Jardim/Praça", "Bicicletário", "Solarium",
+];
+
+const DIFERENCIAIS_OPCOES = [
+  "Portaria 24h", "Segurança/CFTV", "Gerador", "Acessibilidade", "Energia solar",
+  "Reuso de água", "Vagas para visitantes", "Carregador de carro elétrico",
+  "Wi-Fi áreas comuns", "Elevadores", "Lavanderia compartilhada",
+];
+
+function GrupoCheckbox({ titulo, opcoes, valores, onChange }) {
+  const lista = Array.isArray(valores) ? valores : [];
+  const [extra, setExtra] = React.useState("");
+  function toggle(item) {
+    if (lista.includes(item)) onChange(lista.filter(v => v !== item));
+    else onChange([...lista, item]);
+  }
+  function adicionarExtra() {
+    const v = extra.trim();
+    if (v && !lista.includes(v)) onChange([...lista, v]);
+    setExtra("");
+  }
+  // itens marcados que nao estao na lista padrao (livres)
+  const extras = lista.filter(v => !opcoes.includes(v));
+  return (
+    <div className="field">
+      <label>{titulo}</label>
+      <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 6, marginBottom: 8}}>
+        {opcoes.map(item => (
+          <label key={item} style={{display: "flex", alignItems: "center", gap: 7, textTransform: "none", letterSpacing: 0, fontSize: 13, color: "#1a1a1a", marginBottom: 0, cursor: "pointer"}}>
+            <input type="checkbox" style={{width: "auto"}} checked={lista.includes(item)} onChange={() => toggle(item)} /> {item}
+          </label>
+        ))}
+        {extras.map(item => (
+          <label key={item} style={{display: "flex", alignItems: "center", gap: 7, textTransform: "none", letterSpacing: 0, fontSize: 13, color: "#1a1a1a", marginBottom: 0, cursor: "pointer"}}>
+            <input type="checkbox" style={{width: "auto"}} checked onChange={() => toggle(item)} /> {item}
+          </label>
+        ))}
+      </div>
+      <div style={{display: "flex", gap: 8}}>
+        <input placeholder="Adicionar outro item..." value={extra}
+          onChange={e => setExtra(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); adicionarExtra(); } }} />
+        <button type="button" className="btn-secondary" style={{width: "auto", whiteSpace: "nowrap"}} onClick={adicionarExtra}>+ Adicionar</button>
+      </div>
+    </div>
+  );
+}
+
 function GerenciadorTipologias({ tipologias, setTipologias }) {
   function up(idx, k, v) {
     setTipologias(ts => ts.map((t, i) => i === idx ? { ...t, [k]: v } : t));
@@ -465,6 +517,9 @@ function FormEmpreendimento({ inicial, aoSalvar, aoCancelar }) {
   const [dados, setDados] = React.useState(inicial || {
     nome: "", construtora: "", bairro: "", descricao: "", video_url: "",
     status_obra: "na_planta", entrega_prevista: "", destaque: false, ativo: true,
+    endereco: "", area_total: "", num_torres: "", num_unidades: "", num_andares: "",
+    vagas_info: "", data_lancamento: "", tour_360_url: "",
+    lazer: [], diferenciais: [], proximidades: "", condicoes_pagamento: "",
   });
   const [tipologias, setTipologias] = React.useState(
     (inicial?.tipologias || []).map((t, i) => ({ ordem: i, ...t }))
@@ -478,7 +533,16 @@ function FormEmpreendimento({ inicial, aoSalvar, aoCancelar }) {
     e.preventDefault();
     setErro(""); setSalvando(true);
     try {
-      const payload = { ...dados, tipologias: tipologias.map((t, i) => ({ ...t, ordem: i })) };
+      const toInt = v => (v === "" || v === null || v === undefined) ? null : parseInt(v, 10);
+      const payload = {
+        ...dados,
+        num_torres: toInt(dados.num_torres),
+        num_unidades: toInt(dados.num_unidades),
+        num_andares: toInt(dados.num_andares),
+        lazer: dados.lazer || [],
+        diferenciais: dados.diferenciais || [],
+        tipologias: tipologias.map((t, i) => ({ ...t, ordem: i })),
+      };
       if (inicial?.id) {
         await api(`/api/admin/empreendimentos/${inicial.id}`, { method: "PUT", body: payload });
       } else {
@@ -514,6 +578,39 @@ function FormEmpreendimento({ inicial, aoSalvar, aoCancelar }) {
       <div className="field">
         <label>Descricao</label>
         <textarea value={dados.descricao || ""} onChange={e => up("descricao", e.target.value)} rows={6} />
+      </div>
+
+      <h3 style={{margin: "26px 0 12px", fontSize: 16, color: "#16284B", borderTop: "1px solid #eee", paddingTop: 20}}>Ficha técnica</h3>
+      <div className="grid-3">
+        <div className="field"><label>Área total</label><input placeholder="Ex: 8.000 m²" value={dados.area_total || ""} onChange={e => up("area_total", e.target.value)} /></div>
+        <div className="field"><label>Vagas (info)</label><input placeholder="Ex: 1 a 3 por unidade" value={dados.vagas_info || ""} onChange={e => up("vagas_info", e.target.value)} /></div>
+        <div className="field"><label>Data de lançamento</label><input placeholder="Ex: Mar/2025" value={dados.data_lancamento || ""} onChange={e => up("data_lancamento", e.target.value)} /></div>
+      </div>
+      <div className="grid-3">
+        <div className="field"><label>Nº de torres</label><input type="number" min={0} value={dados.num_torres ?? ""} onChange={e => up("num_torres", e.target.value)} /></div>
+        <div className="field"><label>Nº de unidades</label><input type="number" min={0} value={dados.num_unidades ?? ""} onChange={e => up("num_unidades", e.target.value)} /></div>
+        <div className="field"><label>Nº de andares</label><input type="number" min={0} value={dados.num_andares ?? ""} onChange={e => up("num_andares", e.target.value)} /></div>
+      </div>
+      <div className="field">
+        <label>Tour 360° (link)</label>
+        <input type="url" placeholder="https://..." value={dados.tour_360_url || ""} onChange={e => up("tour_360_url", e.target.value)} />
+      </div>
+
+      <h3 style={{margin: "26px 0 12px", fontSize: 16, color: "#16284B", borderTop: "1px solid #eee", paddingTop: 20}}>Lazer e comodidades</h3>
+      <GrupoCheckbox titulo="Lazer" opcoes={LAZER_OPCOES} valores={dados.lazer} onChange={v => up("lazer", v)} />
+      <GrupoCheckbox titulo="Diferenciais" opcoes={DIFERENCIAIS_OPCOES} valores={dados.diferenciais} onChange={v => up("diferenciais", v)} />
+
+      <h3 style={{margin: "26px 0 12px", fontSize: 16, color: "#16284B", borderTop: "1px solid #eee", paddingTop: 20}}>Localização</h3>
+      <div className="field"><label>Endereço</label><input placeholder="Rua, número, bairro..." value={dados.endereco || ""} onChange={e => up("endereco", e.target.value)} /></div>
+      <div className="field">
+        <label>Proximidades</label>
+        <textarea placeholder="Escolas, shoppings, transporte, etc." value={dados.proximidades || ""} onChange={e => up("proximidades", e.target.value)} rows={4} />
+      </div>
+
+      <h3 style={{margin: "26px 0 12px", fontSize: 16, color: "#16284B", borderTop: "1px solid #eee", paddingTop: 20}}>Condições</h3>
+      <div className="field">
+        <label>Condições de pagamento</label>
+        <textarea placeholder="Entrada, parcelamento, financiamento..." value={dados.condicoes_pagamento || ""} onChange={e => up("condicoes_pagamento", e.target.value)} rows={4} />
       </div>
 
       <GerenciadorTipologias tipologias={tipologias} setTipologias={setTipologias} />

@@ -69,6 +69,18 @@ h2.sec{font-size:1.3rem;margin:1.8rem 0 .7rem;font-weight:700}
 .tipo .twa{margin-top:.9rem}
 .tipo .twa a{font-family:'Inter';font-weight:700;font-size:.85rem;color:#25a052;display:inline-flex;gap:.3rem;align-items:center}
 
+/* ficha técnica rica */
+.ficha{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:.6rem}
+.ficha .fi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 6px 22px -16px rgba(22,40,75,.4)}
+.ficha .fi .k{font-family:'Inter';font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ficha .fi .v{font-family:'Inter';font-weight:800;font-size:1.05rem;color:var(--navy);margin-top:.2rem}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:.6rem}
+.chip{display:inline-flex;align-items:center;gap:.45rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.5rem .95rem;font-family:'Inter';font-weight:600;font-size:.88rem;color:var(--navy)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--grad-gold);flex:0 0 auto}
+.chip.dif .dot{background:var(--grad)}
+.bloco{white-space:pre-line;color:#33425e;font-size:.97rem;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:.6rem;box-shadow:0 6px 22px -16px rgba(22,40,75,.4)}
+.tour-btn{margin-top:.9rem}
+
 /* sticky card */
 .cta-card{position:sticky;top:84px;background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:24px}
 .cta-card .price{font-family:'Inter';font-weight:800;font-size:1.7rem;color:var(--navy)}
@@ -194,6 +206,45 @@ function tipoCard(t,nome,bairro){
     '<div class="twa"><a href="https://wa.me/'+WA+'?text='+waMsg+'" target="_blank">💬 Quero essa planta</a></div></div>';
 }
 
+function temVal(v){ return v!==null && v!==undefined && String(v).trim()!=='' && String(v).trim().toLowerCase()!=='none'; }
+
+// bloco "Ficha técnica" com os campos disponíveis
+function fichaTecnica(d){
+  var its=[];
+  function add(k,v,suf){ if(temVal(v)) its.push('<div class="fi"><div class="k">'+k+'</div><div class="v">'+esc(String(v).trim())+(suf||'')+'</div></div>'); }
+  add('Endereço', d.endereco);
+  add('Área total', d.area_total);
+  add('Torres', d.num_torres);
+  add('Unidades', d.num_unidades);
+  add('Andares', d.num_andares);
+  add('Vagas', d.vagas_info);
+  add('Lançamento', d.data_lancamento);
+  add('Entrega', d.entrega_prevista);
+  if(!its.length) return '';
+  return '<h2 class="sec">Ficha técnica</h2><div class="ficha">'+its.join('')+'</div>';
+}
+
+// chips a partir de um array de strings (lazer/diferenciais)
+function chipsBloco(titulo, arr, classe){
+  var lista=(arr||[]).filter(temVal);
+  if(!lista.length) return '';
+  return '<h2 class="sec">'+titulo+'</h2><div class="chips">'+
+    lista.map(function(x){return '<span class="chip '+(classe||'')+'"><span class="dot"></span>'+esc(String(x).trim())+'</span>';}).join('')+'</div>';
+}
+
+// bloco de texto livre (proximidades / condições)
+function textoBloco(titulo, txt){
+  if(!temVal(txt)) return '';
+  return '<h2 class="sec">'+titulo+'</h2><div class="bloco">'+esc(String(txt).trim())+'</div>';
+}
+
+// botão de tour 360
+function tour360(url){
+  if(!temVal(url)) return '';
+  var u=String(url).trim();
+  return '<a class="btn btn-ghost tour-btn" href="'+esc(u)+'" target="_blank" rel="noopener">🔄 Tour virtual 360°</a>';
+}
+
 function render(d){
   EMP=d;
   var nome=(d.nome||'').trim(), bairro=(d.bairro||'').trim(), constr=(d.construtora||'').trim();
@@ -233,9 +284,14 @@ function render(d){
        '<div class="loc">📍 '+(bairro?esc(bairro)+' · ':'')+'Vitória da Conquista, BA</div>'+
        (facts.length?'<div class="facts">'+facts.map(function(f){return '<span class="fact">'+f+'</span>';}).join('')+'</div>':'')+
        (d.descricao&&d.descricao.trim()?'<h2 class="sec">Sobre o empreendimento</h2><div class="desc">'+esc(d.descricao.trim())+'</div>':'')+
+       fichaTecnica(d)+
+       chipsBloco('Lazer e comodidades', d.lazer)+
+       chipsBloco('Diferenciais', d.diferenciais, 'dif')+
        video+
        (tipos?'<h2 class="sec">Plantas & tipologias</h2><div class="tipos">'+tipos+'</div>':'')+
-       (mapq?'<h2 class="sec">Localização</h2><div class="video" style="aspect-ratio:auto;height:300px"><iframe title="Mapa de '+esc(bairro)+'" loading="lazy" src="https://www.google.com/maps?q='+mapq+'&output=embed"></iframe></div>':'')+
+       textoBloco('Condições de pagamento', d.condicoes_pagamento)+
+       textoBloco('Proximidades', d.proximidades)+
+       (mapq?'<h2 class="sec">Localização</h2>'+tour360(d.tour_360_url)+'<div class="video" style="aspect-ratio:auto;height:300px;margin-top:.6rem"><iframe title="Mapa de '+esc(bairro)+'" loading="lazy" src="https://www.google.com/maps?q='+mapq+'&output=embed"></iframe></div>':(temVal(d.tour_360_url)?'<h2 class="sec">Tour virtual</h2>'+tour360(d.tour_360_url):''))+
      '</div>'+
      '<aside>'+
        '<div class="cta-card">'+
