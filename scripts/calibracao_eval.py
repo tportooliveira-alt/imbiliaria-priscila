@@ -163,6 +163,43 @@ def carregar_lotes() -> list[tuple]:
     return out
 
 
+def carregar_psv() -> list[tuple]:
+    """Le calibracao/*.psv (tabela | com cabecalho) -> tuplas. Colunas:
+    bairro|rua|tipo|area_m2|quartos|suites|vagas|padrao|acab|comercial|preco|data|fonte|titulo"""
+    out: list[tuple] = []
+    for fp in sorted(glob.glob("calibracao/*.psv")):
+        with open(fp, encoding="utf-8") as f:
+            linhas = [ln for ln in f.read().splitlines() if ln.strip()]
+        if not linhas:
+            continue
+        head = [h.strip() for h in linhas[0].split("|")]
+        for ln in linhas[1:]:
+            d = dict(zip(head, [c.strip() for c in ln.split("|")]))
+            try:
+                area = float(d.get("area_m2") or 0)
+                preco = float(d.get("preco") or 0)
+            except ValueError:
+                continue
+            if area <= 0 or preco <= 0:
+                continue
+            tipo = (d.get("tipo") or "casa").lower()
+            if tipo == "sobrado":
+                tipo = "casa"
+            if tipo not in ("casa", "apartamento", "cobertura", "terreno", "comercial"):
+                tipo = "casa"
+
+            def _int(k):
+                x = (d.get(k) or "").strip()
+                return int(x) if x.isdigit() else 0
+
+            p = d.get("padrao") if d.get("padrao") in ("simples", "medio", "alto", "luxo") else "medio"
+            out.append((
+                _norm_b(d.get("bairro", "")), (d.get("titulo") or "")[:42], tipo, area, None,
+                _int("quartos") or 2, _int("suites"), _int("vagas"), p, "bom", None, False, preco, d.get("fonte", "OLX"),
+            ))
+    return out
+
+
 def avalia_item(it):
     (bairro, titulo, tipo, area, area_ter, q, ste, vg, padrao, estado, idade, recem, preco, fonte) = it
     idade_f = idade or ("novo" if recem else "0_10")
@@ -180,6 +217,7 @@ def avalia_item(it):
 def main():
     combinados = [(n, it) for n, lst in [(1, RODADA_1), (2, RODADA_2), (3, RODADA_3)] for it in lst]
     combinados += [("A", it) for it in carregar_lotes()]
+    combinados += [("C", it) for it in carregar_psv()]
     rows = []
     seen = set()
     for nrod, it in combinados:
