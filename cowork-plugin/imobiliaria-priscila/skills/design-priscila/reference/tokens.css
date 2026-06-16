@@ -1,0 +1,49 @@
+/* ============================================================
+   DESIGN TOKENS — Priscila Vasconcelos
+   A fonte da verdade do design. Nada na UI usa valor "cru":
+   todo espaço/cor/fonte/raio/sombra aponta para um token aqui.
+   (Cores da marca preservadas; escalas vindas da pesquisa de design systems.)
+   ============================================================ */
+:root{
+  /* ---- Cor: por PAPEL (máx ~4 por tela; dourado = acento escasso) ---- */
+  --navy-900:#0f1c38; --navy:#16284B; --navy-500:#5C7CB8; --peri:#5C7CB8; --peri-2:#7b95c8;
+  --gold:#c9943a; --gold-2:#e8b55a;          /* ACENTO — uso raro, 1 por seção */
+  --ink:#16284B; --muted:#5d6b86;            /* texto */
+  --line:#dde5f0;                            /* bordas/hairlines */
+  --bg:#FBFCFE; --surface:#EEF2F8; --areia:#f5f0e8;  /* fundos */
+  --success:#1E8E5A; --warning:#B8860B; --danger:#C0392B; --info:#2D6CB5;  /* status só */
+  --grad:linear-gradient(120deg,#16284B 0%,#2c4a82 55%,#5C7CB8 100%);
+  --grad-gold:linear-gradient(120deg,#c9943a,#e8b55a);
+
+  /* ---- Espaçamento: grid de 8pt (use SÓ estes) ---- */
+  --space-1:4px;  --space-2:8px;  --space-3:12px; --space-4:16px;
+  --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px; --space-20:80px;
+  /* ritmo: espaço ENTRE blocos >= espaço DENTRO; padding vertical de secao = --space-16/20 fixo */
+
+  /* ---- Tipografia: ~6-7 papéis (Playfair títulos / Inter texto) ---- */
+  --font-title:'Playfair Display',Georgia,serif;
+  --font-ui:'Inter',system-ui,sans-serif;
+  --fs-display:3.5rem; --fs-h1:2.5rem; --fs-h2:2rem; --fs-h3:1.5rem;  /* títulos */
+  --fs-body-lg:1.125rem; --fs-body:1rem; --fs-sm:.875rem; --fs-xs:.75rem; /* texto/UI */
+  --lh-title:1.18; --lh-body:1.55;
+
+  /* ---- Raio (4 passos) ---- */
+  --radius-sm:6px; --radius-md:12px; --radius-lg:20px; --radius-pill:999px;
+
+  /* ---- Sombra/elevação (3 níveis: repouso -> hover -> flutuante) ---- */
+  --shadow-1:0 1px 2px rgba(22,40,75,.06);
+  --shadow-2:0 4px 12px rgba(22,40,75,.10);
+  --shadow-3:0 18px 50px -20px rgba(22,40,75,.35);
+
+  /* ---- Layout ---- */
+  --container:1200px;       /* largura máx do conteúdo (todas as seções alinham nisto) */
+  --gap-cards:var(--space-8);
+}
+
+/* ---- Botão: 3 variantes congeladas (mesma altura/padding/raio) ---- */
+.btn{display:inline-flex;align-items:center;gap:var(--space-2);font-family:var(--font-ui);font-weight:600;
+  font-size:var(--fs-body);padding:var(--space-3) var(--space-6);border-radius:var(--radius-pill);
+  border:none;cursor:pointer;transition:.2s;min-height:44px;white-space:nowrap}
+.btn--primary{background:var(--grad);color:#fff;box-shadow:var(--shadow-2)}
+.btn--gold{background:var(--grad-gold);color:#fff;box-shadow:var(--shadow-2)}     /* premium, raro */
+.btn--ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}      /* secundário */
