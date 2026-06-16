@@ -123,7 +123,9 @@ import json
 # nomes de bairro (normalizados) -> chave do m2_vdc
 _BAIRRO_ALIAS = {
     "alto_da_boa_vista": "boa_vista", "loteamento_alto_da_boa_vista": "boa_vista",
-    "terras_alphaville": "alphaville", "haras_camping_club": "haras",
+    "terras_alphaville": "alphaville", "alphaville_1": "alphaville", "alphaville_2": "alphaville",
+    "haras_camping_club": "haras", "vila_serrana_1": "vila_serrana", "vila_serrana_2": "vila_serrana",
+    "olivia_flores": "candeias",  # avenida em Candeias
 }
 
 
