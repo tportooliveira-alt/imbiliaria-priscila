@@ -188,16 +188,10 @@ function render(d){
        <div class="cta-card">
          <div class="price">${preco}</div>
          <div class="stk">
-           <a class="btn btn-wa" href="https://wa.me/${WA}?text=${waMsg}" target="_blank">💬 Agendar pelo WhatsApp</a>
-           <button class="btn btn-primary" onclick="askAna()">✦ Perguntar pra Ana</button>
+           <a class="btn btn-primary" href="agendar-visita.html?slug=${d.slug}">📅 Tenho interesse · Marcar visita</a>
+           <a class="btn btn-wa" href="https://wa.me/${WA}?text=${waMsg}" target="_blank">💬 Falar no WhatsApp</a>
+           <button class="btn btn-ghost" onclick="askAna()">✦ Perguntar pra Ana</button>
            ${tour}
-         </div>
-         <div class="formv">
-           <div style="font-family:'Inter';font-weight:700;font-size:.95rem">Agendar visita</div>
-           <label for="vNome">Seu nome</label><input id="vNome" autocomplete="name" placeholder="Como te chamo?"/>
-           <label for="vTel">Telefone/WhatsApp</label><input id="vTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(77) 9 ____-____"/>
-           <label for="vData">Melhor dia/horário</label><input id="vData" placeholder="Ex.: sábado de manhã"/>
-           <button class="btn btn-primary" style="margin-top:14px" onclick="agendar()">Solicitar visita →</button>
          </div>
          <div class="agentmini">
            <img src="/assets/priscila-bracos.jpg" alt="Priscila"/>

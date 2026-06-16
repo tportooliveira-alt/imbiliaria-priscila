@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex"/>
+<title>Agendar visita · Priscila Vasconcelos</title>
+<link rel="icon" href="/assets/logo-icone.jpeg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--navy:#16284B;--peri:#5C7CB8;--bg:#FBFCFE;--surface:#EEF2F8;--line:#dde5f0;--ink:#16284B;--muted:#5d6b86;--gold:#c9943a;--gold2:#e8b55a;
+--grad:linear-gradient(120deg,#16284B 0%,#2c4a82 55%,#5C7CB8 100%);--grad-gold:linear-gradient(120deg,#c9943a,#e8b55a);
+--shadow:0 18px 50px -20px rgba(22,40,75,.35);--r:20px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;letter-spacing:-.01em;line-height:1.15}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;z-index:30;background:rgba(251,252,254,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+.brand img{height:54px;mix-blend-mode:multiply}
+.back{font-size:.9rem;color:var(--muted);font-weight:600}
+.hero{padding:34px 0 10px}
+.eyebrow{display:inline-flex;gap:.4rem;font-size:.8rem;font-weight:600;color:var(--gold);background:rgba(201,148,58,.13);padding:.4rem .85rem;border-radius:999px;margin-bottom:.7rem}
+.hero h1{font-size:clamp(1.8rem,5vw,2.6rem);font-weight:800}
+.hero p{color:var(--muted);margin-top:.5rem}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin:18px 0 40px}
+.imo{display:flex;gap:14px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--surface);margin-bottom:18px}
+.imo img{width:84px;height:64px;object-fit:cover;border-radius:10px;flex:0 0 auto;background:#dde5f0}
+.imo .t{font-weight:700;font-size:.98rem}
+.imo .m{font-size:.85rem;color:var(--muted)}
+.imo .p{font-weight:700;color:var(--gold);font-size:.95rem;margin-top:.1rem}
+label{display:block;font-family:'Inter';font-weight:600;font-size:.82rem;margin:.85rem 0 .3rem}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:.75rem .85rem;font-family:'Inter';font-size:1rem;color:var(--ink);background:#fff;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--peri)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border:none;cursor:pointer;font-family:'Inter';font-weight:600;font-size:1rem;padding:.95rem 1.4rem;border-radius:999px;transition:.2s;width:100%}
+.btn-gold{background:var(--grad-gold);color:#fff;box-shadow:0 6px 18px rgba(201,148,58,.34);margin-top:18px}
+.btn-gold:hover{filter:brightness(1.05)}
+.btn-gold:disabled{opacity:.6;cursor:default}
+.btn-wa{background:#25D366;color:#fff;margin-top:10px}
+.alt{text-align:center;font-size:.85rem;color:var(--muted);margin-top:14px}
+.alt a{color:var(--peri);font-weight:600;text-decoration:underline}
+.disc{font-size:.78rem;color:var(--muted);margin-top:12px;text-align:center}
+.ok{text-align:center;padding:18px 6px}
+.ok .ico{font-size:3rem}
+.ok h2{font-size:1.6rem;margin:.4rem 0 .3rem}
+.ok p{color:var(--muted)}
+.err{background:#fdecec;border:1px solid #f5c6c6;color:#9a2a2a;border-radius:12px;padding:.7rem .9rem;font-size:.9rem;margin-top:12px;display:none}
+.err.show{display:block}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+  <a class="brand" href="/v3-editorial/"><img src="/assets/logo-branco.jpeg" alt="Priscila Vasconcelos"/></a>
+  <a class="back" id="voltar" href="/v3-editorial/">← Voltar</a>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <span class="eyebrow">✦ Visita sem compromisso</span>
+  <h1>Agendar visita</h1>
+  <p>Preencha abaixo e a Priscila confirma com você o horário. Rápido e sem compromisso.</p>
+</div></section>
+
+<div class="wrap">
+  <div class="card" id="card">
+    <div class="imo" id="imo" style="display:none">
+      <img id="imoFoto" alt=""/>
+      <div><div class="t" id="imoTitulo">—</div><div class="m" id="imoBairro"></div><div class="p" id="imoPreco"></div></div>
+    </div>
+    <form id="form" onsubmit="return false">
+      <label for="nome">Seu nome *</label>
+      <input id="nome" type="text" maxlength="120" placeholder="Como a Priscila te chama?" autocomplete="name"/>
+      <div class="row">
+        <div><label for="tel">WhatsApp *</label><input id="tel" type="tel" maxlength="30" placeholder="(77) 9 9999-9999" autocomplete="tel"/></div>
+        <div><label for="data">Dia preferido *</label><input id="data" type="date"/></div>
+      </div>
+      <label for="turno">Turno</label>
+      <select id="turno"><option value="manha">Manhã</option><option value="tarde">Tarde</option><option value="noite">Noite</option></select>
+      <label for="obs">Observações (opcional)</label>
+      <textarea id="obs" rows="2" maxlength="1000" placeholder="Ex.: tenho preferência de horário, alguma dúvida..."></textarea>
+      <div class="err" id="erro"></div>
+      <button class="btn btn-gold" id="btn" onclick="enviar()">Confirmar visita →</button>
+      <a class="btn btn-wa" id="waBtn" href="#" target="_blank">💬 Prefere pelo WhatsApp?</a>
+      <div class="disc">🔒 Seus dados são usados só pra a Priscila te atender. Sem spam.</div>
+    </form>
+  </div>
+</div>
+
+<script src="/assets/analytics.js" defer></script>
+<script>
+var WA='5577999395511';
+var IMO=null;
+var slug=new URLSearchParams(location.search).get('slug')||new URLSearchParams(location.search).get('imovel')||'';
+function fmt(v){try{return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}catch(e){return 'R$ '+v;}}
+function capa(it){var im=(it&&it.imagens)||[];var c=im.find(function(x){return x.tipo==='capa';})||im[0];return c?('/assets/'+c.arquivo+'/600.webp'):'/assets/priscila-hero.jpg';}
+// data mínima = amanhã
+(function(){var d=new Date();d.setDate(d.getDate()+1);var di=document.getElementById('data');di.min=d.toISOString().slice(0,10);})();
+// carrega o imóvel (se houver slug)
+if(slug){
+  fetch('/api/imoveis/'+encodeURIComponent(slug)).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    if(!d)return; IMO=d;
+    document.getElementById('imo').style.display='flex';
+    document.getElementById('imoFoto').src=capa(d);
+    document.getElementById('imoTitulo').textContent=d.titulo||'Imóvel';
+    document.getElementById('imoBairro').textContent=(d.bairro||'')+(d.tipo?(' · '+d.tipo):'');
+    document.getElementById('imoPreco').textContent=d.preco?fmt(d.preco):'';
+    var volta=document.getElementById('voltar'); volta.href='imovel.html?slug='+encodeURIComponent(slug);
+    atualizaWa();
+  }).catch(function(){});
+}
+function atualizaWa(){
+  var t=IMO?(' no imóvel "'+(IMO.titulo||'').trim()+'" ('+(IMO.bairro||'')+')'):'';
+  var msg=encodeURIComponent('Olá Priscila! Tenho interesse'+t+' e gostaria de agendar uma visita.');
+  document.getElementById('waBtn').href='https://wa.me/'+WA+'?text='+msg;
+}
+atualizaWa();
+function showErr(m){var e=document.getElementById('erro');e.textContent=m;e.classList.add('show');}
+function enviar(){
+  var nome=document.getElementById('nome').value.trim();
+  var tel=document.getElementById('tel').value.trim();
+  var data=document.getElementById('data').value;
+  var turno=document.getElementById('turno').value;
+  var obs=document.getElementById('obs').value.trim();
+  document.getElementById('erro').classList.remove('show');
+  if(nome.length<2)return showErr('Por favor, informe seu nome.');
+  if(tel.replace(/\D/g,'').length<8)return showErr('Informe um WhatsApp válido.');
+  if(!data)return showErr('Escolha o dia preferido da visita.');
+  var btn=document.getElementById('btn'); btn.textContent='Enviando…'; btn.disabled=true;
+  var body={nome:nome,telefone:tel,data_preferida:data,turno:turno,observacoes:obs||null};
+  if(IMO){body.codigo_imovel=String(IMO.id);body.titulo_imovel=IMO.titulo;body.bairro=IMO.bairro;}
+  fetch('/api/agendar-visita',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+   .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+   .then(function(res){
+     if(!res.ok){throw new Error((res.j&&res.j.detail)||'erro');}
+     // CONVERSÃO (Google Ads / Meta)
+     try{window.track&&window.track('agendar_visita',{bairro:(IMO&&IMO.bairro)||'',imovel:(IMO&&IMO.id)||''});}catch(e){}
+     var primeiro=nome.split(' ')[0];
+     document.getElementById('card').innerHTML=
+       '<div class="ok"><div class="ico">✅</div><h2>Visita solicitada, '+primeiro+'!</h2>'+
+       '<p>A Priscila vai confirmar o horário com você no WhatsApp em breve. Obrigada pela confiança! 💙</p>'+
+       '<a class="btn btn-wa" style="max-width:320px;margin:18px auto 0" href="'+document.getElementById('waBtn').href+'" target="_blank">💬 Falar agora no WhatsApp</a>'+
+       '<div class="disc"><a href="/v3-editorial/" style="color:var(--peri)">← Voltar ao site</a></div></div>';
+     window.scrollTo({top:0,behavior:'smooth'});
+   })
+   .catch(function(){
+     btn.textContent='Confirmar visita →'; btn.disabled=false;
+     showErr('Não consegui enviar agora 😕 Tenta de novo ou fala no WhatsApp ali embaixo.');
+   });
+}
+</script>
+</body>
+</html>
