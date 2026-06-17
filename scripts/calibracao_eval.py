@@ -158,7 +158,7 @@ def carregar_lotes() -> list[tuple]:
             out.append((
                 _norm_b(a.get("b", "")), (a.get("ti") or "")[:42], tipo, a["a"], a.get("at"),
                 a.get("q") or 2, a.get("s") or 0, a.get("v") or 0,
-                p, e, i, bool(a.get("r")), a["pr"], a.get("f", ""),
+                p, e, i, bool(a.get("r")), a["pr"], a.get("f", ""), a.get("ru"),
             ))
     return out
 
@@ -196,17 +196,19 @@ def carregar_psv() -> list[tuple]:
             out.append((
                 _norm_b(d.get("bairro", "")), (d.get("titulo") or "")[:42], tipo, area, None,
                 _int("quartos") or 2, _int("suites"), _int("vagas"), p, "bom", None, False, preco, d.get("fonte", "OLX"),
+                d.get("rua") or None,
             ))
     return out
 
 
 def avalia_item(it):
-    (bairro, titulo, tipo, area, area_ter, q, ste, vg, padrao, estado, idade, recem, preco, fonte) = it
+    (bairro, titulo, tipo, area, area_ter, q, ste, vg, padrao, estado, idade, recem, preco, fonte) = it[:14]
+    rua = it[14] if len(it) > 14 else None
     idade_f = idade or ("novo" if recem else "0_10")
     r = avaliar(
         bairro=bairro, area_util=area, quartos=q or 2, suites=ste or 0, vagas=vg or 0,
         padrao=padrao or "medio", estado=estado or "bom", idade=idade_f,
-        tipo=tipo, area_terreno=area_ter,
+        tipo=tipo, area_terreno=area_ter, rua=rua,
     )
     est = r.valor_central
     erro = (est - preco) / preco * 100
@@ -226,7 +228,7 @@ def main():
             continue
         seen.add(chave)
         est, vmin, vmax, erro, dentro = avalia_item(it)
-        (bairro, titulo, tipo, area, area_ter, q, ste, vg, padrao, estado, idade, recem, preco, fonte) = it
+        (bairro, titulo, tipo, area, area_ter, q, ste, vg, padrao, estado, idade, recem, preco, fonte) = it[:14]
         rows.append({
             "rodada": nrod, "bairro": bairro, "titulo": titulo, "tipo": tipo, "area_util": area,
             "area_terreno": area_ter or "", "quartos": q or "", "suites": ste or "", "vagas": vg or "",

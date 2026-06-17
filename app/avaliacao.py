@@ -7,12 +7,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.ruas import rua_eh_comercial, tier_da_rua
 from app.m2_vdc import (
     FATOR_ESTADO,
     FATOR_IDADE,
     FATOR_LAZER,
     FATOR_MOBILIA,
     FATOR_PADRAO,
+    FATOR_PONTO_COMERCIAL,
+    FATOR_RUA,
     FATOR_TIPO,
     FATOR_VISTA,
     M2_CASA_MULT,
@@ -61,12 +64,21 @@ def avaliar(
     elevador: bool = False,
     banheiros: int = 0,
     area_terreno: float | None = None,
+    rua: str | None = None,
+    ponto_comercial: bool = False,
 ) -> ResultadoAvaliacao:
     """Calcula faixa de valor para um imovel em VDC (calculadora avancada)."""
     if area_util <= 0:
         raise ValueError("area_util deve ser positiva")
 
     chave, m2_base = m2_do_bairro(bairro)
+
+    # Fator de RUA: rua nobre/condominio premium vale mais; popular menos; nao reconhecida = neutro.
+    tier_rua = tier_da_rua(chave, rua)
+    f_rua = FATOR_RUA.get(tier_rua, 1.0)
+    # Ponto comercial (numa via comercial) ganha um premio adicional.
+    eh_ponto_comercial = bool(ponto_comercial) and (rua_eh_comercial(chave, rua) or tipo == "comercial")
+    f_comercial = FATOR_PONTO_COMERCIAL if eh_ponto_comercial else 1.0
 
     # Casa usa multiplicador POR BAIRRO (casa/apto varia 0,62 a 1,29); demais tipos, fator fixo.
     f_tipo = M2_CASA_MULT.get(chave, M2_CASA_MULT["_def"]) if tipo == "casa" else FATOR_TIPO[tipo]
@@ -116,12 +128,12 @@ def avaliar(
         # Terreno: avaliado pelo m² de TERRA do bairro (dado de mercado), nao pelo construido.
         m2_terreno = terreno_do_bairro(chave, m2_base)
         area_base = area_terreno or area_util
-        m2_ajustado = m2_terreno * f_vista * f_extras
+        m2_ajustado = m2_terreno * f_vista * f_extras * f_rua * f_comercial
         valor_central = m2_ajustado * area_base
     else:
         m2_ajustado = (
             m2_base * f_tipo * f_padrao * f_estado * f_idade
-            * f_mobilia * f_lazer * f_vista * f_area * f_extras
+            * f_mobilia * f_lazer * f_vista * f_area * f_extras * f_rua * f_comercial
         )
         area_base = area_util
         valor_central = m2_ajustado * area_base
@@ -157,6 +169,8 @@ def avaliar(
             "vista": f_vista,
             "area": round(f_area, 3),
             "extras": round(f_extras, 3),
+            "rua": f_rua,
+            "comercial_ponto": f_comercial,
         },
         detalhes={
             "area_util": area_util,

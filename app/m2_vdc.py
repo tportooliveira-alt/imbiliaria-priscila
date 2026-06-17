@@ -117,6 +117,15 @@ FATOR_VISTA: dict[Vista, float] = {
     "privilegiada": 1.06,
 }
 
+# Fator de RUA dentro do bairro (do mapa calibracao/ruas_vdc.json via app/ruas.py).
+# Rua nobre/condominio premium vale mais; rua popular vale menos; nao reconhecida = 1.0 (neutro).
+FATOR_RUA: dict[str, float] = {
+    "premium": 1.08,   # rua/condominio mais valorizado (suave: o padrao ja captura parte da qualidade)
+    "popular": 0.93,   # rua simples/conjunto
+}
+# Premio quando o imovel e PONTO COMERCIAL numa via comercial (alem do tipo=comercial).
+FATOR_PONTO_COMERCIAL = 1.12
+
 
 # Multiplicador de CASA por bairro (relacao casa/apto NAO e constante: 0,62 a 1,29).
 # casaMult = mediana casa R$/m² ÷ base apto do bairro (OLX jun/2026, 812 anuncios).

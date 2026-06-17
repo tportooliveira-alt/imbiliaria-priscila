@@ -265,6 +265,8 @@ class AvaliacaoRequest(BaseModel):
     elevador: bool = False
     banheiros: int = Field(0, ge=0, le=20)
     area_terreno: float | None = Field(None, gt=0, le=100_000)
+    rua: str | None = Field(None, max_length=120)
+    ponto_comercial: bool = False
     nome: str | None = Field(None, max_length=120)
     contato: str | None = Field(None, max_length=120)
     prazo_venda: Literal["ja", "3_meses", "6_meses", "12_meses", "pesquisando"] | None = None
@@ -332,6 +334,8 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
             elevador=payload.elevador,
             banheiros=payload.banheiros,
             area_terreno=payload.area_terreno,
+            rua=payload.rua,
+            ponto_comercial=payload.ponto_comercial,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
