@@ -424,7 +424,10 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
     # Yield mensal CALIBRADO com 99 alugueis reais de VDC (17/06). NAO e fixo: cai conforme o
     # imovel encarece ('piso do aluguel' — barato ~0,65%/mes, caro ~0,38%). Ver avaliacao.yield_aluguel_mensal.
     yield_mes = avaliacao.yield_aluguel_mensal(r.valor_central, payload.tipo)
-    aluguel_estimado = round(r.valor_central * yield_mes)
+    # PISO do aluguel: abaixo de ~R$950/mes nao se aluga no mercado formal de VDC
+    # (minimo real R$900; cluster R$1.000-1.200). Imovel muito barato nao cai abaixo disso.
+    PISO_ALUGUEL = 950
+    aluguel_estimado = max(PISO_ALUGUEL, round(r.valor_central * yield_mes)) if payload.tipo not in ("terreno",) else round(r.valor_central * yield_mes)
 
     return {
         "bairro_informado": payload.bairro,
