@@ -49,7 +49,21 @@ def criar(
             (titulo.strip(), dt_ini.isoformat(), dt_fim.isoformat(), tipo,
              lead_id, imovel_id, observacoes),
         )
-        return int(cur.lastrowid)
+        novo_id = int(cur.lastrowid)
+
+    # Espelha no Google Calendar (best-effort; no-op se nao configurado, NUNCA quebra a marcacao).
+    try:
+        from app import gcal
+        ev = gcal.criar_evento(titulo=titulo.strip(), inicio_iso=dt_ini.isoformat(),
+                               fim_iso=dt_fim.isoformat(), descricao=observacoes or "")
+        if ev:
+            with db_session() as conn:
+                conn.execute("UPDATE agenda SET gcal_event_id = ? WHERE id = ?", (ev, novo_id))
+    except Exception:  # pragma: no cover - defensivo
+        import logging
+        logging.getLogger("agenda").exception("falha ao espelhar evento %s no Google", novo_id)
+
+    return novo_id
 
 
 def listar(

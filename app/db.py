@@ -410,6 +410,8 @@ def init_db() -> None:
         _migrar_coluna(conn, "simulacoes", "tipo_imovel", "TEXT")
         # W6: tour 360 por imovel
         _migrar_coluna(conn, "imoveis", "tour_360_url", "TEXT")
+        # Ponte Google Calendar: id do evento espelhado no Google (NULL = nao espelhado)
+        _migrar_coluna(conn, "agenda", "gcal_event_id", "TEXT")
         # Empreendimentos: ficha tecnica rica (condominio/obra grande)
         for _col, _tipo in (
             ("endereco", "TEXT"), ("area_total", "TEXT"),
