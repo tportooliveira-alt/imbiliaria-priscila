@@ -421,16 +421,16 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
         )
 
     # Potencial de aluguel — yield mensal sobre o valor de venda estimado.
-    # Residencial: yield REAL por bairro (VivaReal jun/2026). Comercial/terreno: por tipo.
-    # Yields reais por bairro (812 anuncios OLX, jun/2026). Apartamento varia por bairro;
-    # casa/cobertura/comercial/terreno usam yield por tipo.
+    # Yield mensal CALIBRADO com 99 alugueis reais de VDC (17/06, aluguel/valor estimado) -> ~0,55%/mes (~6,6%/ano).
+    # Apartamento varia por bairro; casa/cobertura/comercial/terreno usam yield por tipo. Script: scripts/calibracao_aluguel.py.
     yield_bairro = {
-        "candeias": 0.0058, "boa_vista": 0.0053, "recreio": 0.0025, "centro": 0.0045,
-        "felicia": 0.0050, "brasil": 0.0050, "alto_maron": 0.0045,
+        "candeias": 0.0054, "boa_vista": 0.0056, "recreio": 0.0045, "centro": 0.0059,
+        "felicia": 0.0069, "brasil": 0.0050, "alto_maron": 0.0045,
+        "primavera": 0.0058, "universidade": 0.0066,
         "patagonia": 0.0060, "vila_serrana": 0.0050,
     }
     yield_tipo = {
-        "apartamento": 0.0050, "casa": 0.0035, "cobertura": 0.0050,
+        "apartamento": 0.0055, "casa": 0.0040, "cobertura": 0.0050,
         "comercial": 0.0070, "terreno": 0.0015,
     }
     if payload.tipo == "apartamento":

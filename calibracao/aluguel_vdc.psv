@@ -1,0 +1,100 @@
+bairro|rua|tipo|area_m2|quartos|suites|vagas|padrao|acab|comercial|preco|data|fonte|titulo
+Candeias||apartamento|60|2|0|2|simples|pronto|nao|1500|03/2026|OLX|Candeias Residence 2q
+Candeias||apartamento|100|3|0|3|medio|pronto|nao|2800|06/2026|OLX|Apt Candeias 3q
+Candeias||apartamento|77|3|0|2|medio|pronto|nao|1600|03/2026|OLX|Apt Cobertura Candeias 3q
+Candeias||apartamento|95|3|2|3|medio|pronto|nao|1790|05/2026|OLX|Apt 3q 2 suites Candeias
+Candeias||apartamento|95|2|2|2|medio|pronto|nao|2150|04/2026|OLX|Apt 2q 2 suites Candeias
+Candeias||apartamento|130|3|0|3|alto|pronto|nao|3000|04/2026|OLX|Apt amplo 3q Candeias
+Candeias||casa|111|2|2|2|medio|pronto|nao|2500|03/2026|OLX|Casa 2 suites Candeias
+Candeias||apartamento|68|3|0|1|simples|pronto|nao|1800|03/2026|OLX|Apt 68m2 3q Candeias
+Candeias||apartamento|57|2|0|1|simples|pronto|nao|1600|03/2026|OLX|Dona Olivia 57m2 2q
+Candeias||apartamento|90|3|0|1|medio|pronto|nao|4200|02/2026|OLX|Apt Dona Olivia 90m2 3q
+Candeias||apartamento|53|2|1|2|simples|pronto|nao|1610|10/2025|OLX|Apt 2q suite Candeias
+Candeias|Av Olivia Flores|apartamento|135|3|3|1|alto|pronto|nao|5000|01/2026|OLX|Apt 135m2 3 suites Olivia Flores
+Candeias||apartamento|68|3|2|2|simples|pronto|nao|1500|01/2026|OLX|Apt 68m2 3q 2 suites
+Candeias||apartamento|100|3|2|3|medio|pronto|nao|2200|06/2026|OLX|Apt 3q planejados Candeias
+Candeias||apartamento|115|3|2|4|alto|pronto|nao|3500|06/2026|OLX|Apt 3q Morada Nobre Candeias
+Candeias||apartamento|103|3|0|3|medio|pronto|nao|2200|06/2026|OLX|Edgard Vianne 3q
+Candeias||apartamento|98|3|0|2|medio|pronto|nao|3000|05/2026|OLX|Apt mobiliado Ouro Branco
+Candeias||apartamento|67|2|1|2|simples|pronto|nao|1450|05/2026|OLX|Apt 2q suite elevador
+Candeias||apartamento|74|3|0|2|simples|pronto|nao|2700|04/2026|OLX|Apt 3q mobiliado Candeias
+Candeias||apartamento|46|2|0|1|simples|pronto|nao|1700|03/2026|OLX|Apt 46m2 2q Candeias
+Candeias||apartamento|174|3|3|1|alto|pronto|nao|5000|06/2026|OLX|Apt 3 suites Joaquim Gusmao
+Candeias||apartamento|28|1|0|1|simples|pronto|nao|1300|04/2026|OLX|Apt qto e sala 28m2
+Candeias||apartamento|190|3|3|4|alto|pronto|nao|5500|05/2026|OLX|Apt Morada Imperial Candeias
+Candeias||apartamento|50|1|0|1|simples|pronto|nao|1100|06/2026|OLX|Apt qto e sala Olivia Flores
+Candeias||casa|198|3|0|4|alto|pronto|nao|6300|08/2025|OLX|Casa alto padrao Candeias
+Candeias|Av Fortaleza|cobertura|261|4|4|4|luxo|pronto|nao|5000|05/2026|ImovelWeb|Henri Matisse cobertura 4 suites
+Candeias|Rua Airton Senna|casa|160|3|1|2|alto|pronto|nao|4000|06/2026|ImovelWeb|Casa 3q suite Candeias
+Candeias|Rua Kardenar Oliveira|apartamento|52|2|1|1|simples|pronto|nao|1400|06/2026|ImovelWeb|Apt Candeias Premium 2q
+Recreio||apartamento|160|3|0|3|medio|pronto|nao|2500|03/2026|OLX|Apt Recreio 3q
+Recreio||apartamento|85|3|0|2|medio|pronto|nao|3200|06/2026|OLX|Apt Recreio mobiliado 3q
+Recreio||apartamento|60|2|1|1|simples|pronto|nao|1880|04/2026|OLX|Apt 2q suite frente UNEX
+Recreio||apartamento|85|2|0|1|simples|pronto|nao|1200|02/2026|OLX|Apt 2q Recreio 85m2
+Recreio||apartamento|123|3|0|1|medio|pronto|nao|1800|11/2025|OLX|Apt 123m2 3q Recreio
+Recreio||apartamento|145|3|2|3|alto|pronto|nao|1800|05/2026|OLX|Apt 3q 2 suites Recreio
+Recreio||apartamento|70|2|0|2|simples|pronto|nao|1300|05/2026|OLX|Apt 2q Recreio
+Recreio||apartamento|80|3|0|1|simples|pronto|nao|1500|01/2026|OLX|Apt 3q Recreio
+Recreio||casa|145|4|2|4|alto|pronto|nao|4100|08/2025|OLX|Casa 4q 2 suites Vila Emurc
+Recreio||apartamento|130|3|0|3|medio|pronto|nao|2000|03/2026|OLX|Apt 3q Lelia Aguiar
+Recreio||apartamento|80|2|0|1|simples|pronto|nao|1480|05/2026|OLX|Apt 2q central Recreio
+Recreio||apartamento|90|3|2|4|medio|pronto|nao|2700|05/2026|OLX|Apt 3 suites Lara Andrade
+Recreio|Rua Augusto Seixas|casa|70|2|0|1|medio|pronto|nao|3200|05/2026|ImovelWeb|Casa Augusto Seixas 70m2
+Recreio|Rua Siqueira Campos|apartamento|180|4|2|2|alto|pronto|nao|2300|05/2026|ImovelWeb|Apt 4q 2 suites Siqueira Campos
+Boa Vista||apartamento|60|2|1|0|simples|pronto|nao|1300|05/2026|OLX|Apt Boa Vista 2q
+Boa Vista||casa|249|3|0|3|alto|pronto|nao|4000|03/2026|OLX|Casa duplex 3q Boa Vista
+Boa Vista||apartamento|90|2|2|1|medio|pronto|nao|1850|04/2026|OLX|Apt 2 suites Boa Vista
+Boa Vista||apartamento|99|3|2|4|medio|pronto|nao|2800|04/2026|OLX|Apt 3q 2 suites Boa Vista
+Boa Vista||apartamento|90|3|0|1|medio|pronto|nao|3700|02/2026|OLX|Apt 90m2 3q Boa Vista
+Boa Vista||apartamento|65|3|0|1|simples|pronto|nao|1700|11/2025|OLX|Apt 65m2 3q Boa Vista
+Boa Vista||apartamento|76|3|1|2|medio|pronto|nao|2500|06/2026|OLX|Apt 3q suite mobiliado
+Boa Vista||apartamento|72|3|1|2|medio|pronto|nao|3000|06/2026|OLX|Apt terreo mobiliado 3q
+Boa Vista||casa|200|4|4|4|alto|pronto|nao|7500|05/2026|OLX|Casa duplex 4 suites cond
+Boa Vista||apartamento|60|2|2|2|simples|pronto|nao|1950|04/2026|OLX|Apt semi mobiliado terreo
+Boa Vista||apartamento|95|3|0|2|medio|pronto|nao|2200|01/2026|OLX|Orlando Leite 3q
+Boa Vista||casa|132|3|3|4|alto|pronto|nao|5635|08/2025|OLX|Casa 3 suites Maison Bordeaux
+Boa Vista|Av Larissa Cavalcante|apartamento|60|2|1|1|simples|pronto|nao|1150|06/2026|ImovelWeb|Apt 2q Don Residencial
+Boa Vista|Rua Guimaraes Rosa|casa|130|2|1|1|medio|pronto|nao|1500|06/2026|ImovelWeb|Casa Costa Azul 2q
+Boa Vista|Av Projetada|apartamento|95|3|2|2|medio|pronto|nao|2300|06/2026|ImovelWeb|Apt 3q 2 suites Boa Vista
+Centro||apartamento|75|2|0|0|simples|pronto|nao|1400|05/2026|OLX|Apt Centro Guarani 2q
+Centro||apartamento|80|2|0|2|simples|pronto|nao|3000|06/2026|OLX|Apt terreo 2q Centro
+Centro||casa|130|3|3|4|medio|pronto|nao|2100|05/2026|OLX|Casa 3 suites Centro
+Centro||apartamento|60|2|0|1|simples|pronto|nao|1100|06/2026|OLX|Apt Centro 2q
+Centro||apartamento|50|2|0|1|simples|pronto|nao|1100|06/2026|OLX|Apt Vitoria Imperial 2q Centro
+Felicia||casa|90|3|1|2|simples|pronto|nao|1940|06/2026|OLX|Casa 3q suite Felicia
+Felicia||casa|115|3|2|2|medio|pronto|nao|1800|06/2026|OLX|Casa 3q Felicia 115m2
+Felicia||apartamento|45|2|0|1|simples|pronto|nao|1250|06/2026|OLX|Apt 2q piscina Felicia
+Felicia||apartamento|70|2|1|2|simples|pronto|nao|1620|05/2026|OLX|Apt 2q suite Felicia
+Felicia||apartamento|55|2|0|2|simples|pronto|nao|1200|05/2026|OLX|Apt 2q Felicia condominio
+Felicia||apartamento|100|3|0|2|medio|pronto|nao|2850|05/2026|OLX|Apt alto padrao 3q Felicia
+Felicia||apartamento|60|2|0|1|simples|pronto|nao|1050|05/2026|OLX|Apt Riverside 2q Felicia
+Felicia||casa|140|3|2|4|medio|pronto|nao|4750|05/2026|OLX|Casa 3q 2 suites Felicia
+Felicia||apartamento|82|3|1|2|simples|pronto|nao|1600|04/2026|OLX|Apt 3q suite elevador Felicia
+Felicia||apartamento|75|2|1|2|simples|pronto|nao|1250|12/2025|OLX|Apt semi mobiliado 2q Felicia
+Alto Maron||apartamento|89|3|0|2|simples|pronto|nao|1550|05/2026|OLX|Apt 89m2 Alto Maron
+Alto Maron||apartamento|60|2|0|1|simples|pronto|nao|900|05/2026|OLX|Apt 2q Alto Maron
+Alto Maron||casa|454|3|0|3|alto|pronto|nao|4000|03/2026|OLX|Casa completa 3q Alto Maron
+Brasil||casa|216|4|0|0|medio|pronto|nao|2500|05/2026|OLX|Casa 4q Bairro Brasil
+Primavera||casa|140|4|2|5|medio|pronto|nao|2500|06/2026|OLX|Casa 4q Primavera
+Primavera||apartamento|75|2|0|2|simples|pronto|nao|1500|06/2026|OLX|Apt 2q Primavera 75m2
+Primavera||casa|80|2|1|2|simples|pronto|nao|2500|06/2026|OLX|Casa mobiliada 2q Primavera
+Primavera||casa|70|2|1|2|simples|pronto|nao|1500|05/2026|OLX|Casa 2q Vog Alegro Primavera
+Primavera||casa|55|2|1|2|simples|pronto|nao|1450|05/2026|OLX|Casa 2q Vog Primavera
+Universidade|Av Olivia Flores|apartamento|70|3|1|2|medio|pronto|nao|2000|03/2026|OLX|Apt terreo 3q Universidade
+Universidade|Av Olivia Flores|apartamento|70|3|1|2|medio|pronto|nao|1800|06/2026|ImovelWeb|Apt Vila Espanha 3q Olivia Flores
+Universidade||apartamento|51|2|0|1|simples|pronto|nao|2000|02/2026|OLX|Apt Dona Olivia 51m2
+Universidade||apartamento|68|3|0|1|simples|pronto|nao|1800|02/2026|OLX|Apt Dona Mirai 68m2 3q
+Universidade||apartamento|46|2|0|1|simples|pronto|nao|1900|10/2025|OLX|Res Mirai 46m2 2q
+Universidade||apartamento|65|2|0|2|simples|pronto|nao|2100|06/2026|OLX|Dona Mirai 2q mobiliado
+Universidade||apartamento|71|3|0|2|simples|pronto|nao|1800|06/2026|OLX|Dona Mirai 3q terreo
+Universidade||apartamento|70|3|1|2|medio|pronto|nao|2000|04/2026|OLX|Dona Mirai 3q quintal
+Universidade||apartamento|69|2|1|1|medio|pronto|nao|3300|04/2026|OLX|Apt mobiliado 2q suite Universidade
+Universidade||apartamento|70|3|1|2|medio|pronto|nao|1800|03/2026|OLX|Dona Mirai 3q
+Universidade||apartamento|65|2|0|2|medio|pronto|nao|2200|06/2026|OLX|Apt mobiliado 2q Universidade
+Universidade||apartamento|54|2|1|2|medio|pronto|nao|2500|05/2026|OLX|Apt suite mobiliado Dona Mirai
+Universidade||apartamento|50|2|0|2|simples|pronto|nao|2500|05/2026|OLX|Apt 2q mobiliado Universidade
+Universidade|Av Olivia Flores|apartamento|70|2|0|2|simples|pronto|nao|1299|05/2026|OLX|Apt 2q proximo UFBA
+Universidade||apartamento|85|2|0|2|medio|pronto|nao|2600|04/2026|OLX|Apt mobiliado 2q frente UESB
+Universidade|Estrada Velha da Barra|casa|100|2|1|2|simples|pronto|nao|1300|04/2026|ImovelWeb|Velli Residencial 2q
+Universidade|Av Olivia Flores|apartamento|71|2|1|1|medio|pronto|nao|1400|06/2026|ImovelWeb|Apt Dona Mirai 2q Olivia Flores
+Universidade||casa|67|3|1|2|simples|pronto|nao|1600|06/2026|ImovelWeb|Casa 3q Universidade cond
