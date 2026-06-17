@@ -121,6 +121,7 @@ footer img{height:58px;mix-blend-mode:screen;margin:0 auto 12px}
   <div class="tool">
     <div class="grid2">
       <div class="field"><label for="bairro">Bairro</label><select id="bairro"><option>Carregando...</option></select></div>
+      <div class="field"><label for="rua">Rua / avenida <span style="font-weight:400;opacity:.6">(opcional, afina o valor)</span></label><input id="rua" type="text" placeholder="Ex.: Av. Olívia Flores"/></div>
       <div class="field"><label for="tipo">Tipo</label><select id="tipo"><option>Casa</option><option>Apartamento</option><option>Cobertura</option><option>Terreno</option><option>Comercial</option></select></div>
       <div class="field"><label for="area">Área (m²)</label><input id="area" type="number" inputmode="numeric" placeholder="Ex.: 120"/></div>
       <div class="field"><label for="quartos">Quartos</label><input id="quartos" type="number" inputmode="numeric" value="3"/></div>
@@ -142,6 +143,7 @@ footer img{height:58px;mix-blend-mode:screen;margin:0 auto 12px}
       </div>
       <label class="check"><input type="checkbox" id="elevador"/> Tem elevador (prédio)</label>
       <label class="check"><input type="checkbox" id="andar"/> Andar alto / cobertura</label>
+      <label class="check"><input type="checkbox" id="comercial"/> É ponto comercial (loja/sala em rua de comércio)</label>
     </details>
     <button class="btn btn-gold" style="margin-top:18px;width:100%" onclick="avaliar()" id="btnAval">Ver quanto vale →</button>
 
@@ -211,7 +213,9 @@ function montarBody(){
     tem_area_externa:document.getElementById('externa').checked,
     tipo:val('tipo').toLowerCase(),mobilia:val('mobilia'),lazer:val('lazer'),vista:val('vista'),
     banheiros:+val('banheiros')||0,elevador:elv?elv.checked:false,andar_alto:anr?anr.checked:false,
-    area_terreno:parseFloat(val('terreno'))||null};
+    area_terreno:parseFloat(val('terreno'))||null,
+    rua:(document.getElementById('rua')?document.getElementById('rua').value.trim():'')||null,
+    ponto_comercial:document.getElementById('comercial')?document.getElementById('comercial').checked:false};
 }
 // "Ver quanto vale" -> NÃO mostra o valor ainda; abre o portão (nome+WhatsApp) pra gerar lead.
 function avaliar(){
