@@ -194,6 +194,26 @@ def avaliar(
     )
 
 
+def yield_aluguel_mensal(valor: float, tipo: str = "apartamento") -> float:
+    """Yield mensal (aluguel/valor) — NAO e fixo: cai conforme o imovel encarece
+    ('piso do aluguel'). Calibrado com 99 alugueis reais de VDC (17/06):
+    barato ~0,70%/mes -> caro ~0,38%/mes. Comercial/terreno por tipo."""
+    if tipo == "comercial":
+        return 0.0070
+    if tipo == "terreno":
+        return 0.0015
+    # Residencial (apto/casa/cobertura): curva por faixa de valor.
+    if valor < 250_000:
+        return 0.0065
+    if valor < 400_000:
+        return 0.0057
+    if valor < 600_000:
+        return 0.0050
+    if valor < 1_000_000:
+        return 0.0042
+    return 0.0038
+
+
 def texto_editorial(r: ResultadoAvaliacao, bairro_original: str) -> str:
     """Gera texto curto de fallback (caso Claude nao esteja disponivel)."""
     faixa = f"R$ {r.valor_minimo:,.0f} a R$ {r.valor_maximo:,.0f}".replace(",", ".")

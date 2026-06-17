@@ -421,22 +421,9 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
         )
 
     # Potencial de aluguel — yield mensal sobre o valor de venda estimado.
-    # Yield mensal CALIBRADO com 99 alugueis reais de VDC (17/06, aluguel/valor estimado) -> ~0,55%/mes (~6,6%/ano).
-    # Apartamento varia por bairro; casa/cobertura/comercial/terreno usam yield por tipo. Script: scripts/calibracao_aluguel.py.
-    yield_bairro = {
-        "candeias": 0.0054, "boa_vista": 0.0056, "recreio": 0.0045, "centro": 0.0059,
-        "felicia": 0.0069, "brasil": 0.0050, "alto_maron": 0.0045,
-        "primavera": 0.0058, "universidade": 0.0066,
-        "patagonia": 0.0060, "vila_serrana": 0.0050,
-    }
-    yield_tipo = {
-        "apartamento": 0.0055, "casa": 0.0040, "cobertura": 0.0050,
-        "comercial": 0.0070, "terreno": 0.0015,
-    }
-    if payload.tipo == "apartamento":
-        yield_mes = yield_bairro.get(r.bairro_normalizado, 0.0050)
-    else:
-        yield_mes = yield_tipo.get(payload.tipo, 0.0050)
+    # Yield mensal CALIBRADO com 99 alugueis reais de VDC (17/06). NAO e fixo: cai conforme o
+    # imovel encarece ('piso do aluguel' — barato ~0,65%/mes, caro ~0,38%). Ver avaliacao.yield_aluguel_mensal.
+    yield_mes = avaliacao.yield_aluguel_mensal(r.valor_central, payload.tipo)
     aluguel_estimado = round(r.valor_central * yield_mes)
 
     return {
