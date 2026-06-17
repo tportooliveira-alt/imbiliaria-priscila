@@ -23,7 +23,7 @@ M2_VDC: dict[str, float] = {
     "boa_vista": 4710,   # [n=33]
     "alto_maron": 4400,  # [n=11] (estava subestimado antes)
     "centro": 4330,      # [n=11]
-    "brasil": 4270,      # [n=6] amostra menor
+    "brasil": 3200,      # recalibrado 17/06 (era 4270): backtest n=10 supervalorizava +28% (real ~3016)
     "ibirapuera": 2800,  # recalibrado 16/06 (era 4300): backtest 9 anuncios reais, mediana apto ~2870 / casa ~2530
     "felicia": 3800,     # recalibrado 17/06 (era 3400, baixei demais): backtest n=22 subvalorizava -21%
     "primavera": 4300,   # recalibrado 17/06 (era 3700): backtest n=21 subvalorizava -17% (Horto Premier/Conde puxam)
@@ -31,7 +31,7 @@ M2_VDC: dict[str, float] = {
     "panorama": 3400,    # mantido
     "urbis": 3000,       # mantido
     "zabele": 3300,      # recalibrado 17/06 (era 2900): backtest n=11 subvalorizava -19%
-    "bateias": 2800,     # mantido
+    "bateias": 3400,     # recalibrado 17/06 (era 2800): backtest n=16 subvalorizava -35% (real ~3189)
     "vila_serrana": 1600,# [amostra pequena]
     "patagonia": 2600,   # recalibrado 16/06 (era 1900): backtest casas reais ~2969/m² (estava subestimado)
     "alphaville": 4600,  # add 16/06: Terras AlphaVille (condominio de luxo; casas alto/luxo)
