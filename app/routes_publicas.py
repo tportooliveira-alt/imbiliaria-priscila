@@ -426,8 +426,14 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
     yield_mes = avaliacao.yield_aluguel_mensal(r.valor_central, payload.tipo)
     # PISO do aluguel: abaixo de ~R$950/mes nao se aluga no mercado formal de VDC
     # (minimo real R$900; cluster R$1.000-1.200). Imovel muito barato nao cai abaixo disso.
+    # Mobiliado aluga mais caro (web: +15-30%). vazio=base, semi +8%, mobiliado +18%.
+    f_mob_aluguel = {"vazio": 1.0, "semi": 1.08, "mobiliado": 1.18}.get(payload.mobilia, 1.0)
     PISO_ALUGUEL = 950
-    aluguel_estimado = max(PISO_ALUGUEL, round(r.valor_central * yield_mes)) if payload.tipo not in ("terreno",) else round(r.valor_central * yield_mes)
+    bruto = round(r.valor_central * yield_mes * f_mob_aluguel)
+    aluguel_estimado = max(PISO_ALUGUEL, bruto) if payload.tipo != "terreno" else bruto
+    # Liquido aprox: -25% (vacancia ~7% + IPTU + condominio), ANTES do IR. So referencia.
+    aluguel_liquido = round(aluguel_estimado * 0.75)
+    yield_anual_bruto = round(yield_mes * 12 * 100, 2)
 
     return {
         "bairro_informado": payload.bairro,
@@ -439,6 +445,9 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
         "valor_maximo": r.valor_maximo,
         "aluguel_estimado": aluguel_estimado,
         "aluguel_yield_pct": round(yield_mes * 100, 2),
+        "aluguel_yield_anual_pct": yield_anual_bruto,
+        "aluguel_liquido_estimado": aluguel_liquido,
+        "aluguel_yield_liquido_anual_pct": round(yield_anual_bruto * 0.75, 2),
         "fatores": r.fatores_aplicados,
         "confianca": r.confianca,
         "texto": texto,
