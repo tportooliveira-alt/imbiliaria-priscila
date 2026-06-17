@@ -140,6 +140,27 @@
       "popular": ["VOG Fiori", "Cond Vivendas do Bosque", "Cond Parque Belvedere", "Lot Barao Uchoa"],
       "comercial": [],
       "obs": "Horto Premier = premium (casas R$5.523-6.000/m2, 750-975k). Duque Du Lest R$5.070/m2. VOG Fiori aptos R$3.333/m2 (popular). Conde III 290-420k."
+    },
+    "universidade": {
+      "perfil": "nobre_luxo",
+      "premium": ["Alphaville 1", "Alphaville 2", "Haras Camping Club"],
+      "popular": ["Cond Dona Olivia", "Cond Bem Residencial", "Cond Dona Mirai"],
+      "comercial": [],
+      "obs": "Regiao do Alphaville = topo da cidade. Alphaville 1 R$6.462-11.047/m2 (casas 950k-2.1M). Alphaville 2 (Terras) 930k-1.89M. Haras R$6.271/m2. Duque Du Lest medio-alto. Dona Olivia aptos populares 270-320k."
+    },
+    "sao_pedro": {
+      "perfil": "popular",
+      "premium": [],
+      "popular": ["Lot Parque das Palmeiras", "Lot Parque Real", "Rua P", "Cond Vivenda das Bromelias"],
+      "comercial": [],
+      "obs": "100% popular. Parque das Palmeiras domina (casas 65-132m2 240-480k). Bromelias 214-223k. Parque Florestal 230k."
+    },
+    "zabele": {
+      "perfil": "popular_bimodal",
+      "premium": ["Cond Portal do Sol"],
+      "popular": ["Senhorinha Cairo", "Miro Cairo", "Vila Serrana", "Cidade Maravilhosa", "Cond Terras Premium"],
+      "comercial": [],
+      "obs": "Bimodal: Portal do Sol topo (casa 340m2 R$4.382/m2). Senhorinha/Miro Cairo populares 190-210k. Cidade Maravilhosa 230-260k. Ver memoria avm-granularidade-rua (rua comercial cara vs popular barata)."
     }
   }
 }

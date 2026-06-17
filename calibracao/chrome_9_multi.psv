@@ -1,0 +1,46 @@
+bairro|rua|tipo|area_m2|quartos|suites|vagas|padrao|acab|comercial|preco|data|fonte|titulo
+Recreio|Res Maiorca|apartamento|81|2|1|2|medio|pronto|nao|255000|05/2026|OLX|Apt Maiorca 81m2
+Recreio||casa|270|5|3|5|luxo|pronto|nao|1200000|05/2026|OLX|Casa Duplex Recreio 270m2
+Recreio||casa|470|4|4|5|luxo|pronto|nao|1800000|04/2026|OLX|Residencia alto padrao 470m2
+Recreio|Rua Anita Garibaldi|apartamento|100|3|2|4|alto|pronto|nao|850000|04/2026|OLX|Apt Anita Garibaldi 100m2
+Recreio||casa|400|5|3|5|alto|pronto|nao|800000|04/2026|OLX|Casa Recreio 400m2
+Recreio|Ed Jardim da Cidade|apartamento|150|4|2|3|alto|pronto|nao|690000|04/2026|OLX|Apt Jardim da Cidade 150m2
+Recreio|Cond Lara Andrade|apartamento|95|3|2|4|alto|pronto|nao|645000|04/2026|OLX|Apt Lara Andrade 95m2
+Recreio||apartamento|65|2|3|0|alto|pronto|nao|500000|04/2026|OLX|Apt San Giorgio 65m2
+Recreio|Rua Anita Garibaldi|apartamento|110|3|2|4|alto|pronto|nao|500000|04/2026|OLX|Apt Anita Garibaldi 110m2
+Recreio|Rua Anita Garibaldi|apartamento|108|3|4|0|alto|pronto|nao|699999|04/2026|OLX|Apt Anita Garibaldi mobiliado 108m2
+Recreio|Cond Maison Bordeaux|casa|85|3|2|4|luxo|pronto|nao|940000|04/2026|OLX|Casa Maison Bordeaux 85m2
+Recreio||apartamento|70|2|1|3|alto|pronto|nao|495000|04/2026|OLX|Apt San Francesco 70m2
+Recreio|Ed Malu Andrade|apartamento|89|3|4|0|alto|pronto|nao|550000|04/2026|OLX|Apt Malu Andrade 89m2
+Recreio|Vitoria Tower|apartamento|40|1|1|1|medio|pronto|nao|350000|03/2026|OLX|Apt Vitoria Tower 40m2
+Recreio|Rua Anita Garibaldi|apartamento|110|3|2|4|alto|pronto|nao|820000|02/2026|OLX|Apt Anita Garibaldi 3 suites 110m2
+Recreio||apartamento|108|3|2|1|alto|pronto|nao|700000|01/2026|OLX|Apt 108m2 Recreio
+Recreio|Res Monte Carlo|apartamento|123|3|2|3|alto|pronto|nao|380000|01/2026|OLX|Apt Monte Carlo 123m2
+Recreio||apartamento|108|3|2|4|alto|osso|nao|500000|01/2026|OLX|Apt alto padrao osso 108m2
+Sao Pedro||casa|80|3|1|2|simples|pronto|nao|260000|06/2026|OLX|Casa Sao Pedro 80m2
+Sao Pedro|Lot Parque das Palmeiras|casa|125|3|2|2|simples|pronto|nao|265000|05/2026|OLX|Casa Parque das Palmeiras 125m2
+Sao Pedro||casa|49|2|1|1|simples|pronto|nao|200000|05/2026|OLX|Casa solta porcelanato 49m2
+Sao Pedro||casa|65|3|2|2|simples|pronto|nao|265000|05/2026|OLX|Casa 65m2 porcelanato
+Sao Pedro|Lot Parque Real|casa|67|3|2|2|simples|pronto|nao|265000|05/2026|OLX|Casa nova Parque Real 67m2
+Sao Pedro|Lot Parque das Palmeiras|casa|74|3|2|2|simples|pronto|nao|265000|03/2026|OLX|Casa Parque Palmeiras 74m2
+Sao Pedro||casa|65|3|2|2|simples|pronto|nao|265000|02/2026|OLX|Casa fase final acabamento 65m2
+Sao Pedro|Rua P|casa|80|3|2|1|simples|pronto|nao|270000|12/2025|OLX|Casa Oeste Park Rua P 80m2
+Sao Pedro|Lot Parque Real|casa|75|3|2|2|simples|pronto|nao|260000|10/2025|OLX|Casa Parque Real 75m2
+Sao Pedro||casa|140|2|1|1|simples|pronto|nao|230000|10/2025|OLX|Casa 2 quartos 140m2
+Sao Pedro|Lot Parque das Palmeiras|casa|55|3|1|2|simples|pronto|nao|265000|07/2025|OLX|Casa loteamento 55m2
+Sao Pedro||casa|78|3|2|2|simples|pronto|nao|270000|06/2025|OLX|Casa terrea moderna 78m2
+Sao Pedro||casa|75|3|2|2|simples|pronto|nao|255000|05/2026|OLX|Casa nova 3/4 75m2
+Sao Pedro||apartamento|47|2|2|1|simples|pronto|nao|185000|04/2026|OLX|Apt 47m2 Sao Pedro
+Sao Pedro|Cond Vivenda das Bromelias|casa|49|2|1|1|simples|pronto|nao|223374|03/2026|OLX|Casa Vivenda das Bromelias 49m2
+Sao Pedro||casa|55|2|2|1|simples|pronto|nao|270000|02/2026|OLX|Casa 55m2 Sao Pedro
+Sao Pedro|Cond Vivenda das Bromelias|casa|49|2|1|1|simples|pronto|nao|214742|12/2025|OLX|Casa Vivenda das Bromelias 49m2 b
+Sao Pedro|Parque Florestal|casa|75|3|2|2|simples|pronto|nao|230000|06/2026|OLX|Casa Parque Florestal 75m2
+Sao Pedro||casa|44|2|1|1|simples|pronto|nao|184000|06/2026|OLX|Casa 44m2 Sao Pedro
+Universidade|Cond Dona Olivia|apartamento|70|2|1|2|medio|pronto|nao|320000|06/2026|OLX|Apt Dona Olivia 70m2
+Universidade|Alphaville 1|casa|240|4|4|0|luxo|pronto|nao|2000000|06/2026|OLX|Casa Alphaville 1 240m2
+Universidade|Alphaville 2|casa|360|4|4|5|luxo|pronto|nao|1890000|06/2026|OLX|Casa Alphaville 2 360m2
+Universidade||casa|360|3|4|5|luxo|pronto|nao|1350000|06/2026|OLX|Casa mobiliada nova 360m2
+Universidade|Cond Bem Residencial|apartamento|70|3|1|2|medio|pronto|nao|260000|06/2026|OLX|Apt Bem Residencial 70m2
+Universidade|Cond Dona Olivia|apartamento|70|2|1|2|medio|pronto|nao|320000|06/2026|OLX|Apt Dona Olivia 70m2 b
+Universidade|Alphaville 1|casa|345|4|4|5|luxo|pronto|nao|1500000|06/2026|OLX|Duplex Alphaville 345m2
+Universidade|Cond Dona Mirai|apartamento|70|3|1|2|medio|pronto|nao|295000|06/2026|OLX|Apt Dona Mirai 70m2

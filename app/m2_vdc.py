@@ -36,7 +36,7 @@ M2_VDC: dict[str, float] = {
     "patagonia": 2600,   # recalibrado 16/06 (era 1900): backtest casas reais ~2969/m² (estava subestimado)
     "alphaville": 4600,  # add 16/06: Terras AlphaVille (condominio de luxo; casas alto/luxo)
     "universidade": 4900,# recalibrado 17/06 (era 3800): e regiao do Alphaville (luxo), subvalorizava -29% [n=21]
-    "sao_pedro": 3200,   # add 16/06
+    "sao_pedro": 4000,   # add 16/06
     "haras": 4500,       # add 16/06: Haras Camping Club (chacaras/luxo)
     "espirito_santo": 4500,  # add 17/06: backtest n=24 (Verana Reserva premium); subvalorizava -17%
     "jatoba": 3300,      # add 17/06: backtest n=20 (Conveima popular 240-270k)
