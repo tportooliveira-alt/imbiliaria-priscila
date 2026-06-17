@@ -73,3 +73,4 @@ data/
 *.sqlite3
 assets/imoveis/
 secret/
+backups/
