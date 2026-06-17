@@ -239,7 +239,10 @@ function enviarLead(){
    .then(r=>r.json()).then(d=>{
      document.getElementById('faixa').textContent=fmt(d.valor_minimo)+' a '+fmt(d.valor_maximo);
      document.getElementById('central').textContent='Valor central estimado: '+fmt(d.valor_central)+' · confiança '+(d.confianca||'média');
-     document.getElementById('aluguel').innerHTML = d.aluguel_estimado ? ('🏠 <b>Potencial de aluguel:</b> '+fmt(d.aluguel_estimado)+'/mês <span style="opacity:.7">(~'+d.aluguel_yield_pct+'% a.m.)</span>') : '';
+     document.getElementById('aluguel').innerHTML = d.aluguel_estimado ? (
+       '🏠 <b>Potencial de aluguel:</b> '+fmt(d.aluguel_estimado)+'/mês <span style="opacity:.7">(~'+(d.aluguel_yield_anual_pct||'')+'% a.a. bruto)</span>'
+       + (d.aluguel_liquido_estimado ? '<br><span style="opacity:.7;font-size:.92em">Líquido estimado ~'+fmt(d.aluguel_liquido_estimado)+'/mês (~'+d.aluguel_yield_liquido_anual_pct+'% a.a., após IPTU/condomínio/vacância)</span>' : '')
+     ) : '';
      document.getElementById('txt').textContent=d.texto||'';
      document.getElementById('capture').classList.remove('show');
      document.getElementById('result').classList.add('show');
