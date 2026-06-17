@@ -26,6 +26,9 @@ certa. Cresce com o tempo — adicione aqui o que for aprendendo sobre a marca.
 - **Meta Pixel** (já medindo no site): `27844979038460971` (público, não é segredo). GA4 ainda vazio.
 - **Postar:** Postiz (`docs/POSTIZ-SETUP.md`) — onde o login do Instagram/Facebook fica pra publicar.
 - **Keywords por imóvel:** `docs/ADS-KEYWORDS-POR-IMOVEL.md`.
+- **Google Ads** (setup + as confirmações que o Google exige): `docs/GOOGLE-ADS-SETUP.md`.
+- **Conectar Instagram/Facebook pra publicar:** Postiz roda no **PC** (é pesado pra VPS) —
+  prompt de instalação pro cowork em `docs/PROMPT-COWORK-POSTIZ.md`.
 
 ## 🔌 Como o cowork trabalha divulgação (fluxo)
 1. **Dados reais** → sempre do MCP (`panorama_geral`, `listar_imoveis`, `imovel_fotos`, `buscar_imovel`).
