@@ -1,0 +1,73 @@
+bairro|rua|tipo|area_m2|quartos|suites|vagas|padrao|acab|comercial|preco|data|fonte|titulo
+Espirito Santo|Av Laura Nunes|apartamento|119|3|2|2|alto|pronto|nao|420000|06/2026|OLX|Apt Av Laura Nunes 119m2
+Espirito Santo||casa|54|2|1|2|medio|pronto|nao|290000|06/2026|OLX|Casa 54m2 Espirito Santo
+Espirito Santo||casa|49|2|2|1|medio|pronto|nao|250000|05/2026|OLX|Casa cond fechado 49m2
+Espirito Santo|Cond Jardim Barcelona|casa|90|3|2|1|alto|pronto|nao|570000|03/2026|OLX|Casa Jardim Barcelona 90m2
+Espirito Santo|Urbis VI|casa|80|3|1|1|simples|pronto|nao|165000|03/2026|OLX|Casa Morada Real II 80m2
+Espirito Santo|Cond Verana Reserva Imperial|casa|181|3|4|4|alto|pronto|nao|950000|03/2026|OLX|Casa Verana Reserva 181m2
+Espirito Santo||casa|182|3|2|4|alto|pronto|nao|949900|03/2026|OLX|Casa Exclusiva 182m2
+Espirito Santo||casa|58|2|2|2|medio|pronto|nao|360000|02/2026|OLX|Casa Cond Servilha 58m2
+Espirito Santo|Cond Verana Reserva Imperial|casa|180|3|2|1|alto|pronto|nao|980000|02/2026|OLX|Casa Verana 180m2 3 suites
+Espirito Santo|Cond Verana Reserva Imperial|casa|160|3|4|1|alto|pronto|nao|850000|02/2026|OLX|Casa Verana 160m2
+Espirito Santo||casa|160|3|3|2|alto|pronto|nao|530000|01/2026|OLX|Casa 3/4 perto Sevilha 160m2
+Espirito Santo|Urbis VI|casa|75|3|4|2|simples|pronto|nao|275000|12/2025|OLX|Casa Urbis 6 75m2
+Espirito Santo||casa|75|3|2|2|alto|pronto|nao|460000|08/2025|OLX|Casa cond fechado 75m2
+Espirito Santo|Cond Esplanada do Parque|casa|135|3|2|3|alto|pronto|nao|790000|07/2025|OLX|Casa Esplanada do Parque 135m2
+Espirito Santo||casa|180|5|3|3|alto|pronto|nao|649000|07/2025|OLX|Casa Duplex 5/4 180m2
+Espirito Santo||casa|60|3|1|2|medio|pronto|nao|340000|03/2026|OLX|Casa 60m2 3 quartos
+Espirito Santo||casa|118|3|1|3|alto|pronto|nao|500000|03/2026|OLX|Duplex 118m2
+Espirito Santo||casa|186|3|3|2|alto|pronto|sim|578000|03/2026|OLX|Casa com ponto comercial 186m2
+Espirito Santo||casa|69|2|1|2|simples|pronto|nao|220000|03/2026|OLX|Casa 69m2 2 quartos
+Espirito Santo||casa|147|3|2|4|alto|pronto|nao|890000|03/2026|OLX|Casa 147m2 3 quartos
+Espirito Santo||casa|56|1|4|1|simples|pronto|nao|180000|06/2026|OLX|Casa Espirito Santo 56m2
+Espirito Santo|Urbis VI|casa|136|3|2|2|simples|pronto|nao|220000|06/2026|OLX|Casa Urbis VI 136m2
+Ibirapuera||casa|400|4|5|2|alto|pronto|nao|1100000|06/2026|OLX|Casa Ibirapuera 400m2
+Ibirapuera||casa|112|3|1|1|simples|pronto|nao|168000|05/2026|OLX|Casa 112m2 Ibirapuera
+Ibirapuera||casa|100|3|3|2|medio|pronto|nao|199000|05/2026|OLX|Casa/terreno 372m2 Ibirapuera
+Ibirapuera||casa|112|2|1|1|simples|pronto|nao|167138|05/2026|OLX|Casa Residencial 112m2
+Ibirapuera||apartamento|94|3|2|4|alto|pronto|nao|580000|03/2026|OLX|Apt 3/4 2 suites 94m2
+Ibirapuera||apartamento|94|3|2|4|alto|pronto|nao|690000|03/2026|OLX|Apt Boa Vista 94m2
+Ibirapuera||casa|180|3|3|2|alto|pronto|nao|680000|02/2026|OLX|Casa Ibirapuera 180m2
+Ibirapuera||casa|92|3|2|2|medio|pronto|nao|350000|01/2026|OLX|Duplex Ibirapuera 92m2
+Ibirapuera||casa|100|3|1|1|medio|pronto|nao|390000|11/2025|OLX|Casa 100m2 Ibirapuera
+Ibirapuera||casa|92|3|1|1|medio|pronto|nao|420000|11/2025|OLX|Casa 92m2 Ibirapuera
+Ibirapuera||casa|67|3|1|2|medio|pronto|nao|310000|11/2025|OLX|Duplex 67m2 Ibirapuera
+Ibirapuera||casa|340|4|5|5|alto|pronto|nao|1100000|08/2025|OLX|Casa 4q 340m2 Ibirapuera
+Ibirapuera||casa|100|3|2|2|alto|pronto|nao|450000|07/2025|OLX|Casa 100m2 Ibirapuera
+Ibirapuera||casa|313|5|2|5|alto|pronto|nao|1100000|05/2026|OLX|Casa 313m2 Ibirapuera
+Ibirapuera||comercial|269|1|1|0|alto|osso|nao|530000|08/2025|OLX|Predio investidores 269m2
+Ibirapuera||casa|190|4|5|2|alto|pronto|nao|700000|09/2025|OLX|Casa edicula 190m2
+Ibirapuera||casa|85|2|1|1|medio|pronto|nao|380000|09/2025|OLX|Casa 2 suites 85m2
+Ibirapuera||casa|250|4|4|2|alto|pronto|nao|490000|03/2026|OLX|Casa 250m2 4 quartos
+Ibirapuera||casa|300|3|4|1|alto|pronto|nao|600000|02/2026|OLX|Casa 300m2 3 quartos
+Jatoba|Cond Vivant|casa|211|4|2|2|luxo|pronto|nao|1419000|05/2026|OLX|Duplex Vivant 211m2
+Jatoba|Lot Conveima I|casa|65|3|1|2|simples|pronto|nao|270000|03/2026|OLX|Casa Comveima 1 65m2
+Jatoba|Lot Conveima I|casa|55|2|1|2|simples|pronto|nao|240000|03/2026|OLX|Casa Comveima 1 55m2
+Jatoba|Lot Conveima I|casa|60|3|2|2|simples|pronto|nao|250000|03/2026|OLX|Casa Comveima 60m2
+Jatoba||casa|55|3|1|3|simples|pronto|nao|240000|03/2026|OLX|Casa Vila do Marques 55m2
+Jatoba||casa|82|3|2|0|simples|pronto|nao|270000|12/2025|OLX|Casa Residencial 82m2
+Jatoba|Lot Conveima I|casa|70|2|1|2|simples|pronto|nao|250000|11/2025|OLX|Casa Conveima 70m2
+Jatoba||casa|300|2|3|0|alto|pronto|nao|749000|10/2025|OLX|Casa Luxo 300m2
+Jatoba||casa|125|3|3|4|alto|pronto|nao|549000|10/2025|OLX|Casa Espetacular Jatoba 125m2
+Jatoba|Lot Conveima I|casa|125|3|1|2|simples|pronto|nao|265000|10/2025|OLX|Casa Conveima 125m2
+Jatoba||casa|70|3|1|2|simples|pronto|nao|265000|09/2025|OLX|Casa Jatoba 70m2
+Jatoba|Lot Conveima I|casa|85|3|2|2|simples|pronto|nao|260000|08/2025|OLX|Casa Conveima I 85m2
+Guarani||casa|430|5|1|5|medio|pronto|nao|295000|06/2026|OLX|Sobrado 430m2 Guarani
+Guarani||casa|129|4|2|4|alto|pronto|nao|490000|10/2025|OLX|Casa Moderna 129m2
+Felicia|Cond Morada dos Passaros 2|casa|76|3|1|2|medio|pronto|nao|350000|04/2026|OLX|Casa Morada Passaros 2 76m2
+Felicia||apartamento|55|2|1|2|simples|pronto|nao|190000|04/2026|OLX|Apt cond Felicia 55m2
+Felicia||apartamento|94|3|2|2|medio|pronto|nao|320000|04/2026|OLX|Apt 50m do Shopping 94m2
+Felicia|Alameda dos Passaros|casa|125|3|2|3|alto|pronto|nao|490000|04/2026|OLX|Duplex Alameda dos Passaros 125m2
+Felicia|Cond Morada dos Passaros|casa|120|3|2|3|medio|pronto|nao|400000|04/2026|OLX|Casa Morada dos Passaros 120m2
+Felicia|Cond Morada dos Passaros|casa|200|3|2|2|medio|pronto|nao|350000|04/2026|OLX|Casa Morada dos Passaros 200m2
+Felicia||casa|90|3|1|1|medio|pronto|nao|390000|04/2026|OLX|Casa Duplex 90m2
+Felicia||casa|150|3|2|2|medio|osso|nao|450000|04/2026|OLX|Casa Duplex construcao 150m2
+Felicia||casa|120|3|1|3|medio|pronto|nao|390000|04/2026|OLX|Casa Duplex 120m2
+Felicia||casa|76|3|1|2|medio|pronto|nao|350000|04/2026|OLX|Casa 3 quartos 76m2
+Felicia|Cond Recanto dos Passaros|casa|60|3|1|1|medio|pronto|nao|290000|04/2026|OLX|Casa Recanto dos Passaros 60m2
+Felicia|Cond Parque Real|casa|80|3|2|2|medio|pronto|nao|279000|05/2026|OLX|Casa Parque Real 80m2
+Felicia|Cond Morada dos Passaros|casa|100|3|2|2|medio|pronto|nao|330000|05/2026|OLX|Casa Morada dos Passaros 100m2
+Felicia||casa|104|3|1|2|medio|pronto|nao|355000|05/2026|OLX|Duplex Felicia 104m2
+Felicia||casa|130|3|1|2|medio|pronto|nao|420000|04/2026|OLX|Casa Felicia 130m2
+Felicia||casa|200|3|2|3|alto|pronto|nao|680000|05/2026|OLX|Casa px Shopping 200m2
+Felicia||casa|160|3|1|3|alto|pronto|nao|790000|05/2026|OLX|Casa semi nova 160m2

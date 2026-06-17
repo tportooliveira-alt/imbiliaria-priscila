@@ -77,6 +77,55 @@
       "popular": ["Cond Parque Vitoria Sul", "VOG Fiori", "Cond MRV Vitoria", "Cond Plaza Morada dos Passaros"],
       "comercial": [],
       "obs": "Medio. Maria Luiza Quadros = topo (apt R$6.315/m2). Alameda dos Passaros duplex ~R$3.920/m2. MRV/Parque Vitoria Sul = aptos populares 145-235k. Morada dos Passaros = medio 270-400k."
+    },
+    "espirito_santo": {
+      "perfil": "medio",
+      "premium": ["Av Laura Nunes", "Cond Verana Reserva Imperial", "Cond Esplanada do Parque"],
+      "popular": ["Urbis VI", "Cond Morada Real II"],
+      "comercial": [],
+      "obs": "Verana Reserva Imperial = premium (R$4.722-5.444/m2, casas 850-980k). Av Laura Nunes apt R$3.529/m2. Urbis VI = menor patamar (165-275k)."
+    },
+    "ibirapuera": {
+      "perfil": "medio",
+      "premium": ["Av Feira de Santana", "Av Para"],
+      "popular": [],
+      "comercial": [],
+      "obs": "Av Feira de Santana apt ~R$4.500/m2 (melhor). Casas soltas 92-112m2 167-420k. Topo 340-400m2 R$1.1M."
+    },
+    "jatoba": {
+      "perfil": "popular_medio",
+      "premium": ["Cond Vivant"],
+      "popular": ["Lot Conveima I", "Lot Comveima I"],
+      "comercial": [],
+      "obs": "Vivant duplex R$6.725/m2 (topo). Conveima/Comveima I dominante: casas 55-125m2 240-270k (popular-medio)."
+    },
+    "guarani": {
+      "perfil": "medio",
+      "premium": [],
+      "popular": [],
+      "comercial": [],
+      "obs": "Volume baixo. Casa moderna 129m2 R$490k. Sobrado 430m2 R$295k (antigo)."
+    },
+    "jurema": {
+      "perfil": "popular_medio",
+      "premium": ["Av Juracy Magalhaes"],
+      "popular": ["Villa Serrana 3", "Cond Parque Real"],
+      "comercial": ["Av Juracy Magalhaes"],
+      "obs": "Av Juracy Magalhaes = corredor misto. Cond Vitoria Real aptos R$4.479-5.375/m2 (melhor). Villa Serrana popular 140-150k."
+    },
+    "patagonia": {
+      "perfil": "popular",
+      "premium": [],
+      "popular": ["Lot Conveima I", "Lot Cidade Modelo"],
+      "comercial": ["Prox Hospital Esau Matos"],
+      "obs": "Popular. Conveima I domina (220-265k). Triplex 621m2 R$1.5M = topo. Prox Esau Matos = pontos comerciais."
+    },
+    "lagoa_das_flores": {
+      "perfil": "rural_popular",
+      "premium": [],
+      "popular": ["Cond Alpha Park"],
+      "comercial": [],
+      "obs": "Rural/periferico, casas baratas 80-300k. Pouca liquidez."
     }
   }
 }

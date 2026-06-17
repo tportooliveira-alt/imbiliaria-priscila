@@ -1,0 +1,40 @@
+bairro|rua|tipo|area_m2|quartos|suites|vagas|padrao|acab|comercial|preco|data|fonte|titulo
+Jatoba|Lot Conveima I|casa|125|3|1|2|simples|pronto|nao|240000|05/2026|OLX|Casa Conveima 125m2
+Jatoba||casa|115|3|5|2|simples|pronto|nao|270000|04/2026|OLX|Casa 115m2 Jatoba
+Jatoba||casa|73|3|1|1|simples|pronto|nao|255000|03/2026|OLX|Casa 73m2 Jatoba
+Jatoba|Lot Conveima I|casa|75|3|3|2|simples|pronto|nao|240000|12/2025|OLX|Casa Conveima 75m2
+Jatoba|Lot Conveima I|casa|70|3|5|1|simples|pronto|nao|255000|09/2025|OLX|Casa Conveima 70m2
+Jatoba||casa|69|2|3|1|simples|pronto|nao|179000|06/2026|OLX|Casa Jardim Sudoeste 69m2
+Jatoba||casa|54|2|2|1|simples|pronto|nao|221245|06/2026|OLX|Casa cond fechado 54m2
+Jatoba||casa|65|3|2|1|simples|pronto|nao|237278|06/2026|OLX|Casa cond lazer 65m2
+Jurema||apartamento|40|2|1|1|medio|pronto|nao|250000|06/2026|OLX|Apt Jurema 40m2
+Jurema|Villa Serrana 3|casa|100|4|3|2|simples|pronto|nao|140000|05/2026|OLX|Casa Villa Serrana 3 100m2
+Jurema|Cond Vitoria Real|apartamento|48|2|1|1|medio|pronto|nao|215000|04/2026|OLX|Apt Vitoria Real 48m2
+Jurema||apartamento|40|2|1|1|simples|pronto|nao|215000|04/2026|OLX|Apt terreo planejados 40m2
+Jurema||apartamento|40|2|1|1|simples|pronto|nao|199000|02/2026|OLX|Apt 3 andar 40m2
+Jurema||apartamento|40|2|1|1|simples|pronto|nao|199000|12/2025|OLX|Apt 2 quartos 40m2
+Jurema|Av Juracy Magalhaes|apartamento|66|3|1|1|medio|pronto|nao|189900|10/2025|OLX|Apt Av Juracy Magalhaes 66m2
+Jurema||casa|230|5|4|2|alto|pronto|nao|360000|08/2025|OLX|Casa Jurema 230m2
+Jurema||apartamento|50|2|1|1|medio|pronto|nao|249900|06/2026|OLX|Apt mobiliado cond 50m2
+Jurema|Av Juracy Magalhaes|casa|100|3|1|2|medio|pronto|nao|270000|06/2026|OLX|Casa esquina Av Juracy 100m2
+Lagoa das Flores||casa|90|2|2|2|simples|pronto|nao|100000|06/2026|OLX|Casa Lagoa das Flores 90m2
+Lagoa das Flores||casa|50|2|1|0|simples|pronto|nao|80000|05/2026|OLX|Casa 50m2 Lagoa das Flores
+Lagoa das Flores||casa|70|2|1|2|simples|pronto|nao|190000|05/2026|OLX|Casa parcelada 70m2
+Patagonia|Lot Conveima I|casa|68|3|1|2|simples|pronto|nao|249900|06/2026|OLX|Casa Conveima1 68m2
+Patagonia||casa|225|5|3|5|medio|pronto|nao|313000|05/2026|OLX|5 Casas em um terreno 225m2
+Patagonia||casa|50|2|1|1|simples|pronto|nao|100000|05/2026|OLX|Casa a venda 50m2
+Patagonia||casa|621|5|5|5|luxo|pronto|nao|1499900|05/2026|OLX|Triplex Patagonia 621m2
+Patagonia|Prox Hospital Esau Matos|casa|240|2|3|2|medio|pronto|nao|300000|05/2026|OLX|Sobrado prox Esau Matos 240m2
+Patagonia|Lot Conveima I|casa|80|3|1|2|simples|pronto|nao|220000|05/2026|OLX|Casa Conveima 80m2
+Patagonia|Lot Cidade Modelo|casa|110|3|3|1|medio|pronto|nao|340000|04/2026|OLX|Casa Cidade Modelo 110m2
+Patagonia|Prox Hospital Esau Matos|casa|130|3|2|2|medio|pronto|sim|290000|04/2026|OLX|Casa exploracao comercial 130m2
+Patagonia||casa|230|3|2|3|medio|pronto|sim|410000|03/2026|OLX|Sobrado 2 pontos comerciais 230m2
+Patagonia||apartamento|72|2|1|2|simples|pronto|nao|179000|03/2026|OLX|Apt prox rodoviaria 72m2
+Patagonia|Lot Conveima I|casa|125|3|1|2|simples|pronto|nao|250000|02/2026|OLX|Casa Conveima 125m2
+Patagonia||casa|125|2|1|2|simples|pronto|nao|225000|12/2025|OLX|Casa Patagonia 125m2
+Patagonia||casa|58|2|1|2|simples|pronto|nao|245000|11/2025|OLX|Casa Patagonia 58m2
+Patagonia|Lot Conveima I|casa|75|3|1|2|simples|osso|nao|265000|08/2025|OLX|Casa Conveima 75m2 construcao
+Patagonia|Lot Conveima I|casa|75|3|1|2|simples|pronto|nao|240000|06/2026|OLX|Casa Comveima 1 75m2
+Patagonia|Lot Conveima I|casa|78|3|2|2|simples|pronto|nao|252000|06/2026|OLX|Casa Conveima 78m2
+Primavera|Cond Vivendas da Serra|casa|150|3|1|2|medio|pronto|nao|350000|06/2026|OLX|Casa Vivendas da Serra 150m2
+Primavera|Cond Vivendas do Bosque|casa|68|2|2|1|simples|pronto|nao|230000|06/2026|OLX|Casa Vivendas do Bosque 68m2

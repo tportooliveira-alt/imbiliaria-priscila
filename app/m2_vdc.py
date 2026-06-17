@@ -38,6 +38,10 @@ M2_VDC: dict[str, float] = {
     "universidade": 4900,# recalibrado 17/06 (era 3800): e regiao do Alphaville (luxo), subvalorizava -29% [n=21]
     "sao_pedro": 3200,   # add 16/06
     "haras": 4500,       # add 16/06: Haras Camping Club (chacaras/luxo)
+    "espirito_santo": 4500,  # add 17/06: backtest n=24 (Verana Reserva premium); subvalorizava -17%
+    "jatoba": 3300,      # add 17/06: backtest n=20 (Conveima popular 240-270k)
+    "jurema": 4000,      # add 17/06: backtest n=10 (Vitoria Real)
+    "lagoa_das_flores": 1800,# add 17/06: rural barato (80-190k)
     "outro": 3800,       # fallback
 }
 
