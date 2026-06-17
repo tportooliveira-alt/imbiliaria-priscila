@@ -200,11 +200,13 @@ def _sem_markdown(t: str) -> str:
 
 
 def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem: bool = False,
-              nome_cliente: str | None = None) -> dict:
-    """Pipeline completo: classifica → cascata Gemini → Claude → fallback."""
+              nome_cliente: str | None = None, memoria_lead: str | None = None) -> dict:
+    """Pipeline completo: classifica → cascata Gemini → Claude → fallback.
+    memoria_lead: ficha viva do cliente (o que a Ana já sabe dele de conversas anteriores)."""
     cls = classificar(mensagem, tem_imagem=tem_imagem)
     lead = qualify_lead(mensagem, history=historico)
-    _partes = [p for p in (_contexto_momento(nome_cliente), _montar_contexto_carteira(), _ler_dados_financeiros()) if p]
+    _partes = [p for p in (memoria_lead, _contexto_momento(nome_cliente),
+                           _montar_contexto_carteira(), _ler_dados_financeiros()) if p]
     contexto = "\n\n".join(_partes)
     system = system_prompt(cls.rota, contexto=contexto or None)
 

@@ -868,8 +868,14 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
         resposta = {"modelo": "regra-audio", "rota": "audio"}
     else:
         try:
+            try:
+                from app import memoria_lead as _mem
+                _ficha = _mem.ficha_viva(lead_id)
+            except Exception:
+                _ficha = ""
             resposta = dispatcher.responder(
-                str(texto), historico=historico[-5:] or None, nome_cliente=_nome
+                str(texto), historico=historico[-5:] or None, nome_cliente=_nome,
+                memoria_lead=_ficha or None,
             )
             texto_ia = (resposta.get("resposta") or "").strip()
         except Exception as exc:  # IA indisponivel nao pode quebrar webhook
