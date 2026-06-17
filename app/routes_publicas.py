@@ -570,6 +570,18 @@ def agendar_visita(payload: AgendarVisitaRequest) -> dict:
     if payload.bairro:
         leads_repo.adicionar_tag(lead_id, f"bairro:{payload.bairro.lower()}")
 
+    # Cria o evento na AGENDA interna (aparece no painel da corretora). Nao quebra a marcacao se falhar.
+    try:
+        from app import agenda as _agenda
+        _hora = {"manha": 9, "tarde": 14, "noite": 19}.get(payload.turno, 9)
+        _ini = f"{payload.data_preferida}T{_hora:02d}:00:00-03:00"  # fuso Brasilia
+        _fim = f"{payload.data_preferida}T{_hora + 1:02d}:00:00-03:00"
+        _tit = f"Visita - {payload.nome}" + (f" ({payload.bairro})" if payload.bairro else "")
+        _obs = f"Marcou pelo site. {descricao}." + (f" Obs: {payload.observacoes}" if payload.observacoes else "")
+        _agenda.criar(titulo=_tit, inicio=_ini, fim=_fim, tipo="visita", lead_id=lead_id, observacoes=_obs)
+    except Exception:
+        _log.exception("agendar-visita: lead %s criado mas falhou ao criar evento na agenda", lead_id)
+
     registrar_evento_funil(
         "visita.agendada",
         origem="site",
