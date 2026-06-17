@@ -42,11 +42,18 @@ def _mapa() -> dict:
 
 
 def _casa_em(alvo: str, lista) -> bool:
+    """Casa a rua com a lista. Nome curto (ex.: 'Rua H' -> 'h') so casa por igualdade
+    EXATA — substring de 1-2 letras dava falso-positivo (ex.: 'h' dentro de 'pinheiros')."""
     if not alvo:
         return False
     for via in lista or []:
         v = _norm(via)
-        if v and len(v) >= 3 and (v in alvo or alvo in v):
+        if not v:
+            continue
+        if v == alvo:
+            return True
+        # substring so com nomes longos dos dois lados (evita match espurio de 1-2 letras)
+        if len(alvo) >= 4 and len(v) >= 4 and (v in alvo or alvo in v):
             return True
     return False
 
