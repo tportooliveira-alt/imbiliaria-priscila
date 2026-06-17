@@ -23,6 +23,9 @@ LOGIN_JANELA_MIN = 15       # janela em minutos
 def _secret() -> str:
     s = os.getenv("JWT_SECRET")
     if not s:
+        # Em producao, JWT_SECRET e OBRIGATORIO (falha rapido em vez de gerar um fragil).
+        if os.getenv("ENV") == "production":
+            raise RuntimeError("JWT_SECRET e obrigatorio em producao (defina no .env)")
         # fallback de DEV: gera e seta no processo (some quando reinicia)
         s = secrets.token_urlsafe(64)
         os.environ["JWT_SECRET"] = s

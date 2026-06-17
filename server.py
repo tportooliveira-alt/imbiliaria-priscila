@@ -61,6 +61,8 @@ class HeadersDeSeguranca(BaseHTTPMiddleware):
         resp = await call_next(request)
         resp.headers.setdefault("X-Content-Type-Options", "nosniff")
         resp.headers.setdefault("X-Frame-Options", "DENY")
+        # HSTS: forca HTTPS por 1 ano (site servido via nginx TLS).
+        resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
         resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         resp.headers.setdefault(
             "Permissions-Policy", "camera=(), microphone=(), geolocation=()"
@@ -159,11 +161,8 @@ class LeadAnalysisResponse(BaseModel):
 # ─────────────────────────────────────────────────────────────────────────────
 @app.get("/api/health")
 def health() -> dict:
-    return {
-        "status": "ok",
-        "google_api_key": bool(os.getenv("GOOGLE_API_KEY")),
-        "anthropic_api_key": bool(os.getenv("ANTHROPIC_API_KEY")),
-    }
+    # Publico = so liveness. Diagnostico (chaves/contagens) fica no /api/admin/health protegido.
+    return {"status": "ok"}
 
 
 @app.get("/robots.txt", include_in_schema=False)
