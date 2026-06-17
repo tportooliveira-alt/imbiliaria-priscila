@@ -26,6 +26,11 @@ aditiva, reversível, confirmar antes de mexer no comportamento da Ana**. (memó
 6. **Regra "contato já conhecido não é lead frio"** — pelo histórico OU pelo que a pessoa diz
    (ex.: "o contrato"), Ana retoma de onde parou e leva pra Priscila, sem rodar script de novato.
    (motivada pelo caso real da Karen.)
+7. **👁️ Ana ENXERGA imagem (visão multimodal)** — webhook baixa a mídia
+   (`whatsapp.baixar_midia_base64`, Evolution getBase64) e `visao.analisar_para_atendimento`
+   (Claude Haiku) descreve no contexto de lead (simulação Caixa, anúncio, foto, documento), sem
+   inventar. Event-driven/barato, fallback total. **Resolveu a maior perda real** (Jorge/Ane
+   esfriavam com "[mídia recebida]"). Testado em foto real. Doc: `DEGRAU-ANA-VISAO.md`.
 
 ## 🔒 Segurança endurecida (tarde 17/06)
 Avaliação de risco completa + correções (tudo sem derrubar o site):
@@ -57,7 +62,8 @@ Dados de teste sempre limpos depois (não sujar produção).
   consertar; só então mexo.
 
 ## 🅿️ Parado de propósito (só com tempo + rodadas reais)
-- **Visão multimodal da Ana** → `DEGRAU-ANA-VISAO.md` (usa a chave Claude que já está no `.env`).
+- ~~Visão multimodal da Ana~~ → **FEITO 17/06** (ver item 7 acima). Próximo: observar conversas
+  reais com imagem e calibrar o prompt da visão se preciso.
 - **Memória Degrau 2 (conhecer a fundo)** → `DEGRAU-ANA-MEMORIA-2.md` (destila retrato por IA,
   event-driven; custo recorrente → só depois de validar).
 - **`panorama_geral` no MCP** (dashboard num retorno só) — próximo do cowork.
