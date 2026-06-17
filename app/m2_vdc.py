@@ -19,8 +19,8 @@ FaixaIdade = Literal["novo", "0_10", "10_20", "20_mais"]
 # Sao referencia de mercado (ask price) — a avaliacao final/de fechamento e da Priscila.
 M2_VDC: dict[str, float] = {
     "recreio": 5000,     # recalibrado 16/06 (era 6060): backtest 11 anuncios reais, mediana apto ~4630/m² [estava ancorado no topo]
-    "candeias": 5000,    # [n=43] bairro nobre Zona Leste
-    "boa_vista": 4710,   # [n=33]
+    "candeias": 5000,    # nobre Zona Leste — confirmado no backtest de 792 anuncios reais (17/06)
+    "boa_vista": 4710,   # confirmado no backtest de 792 anuncios reais (17/06)
     "alto_maron": 4400,  # [n=11] (estava subestimado antes)
     "centro": 4330,      # [n=11]
     "brasil": 3200,      # recalibrado 17/06 (era 4270): backtest n=10 supervalorizava +28% (real ~3016)
@@ -128,7 +128,8 @@ FATOR_PONTO_COMERCIAL = 1.12
 
 
 # Multiplicador de CASA por bairro (relacao casa/apto NAO e constante: 0,62 a 1,29).
-# casaMult = mediana casa R$/m² ÷ base apto do bairro (OLX jun/2026, 812 anuncios).
+# casaMult = mediana casa R$/m² ÷ base apto do bairro. Recalibrado 16-17/06 com 792 anuncios reais
+# (ver docs/CALIBRACAO-AVM-16-06.md e docs/PESQUISA-PRECOS-VDC.md).
 M2_CASA_MULT: dict[str, float] = {
     "boa_vista": 1.15,   # recalibrado 16/06 (era 1.286): backtest n=17 casas reais ~6500/m² (1.286 estourava)
     "felicia": 0.88,     # recalibrado 16/06 (era 1.051): backtest casa real ~3016 < apto ~3839
