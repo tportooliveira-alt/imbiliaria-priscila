@@ -141,6 +141,58 @@ def listar_depoimentos(incluir_inativos: bool = False) -> list:
     return _j(depoimentos_repo.listar(somente_ativos=not incluir_inativos))
 
 
+@mcp.tool
+def panorama_geral() -> dict:
+    """RAIO-X CENTRALIZADO da imobiliaria numa chamada so: leads (com os QUENTES), agenda de HOJE +
+    proximos, financeiro do mes e pendencias. Use pra ter todo o contexto de uma vez."""
+    import datetime as _dt
+    hoje = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=-3))).strftime("%Y-%m-%d")
+    pan: dict = {"data": hoje}
+    try:
+        d = leads_repo.dashboard()
+        quentes = _j(leads_repo.listar(temperatura="quente", limit=20))
+        pan["leads"] = {
+            "total": d.get("total_leads"),
+            "por_temperatura": d.get("por_temperatura"),
+            "novos_7d": d.get("novos_7d"),
+            "imoveis_ativos": d.get("imoveis_ativos"),
+            "quentes": [
+                {"id": q.get("id"), "nome": q.get("nome"), "telefone": q.get("telefone"),
+                 "estagio": q.get("estagio")}
+                for q in quentes if q.get("estagio") != "teste"
+            ],
+        }
+    except Exception as e:
+        pan["leads"] = {"erro": str(e)}
+    try:
+        ag = _j(agenda_repo.listar(status="agendado"))
+        pan["agenda"] = {
+            "hoje": [
+                {"hora": str(a.get("inicio", ""))[11:16], "titulo": a.get("titulo"), "tipo": a.get("tipo")}
+                for a in ag if str(a.get("inicio", "")).startswith(hoje)
+            ],
+            "proximos": [
+                {"quando": str(a.get("inicio", ""))[:16], "titulo": a.get("titulo")}
+                for a in ag if str(a.get("inicio", "")) > hoje
+            ][:10],
+        }
+    except Exception as e:
+        pan["agenda"] = {"erro": str(e)}
+    try:
+        f = financeiro_repo.dashboard()
+        pan["financeiro"] = {
+            "periodo": f.get("periodo"), "comissoes": f.get("comissoes"),
+            "contas": f.get("contas"), "pipeline": f.get("pipeline"),
+        }
+    except Exception as e:
+        pan["financeiro"] = {"erro": str(e)}
+    try:
+        pan["pendencias"] = {"lembretes_proximas_24h": len(_j(agenda_repo.lembretes_a_enviar(janela_horas=24)))}
+    except Exception as e:
+        pan["pendencias"] = {"erro": str(e)}
+    return pan
+
+
 # ═══════════════ ESCRITA / CORREÇÃO (só com MCP_WRITE_ENABLED=1) ═══════════════
 if WRITE:
     # ── Agenda ──
