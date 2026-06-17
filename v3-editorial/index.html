@@ -601,6 +601,7 @@ fetch('/api/depoimentos').then(function(r){return r.json()}).then(function(d){
       <div class="foot-links">
         <a href="https://wa.me/5577999395511" target="_blank">WhatsApp</a>
         <a href="#imoveis">Imóveis</a><a href="#ana">A Ana</a><a href="#sobre">Sobre</a>
+        <a href="/admin/" style="opacity:.55">Painel da corretora</a>
       </div>
     </div>
     <div class="copy">© Priscila Vasconcelos · Corretora de Imóveis · CRECI/BA 29.231 · Vitória da Conquista, BA</div>
@@ -847,6 +848,6 @@ function simular(){
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 </script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=88658471").catch(function(){});});}</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js?v=b7e195a7").catch(function(){});});}</script>
 </body>
 </html>
