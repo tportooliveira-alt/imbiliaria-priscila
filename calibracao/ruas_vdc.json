@@ -126,6 +126,20 @@
       "popular": ["Cond Alpha Park"],
       "comercial": [],
       "obs": "Rural/periferico, casas baratas 80-300k. Pouca liquidez."
+    },
+    "recreio": {
+      "perfil": "nobre",
+      "premium": ["Av Jonas Hortelio", "Rua Siqueira Campos", "Rua Anita Garibaldi", "Portal das Arvores", "Cond Maison Bordeaux", "Cond Central Park"],
+      "popular": ["Rua Cidade Maravilhosa"],
+      "comercial": ["Av Jonas Hortelio"],
+      "obs": "Nobre. Portal das Arvores apt R$9.354/m2 (topo da cidade), Maison Bordeaux R$11k/m2. Av Jonas Hortelio nobre/comercial (casa R$5.632/m2). Anita Garibaldi aptos R$4.444-7.593/m2. Cidade Maravilhosa popular 220k."
+    },
+    "primavera": {
+      "perfil": "medio_alto",
+      "premium": ["Cond Horto Premier", "Cond Duque Du Lest"],
+      "popular": ["VOG Fiori", "Cond Vivendas do Bosque", "Cond Parque Belvedere", "Lot Barao Uchoa"],
+      "comercial": [],
+      "obs": "Horto Premier = premium (casas R$5.523-6.000/m2, 750-975k). Duque Du Lest R$5.070/m2. VOG Fiori aptos R$3.333/m2 (popular). Conde III 290-420k."
     }
   }
 }
