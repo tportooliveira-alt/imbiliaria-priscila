@@ -16,6 +16,9 @@ Ao abrir este projeto, JÁ tenha o contexto, sem o usuário pedir:
 3. Pra achar o `.md` certo de cada tema, use a skill **`contexto-imobiliaria`** (mapa dos docs).
 4. **PRODUÇÃO REAL:** tem cliente de verdade falando com a Ana. Mudança de comportamento da Ana /
    atendimento / dados → conservador, aditivo, **confirmar antes**. Todo restart vai pro ar.
+5. **Divulgação / marketing / design / carrossel:** leia **`docs/CENTRO-MARCA-MARKETING.md`** — quem é a
+   Priscila, a marca (cores/fontes), o que já existe (carrosséis, Instagram, Meta Pixel) e como gerar
+   conteúdo (dados reais do MCP, nunca inventar, identidade visual fixa).
 
 ## 🧰 Ferramentas e plugins disponíveis — USAR o que for preciso (não fazer na mão)
 - **🔌 Conector MCP "Imobiliária Priscila"** (servidor MCP da VPS, `docs/MCP-SERVER.md`) — **30 ferramentas**, é a
