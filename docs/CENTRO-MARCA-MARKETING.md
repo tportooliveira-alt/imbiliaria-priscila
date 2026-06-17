@@ -36,8 +36,10 @@ certa. Cresce com o tempo — adicione aqui o que for aprendendo sobre a marca.
    `[PREENCHER]` — a Priscila/Thiago completam. Sem dado real, NÃO publica o slide.
 4. Legenda termina com CTA + "salva/compartilha" + hashtags. Sempre assina com CRECI/BA 29.231.
 
+## 📱 Redes
+- **Instagram:** **@priscilavasconcelosvca** — https://instagram.com/priscilavasconcelosvca
+
 ## ⚠️ Pendências de marca (Thiago preenche)
-- **@ do Instagram da Priscila:** `[PREENCHER]` — colocar o handle real aqui.
 - **GA4 ID:** vazio — quando o Thiago pegar, ligar (igual o Pixel).
 - **Depoimentos reais** (≥3-5): `docs/PEDIR-DEPOIMENTOS.md`.
 
