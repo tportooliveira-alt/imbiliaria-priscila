@@ -27,6 +27,28 @@ aditiva, reversível, confirmar antes de mexer no comportamento da Ana**. (memó
    (ex.: "o contrato"), Ana retoma de onde parou e leva pra Priscila, sem rodar script de novato.
    (motivada pelo caso real da Karen.)
 
+## 🔒 Segurança endurecida (tarde 17/06)
+Avaliação de risco completa + correções (tudo sem derrubar o site):
+1. **MCP de escrita trancado** — Basic Auth no nginx (user `cowork` + senha). Antes era só a
+   URL-segredo. `MCP_WRITE_ENABLED=1` agora exige login. Htpasswd em `/etc/nginx/.htpasswd-mcp`.
+   → o cowork precisa da URL com credencial: `https://cowork:<senha>@.../mcp-bLFsLPlqXg...`
+2. **Backup diário do banco** — `scripts/backup_db.py` (sqlite .backup + rotação 14 dias) via
+   `/etc/cron.d/imobiliaria-backup` (03:30, roda como priscila). Pasta `backups/` (gitignored).
+3. **SSH endurecido** — `PasswordAuthentication no` + `PermitRootLogin prohibit-password` no
+   `/etc/ssh/sshd_config` (o `Include` da .d NÃO existe nesse host — editar o arquivo principal).
+   Seguro: root+ubuntu têm chave SSH (conferido antes).
+4. **Conta `priscila` fora do grupo `sudo`** (era inerte; defesa em profundidade).
+- **NÃO feito de propósito:** rotacionar a chave do Google (Thiago vetou — Google não libera outra
+  fácil, limite de projeto estourado). Ficamos com a chave atual. Ana autônoma (`WHATSAPP_AUTO_REPLY=1`)
+  mantida — desligar pararia o produto; decisão de um "modo rascunho" fica pro futuro.
+
+## ✅ QA do site (testado ao vivo, 17/06)
+Tudo verde: 9 páginas (precisam de `.html` na URL: `/imovel.html?slug=`, `/agendar-visita.html`…) →
+200; 5 APIs de leitura → 200; calculadora (`/api/avaliar-imovel`, campo **`area_util`**, resposta tem
+`valor_minimo/valor_maximo`) → ok; **marcar horário ponta a ponta** (lead → agenda interna → Google
+Agenda) → ok; Pixel Meta (`27844979038460971`) ligado no front via `assets/analytics.js` + `/api/config`.
+Dados de teste sempre limpos depois (não sujar produção).
+
 ## 🩺 Raio-x das conversas reais (só observação)
 - **Maior perda: Ana não enxerga imagem** (Jorge e Ane esfriaram por isso). → `DEGRAU-ANA-VISAO.md`.
 - Ana demorou a entender intenção da Kenia (vender, não comprar).
