@@ -25,17 +25,17 @@ M2_VDC: dict[str, float] = {
     "centro": 4330,      # [n=11]
     "brasil": 4270,      # [n=6] amostra menor
     "ibirapuera": 2800,  # recalibrado 16/06 (era 4300): backtest 9 anuncios reais, mediana apto ~2870 / casa ~2530
-    "felicia": 3400,     # recalibrado 16/06 (era 3700): backtest mediana apto ~3535 / casa ~3175
-    "primavera": 3700,   # sem amostra OLX — mantido
+    "felicia": 3800,     # recalibrado 17/06 (era 3400, baixei demais): backtest n=22 subvalorizava -21%
+    "primavera": 4300,   # recalibrado 17/06 (era 3700): backtest n=21 subvalorizava -17% (Horto Premier/Conde puxam)
     "guarani": 3700,     # sem amostra OLX — mantido
     "panorama": 3400,    # mantido
     "urbis": 3000,       # mantido
-    "zabele": 2900,      # mantido
+    "zabele": 3300,      # recalibrado 17/06 (era 2900): backtest n=11 subvalorizava -19%
     "bateias": 2800,     # mantido
     "vila_serrana": 1600,# [amostra pequena]
     "patagonia": 2600,   # recalibrado 16/06 (era 1900): backtest casas reais ~2969/m² (estava subestimado)
     "alphaville": 4600,  # add 16/06: Terras AlphaVille (condominio de luxo; casas alto/luxo)
-    "universidade": 3800,# add 16/06
+    "universidade": 4900,# recalibrado 17/06 (era 3800): e regiao do Alphaville (luxo), subvalorizava -29% [n=21]
     "sao_pedro": 3200,   # add 16/06
     "haras": 4500,       # add 16/06: Haras Camping Club (chacaras/luxo)
     "outro": 3800,       # fallback
