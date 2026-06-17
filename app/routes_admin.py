@@ -22,10 +22,22 @@ class LoginRequest(BaseModel):
 
 
 class LoginResponse(BaseModel):
-    token: str
-    email: str
-    role: str
-    expires_in_hours: int
+    token: str | None = None
+    email: str | None = None
+    role: str | None = None
+    expires_in_hours: int | None = None
+    need_2fa: bool = False  # True quando falta o codigo por e-mail (1o login/aparelho novo)
+
+
+class Verify2FARequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=200)
+    codigo: str = Field(..., min_length=4, max_length=8)
+
+
+class PasskeyFimRequest(BaseModel):
+    credential: dict
+    email: str | None = None
+    apelido: str | None = None
 
 
 class ImovelPayload(BaseModel):
@@ -182,11 +194,91 @@ def login(payload: LoginRequest, request: Request) -> LoginResponse:
     if not user:
         raise HTTPException(status_code=401, detail="email ou senha invalidos")
 
+    # 2FA por e-mail (so se LIGADO + envio configurado): manda o codigo e ainda NAO da o token.
+    if auth.dois_fatores_ativo():
+        try:
+            from app import email_util
+            codigo = auth.gerar_codigo_2fa(user["email"])
+            email_util.enviar_email(
+                user["email"],
+                "Seu codigo de acesso - Painel Priscila Vasconcelos",
+                f"Seu codigo de acesso ao painel e: {codigo}\n\nVale por 10 minutos. "
+                "Se nao foi voce, ignore este e-mail.",
+            )
+        except Exception:
+            pass
+        return LoginResponse(need_2fa=True, email=user["email"])
+
     token = auth.gerar_token(user["id"], user["email"], user["role"])
     return LoginResponse(
-        token=token,
-        email=user["email"],
-        role=user["role"],
+        token=token, email=user["email"], role=user["role"],
+        expires_in_hours=auth.JWT_TTL_HOURS,
+    )
+
+
+@router.post("/api/auth/verify-2fa", response_model=LoginResponse)
+def verify_2fa(payload: Verify2FARequest, request: Request) -> LoginResponse:
+    """Confere o codigo enviado por e-mail e libera o token (1o login / aparelho novo)."""
+    ip = _ip_de(request)
+    if auth.excedeu_limite(ip):
+        raise HTTPException(status_code=429, detail="muitas tentativas, aguarde 15 minutos")
+    auth.registrar_tentativa(ip)
+    if not auth.validar_codigo_2fa(payload.email, payload.codigo):
+        raise HTTPException(status_code=401, detail="codigo invalido ou expirado")
+    user = auth.buscar_usuario_por_email(payload.email)
+    if not user:
+        raise HTTPException(status_code=401, detail="usuario nao encontrado")
+    token = auth.gerar_token(user["id"], user["email"], user["role"])
+    return LoginResponse(
+        token=token, email=user["email"], role=user["role"],
+        expires_in_hours=auth.JWT_TTL_HOURS,
+    )
+
+
+# ─── BIOMETRIA (passkey / digital / rosto) ───────────────────────────────────
+@router.get("/api/auth/passkey/disponivel")
+def passkey_disponivel(email: str) -> dict:
+    """O navegador pergunta: esse e-mail ja tem biometria cadastrada? (mostra o botao)."""
+    from app import passkey
+    return {"tem_passkey": passkey.tem_passkey(email)}
+
+
+@router.post("/api/auth/passkey/registrar/inicio")
+def passkey_registrar_inicio(user: dict = Depends(usuario_atual)) -> dict:
+    """Opcoes pra cadastrar a biometria DESTE aparelho (precisa estar logado)."""
+    import json as _json
+    from app import passkey
+    return _json.loads(passkey.registro_inicio(user["id"], user["email"]))
+
+
+@router.post("/api/auth/passkey/registrar/fim")
+def passkey_registrar_fim(payload: PasskeyFimRequest, user: dict = Depends(usuario_atual)) -> dict:
+    from app import passkey
+    ok = passkey.registro_fim(user["id"], payload.credential, apelido=payload.apelido or "")
+    if not ok:
+        raise HTTPException(status_code=400, detail="nao foi possivel cadastrar a biometria")
+    return {"ok": True}
+
+
+@router.post("/api/auth/passkey/login/inicio")
+def passkey_login_inicio(payload: dict | None = None) -> dict:
+    """Opcoes pro navegador pedir a biometria (login)."""
+    import json as _json
+    from app import passkey
+    email = (payload or {}).get("email")
+    return _json.loads(passkey.login_inicio(email))
+
+
+@router.post("/api/auth/passkey/login/fim", response_model=LoginResponse)
+def passkey_login_fim(payload: PasskeyFimRequest, request: Request) -> LoginResponse:
+    """Confere a biometria e libera o token."""
+    from app import passkey
+    user = passkey.login_fim(payload.credential, email=payload.email)
+    if not user:
+        raise HTTPException(status_code=401, detail="biometria nao reconhecida")
+    token = auth.gerar_token(user["id"], user["email"], user["role"])
+    return LoginResponse(
+        token=token, email=user["email"], role=user["role"],
         expires_in_hours=auth.JWT_TTL_HOURS,
     )
 

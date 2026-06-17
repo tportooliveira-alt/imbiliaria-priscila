@@ -30,42 +30,145 @@ async function api(path, opts = {}) {
   return data;
 }
 
+// ── Biometria (passkey / digital / rosto via WebAuthn) ──────────────────────
+function _b64urlToBuf(s) {
+  s = String(s).replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  const bin = atob(s); const u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return u.buffer;
+}
+function _bufToB64url(buf) {
+  const u = new Uint8Array(buf); let bin = "";
+  for (let i = 0; i < u.length; i++) bin += String.fromCharCode(u[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+async function _postAuth(path, body, token) {
+  const headers = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const r = await fetch(path, { method: "POST", headers, body: JSON.stringify(body || {}) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.detail || `Erro ${r.status}`);
+  return data;
+}
+function biometriaSuportada() {
+  return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.get);
+}
+async function biometriaTemCadastro(email) {
+  try {
+    const r = await fetch("/api/auth/passkey/disponivel?email=" + encodeURIComponent(email));
+    const d = await r.json(); return !!d.tem_passkey;
+  } catch (e) { return false; }
+}
+async function biometriaLogin(email) {
+  const opts = await _postAuth("/api/auth/passkey/login/inicio", { email: email || null });
+  opts.challenge = _b64urlToBuf(opts.challenge);
+  (opts.allowCredentials || []).forEach(c => { c.id = _b64urlToBuf(c.id); });
+  const cred = await navigator.credentials.get({ publicKey: opts });
+  return _postAuth("/api/auth/passkey/login/fim", {
+    email: email || null,
+    credential: {
+      id: cred.id, rawId: _bufToB64url(cred.rawId), type: cred.type,
+      response: {
+        clientDataJSON: _bufToB64url(cred.response.clientDataJSON),
+        authenticatorData: _bufToB64url(cred.response.authenticatorData),
+        signature: _bufToB64url(cred.response.signature),
+        userHandle: cred.response.userHandle ? _bufToB64url(cred.response.userHandle) : null,
+      },
+    },
+  });
+}
+async function biometriaCadastrar(token) {
+  const opts = await _postAuth("/api/auth/passkey/registrar/inicio", {}, token);
+  opts.challenge = _b64urlToBuf(opts.challenge);
+  opts.user.id = _b64urlToBuf(opts.user.id);
+  (opts.excludeCredentials || []).forEach(c => { c.id = _b64urlToBuf(c.id); });
+  const cred = await navigator.credentials.create({ publicKey: opts });
+  return _postAuth("/api/auth/passkey/registrar/fim", {
+    apelido: (navigator.platform || "aparelho"),
+    credential: {
+      id: cred.id, rawId: _bufToB64url(cred.rawId), type: cred.type,
+      response: {
+        clientDataJSON: _bufToB64url(cred.response.clientDataJSON),
+        attestationObject: _bufToB64url(cred.response.attestationObject),
+      },
+    },
+  }, token);
+}
+
 function Login({ onLogin }) {
   const [email, setEmail] = React.useState("");
   const [senha, setSenha] = React.useState("");
   const [erro, setErro] = React.useState("");
   const [carregando, setCarregando] = React.useState(false);
+  const [etapa, setEtapa] = React.useState("login"); // login | codigo
 
-  async function submit(e) {
+  function entrar(r) { setToken(r.token); onLogin({ email: r.email, role: r.role }); }
+
+  async function submitSenha(e) {
     e.preventDefault();
     setErro(""); setCarregando(true);
     try {
-      const r = await api("/api/auth/login", { method: "POST", body: { email, senha } });
-      setToken(r.token);
-      onLogin({ email: r.email, role: r.role });
-    } catch (err) {
-      setErro(err.message);
-    } finally { setCarregando(false); }
+      const r = await _postAuth("/api/auth/login", { email, senha });
+      if (r.need_2fa) setEtapa("codigo");
+      else entrar(r);
+    } catch (err) { setErro(err.message); }
+    finally { setCarregando(false); }
+  }
+
+  async function submitCodigo(e) {
+    e.preventDefault();
+    setErro(""); setCarregando(true);
+    try { entrar(await _postAuth("/api/auth/verify-2fa", { email, codigo: senha })); }
+    catch (err) { setErro(err.message); }
+    finally { setCarregando(false); }
+  }
+
+  async function entrarBio() {
+    setErro(""); setCarregando(true);
+    try { entrar(await biometriaLogin(email || null)); }
+    catch (err) { setErro("Biometria: " + (err.message || "nao reconhecida")); }
+    finally { setCarregando(false); }
   }
 
   return (
     <div className="login-screen">
-      <form className="login-card" onSubmit={submit}>
+      <div className="login-card">
         <h1>Painel administrativo</h1>
         <p>Priscila Vasconcelos Imoveis</p>
         {erro && <div className="alerta">{erro}</div>}
-        <div className="field">
-          <label>E-mail</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
-        </div>
-        <div className="field">
-          <label>Senha</label>
-          <input type="password" value={senha} onChange={e => setSenha(e.target.value)} required minLength={6} />
-        </div>
-        <button className="btn-primary" disabled={carregando}>
-          {carregando ? "Entrando..." : "Entrar"}
-        </button>
-      </form>
+
+        {etapa === "codigo" ? (
+          <form onSubmit={submitCodigo}>
+            <p style={{ fontSize: ".9em", opacity: .8 }}>Enviamos um codigo para <b>{email}</b>. Digite abaixo:</p>
+            <div className="field">
+              <label>Codigo (6 digitos)</label>
+              <input inputMode="numeric" value={senha} onChange={e => setSenha(e.target.value)} required autoFocus />
+            </div>
+            <button className="btn-primary" disabled={carregando}>{carregando ? "Verificando..." : "Confirmar"}</button>
+            <button type="button" className="link" style={{ marginTop: "8px", background: "none", border: 0, cursor: "pointer", opacity: .7 }}
+              onClick={() => { setEtapa("login"); setSenha(""); }}>voltar</button>
+          </form>
+        ) : (
+          <form onSubmit={submitSenha}>
+            <div className="field">
+              <label>E-mail</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
+            </div>
+            <div className="field">
+              <label>Senha</label>
+              <input type="password" value={senha} onChange={e => setSenha(e.target.value)} required minLength={6} />
+            </div>
+            <button className="btn-primary" disabled={carregando}>{carregando ? "Entrando..." : "Entrar"}</button>
+            {biometriaSuportada() && (
+              <button type="button" onClick={entrarBio} disabled={carregando}
+                style={{ marginTop: "12px", width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #5C7CB8", background: "#fff", color: "#16284B", cursor: "pointer", fontWeight: 600 }}>
+                👆 Entrar com digital / rosto
+              </button>
+            )}
+          </form>
+        )}
+      </div>
     </div>
   );
 }
@@ -2295,6 +2398,13 @@ function App() {
 
   function logout() { clearToken(); setUser(null); }
 
+  async function ativarBiometria() {
+    try {
+      await biometriaCadastrar(getToken());
+      alert("Biometria ativada neste aparelho! Da proxima vez voce entra so com digital/rosto.");
+    } catch (e) { alert("Nao deu pra ativar a biometria aqui: " + (e.message || "")); }
+  }
+
   if (carregando) return <div className="login-screen"><p>Carregando...</p></div>;
   if (!user) return <Login onLogin={setUser} />;
 
@@ -2316,6 +2426,8 @@ function App() {
         </nav>
         <div>
           <span className="user">{user.email}</span>
+          {" "}
+          {biometriaSuportada() && <button onClick={ativarBiometria} title="Cadastrar digital/rosto neste aparelho">👆 Ativar biometria</button>}
           {" "}
           <button onClick={logout}>Sair</button>
         </div>

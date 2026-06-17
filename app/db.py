@@ -412,6 +412,36 @@ def init_db() -> None:
         _migrar_coluna(conn, "imoveis", "tour_360_url", "TEXT")
         # Ponte Google Calendar: id do evento espelhado no Google (NULL = nao espelhado)
         _migrar_coluna(conn, "agenda", "gcal_event_id", "TEXT")
+        # Biometria (passkey/WebAuthn) + 2FA por e-mail do admin
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS passkeys (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                credential_id TEXT NOT NULL UNIQUE,
+                user_id INTEGER NOT NULL,
+                public_key TEXT NOT NULL,
+                sign_count INTEGER NOT NULL DEFAULT 0,
+                apelido TEXT,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )"""
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS webauthn_desafios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                chave TEXT NOT NULL,
+                challenge TEXT NOT NULL,
+                tipo TEXT NOT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )"""
+        )
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS codigos_2fa (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                codigo_hash TEXT NOT NULL,
+                expira_em TIMESTAMP NOT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )"""
+        )
         # Empreendimentos: ficha tecnica rica (condominio/obra grande)
         for _col, _tipo in (
             ("endereco", "TEXT"), ("area_total", "TEXT"),

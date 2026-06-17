@@ -114,3 +114,40 @@ def autenticar(email: str, senha: str) -> sqlite3.Row | None:
     if not verifica_senha(senha, user["senha_hash"]):
         return None
     return user
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2FA por e-mail (codigo OTP) — usado no 1o login / aparelho novo (nao todo dia)
+# ─────────────────────────────────────────────────────────────────────────────
+def dois_fatores_ativo() -> bool:
+    """So exige codigo por e-mail se estiver LIGADO e o envio estiver configurado."""
+    from app import email_util
+    return os.getenv("ADMIN_2FA_ENABLED", "0") == "1" and email_util.disponivel()
+
+
+def gerar_codigo_2fa(email: str) -> str:
+    """Gera um codigo de 6 digitos, guarda o hash (expira em 10 min) e devolve o codigo."""
+    codigo = f"{secrets.randbelow(1_000_000):06d}"
+    email = (email or "").lower().strip()
+    with db_session() as conn:
+        conn.execute("DELETE FROM codigos_2fa WHERE email = ?", (email,))
+        conn.execute(
+            "INSERT INTO codigos_2fa (email, codigo_hash, expira_em) "
+            "VALUES (?, ?, datetime('now','+10 minutes'))",
+            (email, hash_senha(codigo)),
+        )
+    return codigo
+
+
+def validar_codigo_2fa(email: str, codigo: str) -> bool:
+    email = (email or "").lower().strip()
+    with db_session() as conn:
+        row = conn.execute(
+            "SELECT id, codigo_hash FROM codigos_2fa WHERE email = ? AND expira_em >= datetime('now') "
+            "ORDER BY id DESC LIMIT 1",
+            (email,),
+        ).fetchone()
+        if not row or not verifica_senha(codigo or "", row["codigo_hash"]):
+            return False
+        conn.execute("DELETE FROM codigos_2fa WHERE email = ?", (email,))  # single-use
+    return True
