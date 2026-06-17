@@ -697,6 +697,23 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
     if len(_so_digitos) < 10 or len(_so_digitos) > 15:
         return {"ignorado": True, "motivo": "remetente nao e telefone (lid/grupo)"}
 
+    # IDEMPOTENCIA: o Evolution pode re-disparar o MESMO evento (mesmo key.id). Se ja
+    # processamos esta mensagem, ignora — evita interacao + resposta duplicadas.
+    _wa_msg_id = key.get("id")
+    if _wa_msg_id:
+        try:
+            from app.db import db_session as _dbi
+            with _dbi() as _ci:
+                _ja = _ci.execute(
+                    "SELECT 1 FROM lead_interacoes WHERE tipo='whatsapp_recebido' "
+                    "AND json_extract(metadata,'$.mensagem_id')=? LIMIT 1",
+                    (_wa_msg_id,),
+                ).fetchone()
+            if _ja:
+                return {"ignorado": True, "motivo": "mensagem duplicada (re-disparo)"}
+        except Exception:
+            pass
+
     # extrai texto (varios formatos do whatsapp)
     msg_content = msg.get("message") or {}
     _eh_audio = bool(msg_content.get("audioMessage") or msg_content.get("pttMessage"))
@@ -770,6 +787,19 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
         descricao=str(texto)[:1000],
         metadata={"mensagem_id": key.get("id")},
     )
+    # Marca da MINHA mensagem recebida (pro debounce: se uma mais nova chegar enquanto eu
+    # processo/espero, eu aborto o envio e deixo o handler da mais nova responder).
+    _minha_msg_id = None
+    try:
+        from app.db import db_session as _dbm
+        with _dbm() as _cm:
+            _rm = _cm.execute(
+                "SELECT MAX(id) AS m FROM lead_interacoes WHERE lead_id=? AND tipo='whatsapp_recebido'",
+                (lead_id,),
+            ).fetchone()
+        _minha_msg_id = _rm["m"] if _rm else None
+    except Exception:
+        _minha_msg_id = None
 
     # ─── Qualificacao em segundo plano (mesmo sem responder o cliente) ────
     # Roda o qualify_lead (le bairro/orcamento/prazo no conteudo) e grava
@@ -910,6 +940,22 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
         _tm.sleep(_rnd.uniform(_dmin, max(_dmin, _dmax)))
     except Exception:
         pass
+
+    # DEBOUNCE: se o cliente mandou outra mensagem (mais nova) enquanto eu processava/esperava,
+    # NAO envio esta resposta — o handler da mensagem mais nova responde com o contexto completo.
+    # Corrige a "resposta dobrada" (texto + imagem em rajada gerava 2 saudacoes).
+    if _minha_msg_id:
+        try:
+            from app.db import db_session as _dbd
+            with _dbd() as _cd:
+                _ult = _cd.execute(
+                    "SELECT MAX(id) AS m FROM lead_interacoes WHERE lead_id=? AND tipo='whatsapp_recebido'",
+                    (lead_id,),
+                ).fetchone()
+            if _ult and _ult["m"] and _ult["m"] > _minha_msg_id:
+                return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": "mensagem_mais_nova_chegou"}
+        except Exception:
+            pass
 
     # Responde por VOZ so quando: o cliente mandou AUDIO **e** ja demonstrou interesse
     # (score >= morno). Caso contrario, entende o audio mas responde por TEXTO (mais barato).
