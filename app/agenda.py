@@ -9,16 +9,20 @@ from app.db import db_session
 TIPOS_VALIDOS = {"visita", "reuniao", "captacao", "followup", "bloqueio", "pessoal", "outro"}
 STATUS_VALIDOS = {"agendado", "confirmado", "cancelado", "realizado"}
 
+# Negocio em Vitoria da Conquista/BA -> horario de Brasilia (sem horario de verao).
+FUSO_BR = timezone(timedelta(hours=-3))
+
 
 def _agora_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
 def _parse_iso(s: str) -> datetime:
-    """Aceita ISO com ou sem timezone; assume UTC se ausente."""
+    """Aceita ISO com ou sem timezone; assume horario de BRASILIA (-03:00) se ausente.
+    (Antes assumia UTC, o que gravava as visitas 3h adiantadas no painel.)"""
     dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=FUSO_BR)
     return dt
 
 
