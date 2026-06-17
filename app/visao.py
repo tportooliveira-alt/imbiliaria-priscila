@@ -99,6 +99,33 @@ def classificar_comodo(arquivo_path: str | Path, *, modelo: str = "gemini-2.0-fl
     return None
 
 
+_PROMPT_ATENDIMENTO = (
+    "Voce ajuda uma corretora de imoveis. Um cliente mandou ESTA imagem no WhatsApp. "
+    "Em 1 a 3 frases, em portugues do Brasil, diga O QUE E a imagem e os dados uteis que aparecem. "
+    "Tipos comuns: simulacao/aprovacao de financiamento (Caixa etc.) -> diga valor aprovado, entrada, "
+    "parcela e prazo se aparecerem; anuncio de imovel -> bairro, valor, area, quartos; documento -> qual; "
+    "foto de imovel -> comodo e estado. "
+    "REGRA DE OURO: so afirme o que da pra LER de verdade na imagem. Se estiver ilegivel, cortada ou em "
+    "duvida, diga 'nao deu pra ler direito'. NUNCA invente valor, numero ou dado que nao esteja claro."
+)
+
+
+def analisar_para_atendimento(image_bytes: bytes, mime: str = "image/jpeg") -> str | None:
+    """A Ana 'enxerga': o Claude le a imagem que o cliente mandou e descreve pro atendimento.
+    Retorna o texto da analise, ou None se sem chave/erro (o webhook entao trata sem quebrar)."""
+    if not image_bytes or not os.getenv("ANTHROPIC_API_KEY"):
+        return None
+    try:
+        from app.clients import ClienteClaude
+
+        texto = ClienteClaude("claude-haiku-4-5").classificar_imagem(
+            _PROMPT_ATENDIMENTO, image_bytes, mime or "image/jpeg", max_tokens=300
+        )
+        return (texto or "").strip() or None
+    except Exception:
+        return None
+
+
 def ordenar_editorial(imagens: list[dict]) -> list[int]:
     """Devolve lista de IDs ordenada editorialmente (capa → sala → ...).
 

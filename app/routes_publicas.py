@@ -715,7 +715,24 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
             except Exception:
                 texto = "[audio]"
         else:
+            # Ana ENXERGA: baixa a imagem e o Claude descreve no contexto de lead.
+            # Fallback total: se nao for imagem, sem chave ou erro -> volta ao placeholder antigo.
             texto = "[midia recebida]"
+            if msg_content.get("imageMessage") or msg_content.get("documentMessage") or msg_content.get("stickerMessage"):
+                try:
+                    from app import visao as _visao
+                    from app import whatsapp as _wa_m
+                    _mid = _wa_m.baixar_midia_base64(msg)
+                    _desc = _visao.analisar_para_atendimento(_mid[0], _mid[1]) if _mid else None
+                    if _desc:
+                        _cap = (msg_content.get("imageMessage") or {}).get("caption") or ""
+                        texto = (f"{_cap}\n\n" if _cap else "") + (
+                            "[O cliente enviou uma imagem. Analise automatica do que aparece nela "
+                            "(use com naturalidade, confirme com ele e NAO invente nada alem disto): "
+                            f"{_desc}]"
+                        )
+                except Exception:
+                    pass
 
     push_name = msg.get("pushName") or None
 

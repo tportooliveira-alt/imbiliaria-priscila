@@ -120,6 +120,34 @@ def enviar_mensagem(telefone: str, texto: str, *, timeout: float = 8.0) -> Respo
         )
 
 
+def baixar_midia_base64(msg: dict) -> tuple[bytes, str] | None:
+    """Baixa a midia (imagem/documento) do WhatsApp via Evolution e devolve (bytes, mime).
+    None se nao configurado ou erro. Reusa o mesmo getBase64FromMediaMessage do audio."""
+    cfg = _config()
+    if not cfg:
+        return None
+    base, key, instancia = cfg
+    try:
+        import base64 as _b64
+
+        body = _json.dumps({"message": {"key": (msg or {}).get("key", {})}}).encode()
+        req = urllib.request.Request(
+            f"{base}/chat/getBase64FromMediaMessage/{instancia}",
+            data=body,
+            method="POST",
+            headers={"Content-Type": "application/json", "apikey": key},
+        )
+        with urllib.request.urlopen(req, timeout=25) as r:
+            data = _json.load(r)
+        b64 = data.get("base64") or data.get("media") or ""
+        if not b64:
+            return None
+        mime = (data.get("mimetype") or "").split(";")[0].strip() or "image/jpeg"
+        return _b64.b64decode(b64), mime
+    except Exception:
+        return None
+
+
 def transcrever_audio(msg: dict) -> str | None:
     """Baixa o audio do WhatsApp (Evolution) e transcreve via Groq Whisper.
 
