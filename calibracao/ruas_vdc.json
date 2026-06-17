@@ -70,6 +70,13 @@
       "popular": ["Rua da Corrente", "Rua Caxias", "Travessa Boa Vista"],
       "comercial": [],
       "obs": "Pequeno/medio. Rua C duplex 300m2 R$1.8M (premium). Rua da Corrente apt 43m2 R$220k."
+    },
+    "felicia": {
+      "perfil": "medio",
+      "premium": ["Alameda dos Passaros", "Res Maria Luiza Quadros"],
+      "popular": ["Cond Parque Vitoria Sul", "VOG Fiori", "Cond MRV Vitoria", "Cond Plaza Morada dos Passaros"],
+      "comercial": [],
+      "obs": "Medio. Maria Luiza Quadros = topo (apt R$6.315/m2). Alameda dos Passaros duplex ~R$3.920/m2. MRV/Parque Vitoria Sul = aptos populares 145-235k. Morada dos Passaros = medio 270-400k."
     }
   }
 }
