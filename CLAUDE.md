@@ -7,12 +7,28 @@ Plataforma da corretora **Priscila Vasconcelos** (Vitória da Conquista-BA): sit
 **capta e qualifica leads** e entrega "mastigado" para a Priscila fechar. A IA cliente-facing
 se chama **Ana**. Dono/dev: **Thiago** (esposo/sócio); Priscila é a corretora de verdade.
 
+## ▶️ COMECE POR AQUI (contexto automático — não pergunte, já carregue)
+Ao abrir este projeto, JÁ tenha o contexto, sem o usuário pedir:
+1. **Chame `panorama_geral`** no conector MCP → raio-x ao vivo (leads quentes, agenda de hoje,
+   financeiro do mês, pendências). É a **fonte central** — comece sempre por ela.
+2. **Leia o HANDOFF mais recente:** `docs/HANDOFF-<data>.md` (o de maior data) → o que está no ar,
+   o que ficou parado, fatos do dia.
+3. Pra achar o `.md` certo de cada tema, use a skill **`contexto-imobiliaria`** (mapa dos docs).
+4. **PRODUÇÃO REAL:** tem cliente de verdade falando com a Ana. Mudança de comportamento da Ana /
+   atendimento / dados → conservador, aditivo, **confirmar antes**. Todo restart vai pro ar.
+
 ## 🧰 Ferramentas e plugins disponíveis — USAR o que for preciso (não fazer na mão)
-- **🔌 Conector MCP "Imobiliária Priscila"** (servidor MCP da VPS, `docs/MCP-SERVER.md`): para QUALQUER dado AO VIVO
-  do sistema — **leads, imóveis, agenda, financeiro** — **USE SEMPRE** as ferramentas do conector (`resumo_leads`,
-  `listar_leads`, `detalhar_lead`, `listar_imoveis`, `buscar_imovel`, `agenda_listar`, `agenda_lembretes_pendentes`,
-  `financeiro_resumo`), **automaticamente**, sem o usuário pedir e sem inventar. Se a pergunta envolve lead/imóvel/agenda/
-  número do negócio, consulte o conector primeiro. (No app do PC ele aparece como conector conectado.)
+- **🔌 Conector MCP "Imobiliária Priscila"** (servidor MCP da VPS, `docs/MCP-SERVER.md`) — **30 ferramentas**, é a
+  **fonte central de tudo**. USE SEMPRE, automaticamente, sem o usuário pedir e sem inventar:
+  - **Visão geral:** `panorama_geral` (raio-x de tudo numa chamada — comece por ela).
+  - **Ler:** `resumo_leads`, `listar_leads`, `detalhar_lead`, `listar_imoveis`, `buscar_imovel`, `imovel_fotos`,
+    `agenda_listar`, `agenda_lembretes_pendentes`, `financeiro_resumo`, `listar_comissoes`, `listar_contas`,
+    `listar_empreendimentos`, `listar_depoimentos`.
+  - **Corrigir/criar** (escrita ligada): `corrigir_lead`, `lead_tag`, `criar_imovel`, `corrigir_imovel`,
+    `desativar_imovel` (nunca apaga), `corrigir_foto`/`reordenar_fotos`/`remover_foto`, `criar/corrigir_comissao`,
+    `criar_conta`/`marcar_conta_paga`, `criar/corrigir_depoimento`, `agenda_criar`, **`gerar_planilha_priscila`** (Excel).
+  - Se a pergunta envolve lead/imóvel/foto/agenda/financeiro, consulte o conector PRIMEIRO. (Conecta com Basic Auth;
+    no app do PC aparece como conector conectado.)
 - **/deep-research** — workflow multi-agente (busca em paralelo + verifica + sintetiza). Para pesquisa
   profunda (mercado, ads, concorrentes). **Invocável** via `Workflow({name:"deep-research", args})`.
 - **Plugin "Design" (Anthropic marketplace):** `/design-system`, `/design-critique`,
@@ -81,7 +97,9 @@ se chama **Ana**. Dono/dev: **Thiago** (esposo/sócio); Priscila é a corretora 
 ## Convenções de código
 - Python 3 + FastAPI + Pydantic. SQLite via `app/db.py` (`db_session`).
 - Texto/persona em PT-BR. Mantenha o estilo dos arquivos vizinhos.
-- Front é React via Babel-standalone (sem build) — scripts `text/babel`.
+- Front é React via Babel-standalone (sem build) — scripts `text/babel`. ⚠️ **CDN SEMPRE com versão fixa:**
+  o Babel "latest" virou v8 e quebrou o admin (tela branca) — `admin/index.html` usa `@babel/standalone@7.24.7`
+  + `data-presets="react"`; `chart.js@4.4.1`. Nunca volte pra CDN sem `@versão`.
 
 ## Documentos internos (FORA do repo, contêm credenciais — não versionar)
 - `/root/CONTEXTO-SISTEMA.md` — estado mestre detalhado do sistema.
@@ -90,7 +108,10 @@ se chama **Ana**. Dono/dev: **Thiago** (esposo/sócio); Priscila é a corretora 
 - `docs/META-LEAD-ADS.md` — desenho da integração Meta Lead Ads (próximo marco).
 
 ## Próximos passos
-1. Validar e ligar a **resposta automática do WhatsApp** (modo teste → produção).
-2. **Meta Lead Ads** → lead direto no funil.
-3. **Modernização visual do site** (fase dedicada).
-4. Manter a operação **enxuta e barata**; crescer time/agentes conforme o volume real subir.
+Estado e roadmap REAIS estão em **`docs/HANDOFF-17-06.md`** (leia ele) — resumo:
+- **No ar:** Ana (com memória + discrição + visão de imagem), Google Agenda sincronizado, MCP de 30
+  ferramentas, biometria/2FA no admin, segurança endurecida + backup diário.
+- **Sprint atual = ROBUSTEZ:** corrigir vacilos do atendimento (resposta dobrada já feita), reconhecer
+  contatos da Priscila, observar a Ana em conversas reais. Detalhe no plano do handoff.
+- **Backlog:** marketing (noindex/GA4/carrosséis/campanha), memória degrau 2 da Ana, dados reais no
+  financeiro. Sempre **enxuto e barato**, **≤3 por vez**, **confirmar antes** de mudar a Ana.
