@@ -39,8 +39,13 @@ def _rp_id() -> str:
     return os.getenv("WEBAUTHN_RP_ID", "pvscelosimobiliaria.com").strip()
 
 
-def _origin() -> str:
-    return os.getenv("WEBAUTHN_ORIGIN", f"https://{_rp_id()}").strip()
+def _origins() -> list[str]:
+    """Origens aceitas. Aceita www e sem-www por padrao (a Priscila pode entrar por qualquer um)."""
+    env = os.getenv("WEBAUTHN_ORIGIN", "").strip()
+    if env:
+        return [o.strip() for o in env.split(",") if o.strip()]
+    rp = _rp_id()
+    return [f"https://{rp}", f"https://www.{rp}"]
 
 
 def _rp_nome() -> str:
@@ -99,7 +104,7 @@ def registro_fim(user_id: int, credential_json: dict, apelido: str = "") -> bool
         credential=credential_json,
         expected_challenge=challenge,
         expected_rp_id=_rp_id(),
-        expected_origin=_origin(),
+        expected_origin=_origins(),
     )
     cred_id = base64.urlsafe_b64encode(verif.credential_id).decode().rstrip("=")
     pub = base64.b64encode(verif.credential_public_key).decode()
@@ -153,7 +158,7 @@ def login_fim(credential_json: dict, email: str | None = None) -> dict | None:
             credential=credential_json,
             expected_challenge=challenge,
             expected_rp_id=_rp_id(),
-            expected_origin=_origin(),
+            expected_origin=_origins(),
             credential_public_key=base64.b64decode(pk["public_key"]),
             credential_current_sign_count=pk["sign_count"],
         )

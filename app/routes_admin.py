@@ -248,13 +248,13 @@ def passkey_registrar_inicio(user: dict = Depends(usuario_atual)) -> dict:
     """Opcoes pra cadastrar a biometria DESTE aparelho (precisa estar logado)."""
     import json as _json
     from app import passkey
-    return _json.loads(passkey.registro_inicio(user["id"], user["email"]))
+    return _json.loads(passkey.registro_inicio(int(user["sub"]), user["email"]))
 
 
 @router.post("/api/auth/passkey/registrar/fim")
 def passkey_registrar_fim(payload: PasskeyFimRequest, user: dict = Depends(usuario_atual)) -> dict:
     from app import passkey
-    ok = passkey.registro_fim(user["id"], payload.credential, apelido=payload.apelido or "")
+    ok = passkey.registro_fim(int(user["sub"]), payload.credential, apelido=payload.apelido or "")
     if not ok:
         raise HTTPException(status_code=400, detail="nao foi possivel cadastrar a biometria")
     return {"ok": True}
