@@ -72,3 +72,4 @@ data/
 *.sqlite
 *.sqlite3
 assets/imoveis/
+secret/
