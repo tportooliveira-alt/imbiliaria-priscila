@@ -1,0 +1,59 @@
+bairro|rua|tipo|area_m2|quartos|suites|vagas|padrao|acab|comercial|preco|data|fonte|titulo
+Ayrton Senna|Rua Radial do Norte C|casa|144|3|1|2|medio|pronto|nao|420000|05/2026|OLX|Casa Radial do Norte C 144m2
+Ayrton Senna|Rua Radial Sul D|casa|72|3|1|2|medio|pronto|nao|420000|06/2026|OLX|Casa Radial Sul D 72m2
+Ayrton Senna|Rua 3|casa|49|2|0|1|simples|pronto|nao|199900|06/2026|Marcelo Santana|Casa Rua 3 49m2
+Ayrton Senna|Rua 3|casa|49|2|0|1|simples|pronto|nao|240000|06/2026|ChavesNaMao|Casa Rua 3 100 49m2
+Ayrton Senna|Vila do Marques|apartamento|70|3|1|2|simples|pronto|nao|260000|05/2026|OLX|Apt Bem Residencial 70m2
+Ayrton Senna|Vila do Marques|apartamento|65|3|1|1|simples|pronto|nao|260000|04/2026|OLX|Apt Bem Residencial 65m2
+Ayrton Senna|Vila do Marques|casa|58|2|0|1|simples|pronto|nao|225000|03/2026|OLX|Casa Geminada Vila Marques 58m2
+Ayrton Senna||casa|72|3|0|2|simples|pronto|nao|240000|02/2026|OLX|Casa nova PMCMV 72m2
+Ayrton Senna||apartamento|70|2|1|1|simples|pronto|nao|213000|10/2025|OLX|Apt terreo 2/4 70m2
+Ayrton Senna|Rua Ayrton Senna|casa|603|7|4|0|alto|pronto|nao|1800000|06/2026|ChavesNaMao|Casa Ayrton Senna 603m2
+Bateias|Cond Vivant|casa|211|4|2|2|alto|pronto|nao|1419000|05/2026|OLX|Duplex Vivant 211m2
+Bateias|Av Modelo|casa|60|2|1|2|simples|pronto|nao|245000|06/2026|ZAP|Casa Av Modelo 60m2
+Bateias|Rua E|casa|100|3|1|2|medio|pronto|nao|255000|06/2026|ChavesNaMao|Casa Rua E 100m2
+Bateias|Rua T|casa|73|3|1|2|medio|pronto|nao|320000|06/2026|ChavesNaMao|Casa Rua T 73m2
+Bateias|Rua Esau Matos|casa|100|3|1|2|medio|pronto|nao|250000|06/2026|Wimoveis|Casa Esau Matos 100m2
+Bateias|Lot Cidade Modelo|casa|100|2|1|2|simples|pronto|nao|250000|05/2026|OLX|Casa Cidade Modelo 100m2
+Bateias|Lot Cidade Modelo|casa|60|2|1|2|simples|pronto|nao|240000|05/2026|OLX|Casa Cidade Modelo 60m2
+Bateias|Lot Cidade Modelo|casa|200|3|1|2|medio|pronto|nao|360000|05/2026|OLX|Casa Solta Cidade Modelo 200m2
+Bateias|Lot Cidade Modelo|casa|166|4|1|3|medio|pronto|nao|320000|05/2026|OLX|Casa 4/4 Cidade Modelo 166m2
+Bateias|Lot Cidade Modelo|casa|64|3|1|2|simples|pronto|nao|245000|10/2025|OLX|Casa Cidade Modelo 64m2
+Bateias|Lot Remanso|casa|78|3|1|2|simples|pronto|nao|390000|06/2026|OLX|Casa Remanso 78m2
+Bateias|Lot Remanso|casa|60|3|1|1|simples|pronto|nao|245000|09/2025|OLX|Casa Remanso 60m2
+Bateias||casa|120|4|1|2|simples|pronto|nao|170000|05/2026|OLX|Sobradinho 120m2
+Bateias||casa|60|2|1|2|simples|pronto|nao|230000|10/2025|OLX|Casa 2/4 Bateias 60m2
+Bateias||casa|125|3|1|3|medio|pronto|nao|290000|06/2026|OLX|Duplex 3/4 Bateias 125m2
+Brasil|Av Ilheus|comercial|180|3|0|5|medio|pronto|sim|600000|04/2026|OLX|Predio Av Ilheus 180m2
+Brasil|Av Itabuna|casa|100|3|1|1|simples|pronto|nao|190000|06/2026|ChavesNaMao|Casa Av Itabuna 100m2
+Brasil|Bairro Brasil ponto comercial|comercial|335|0|0|0|medio|pronto|sim|900000|04/2026|OLX|Ponto Comercial 335m2
+Brasil||casa|95|3|1|2|simples|pronto|nao|350000|05/2026|OLX|Casa Solta 3/4 95m2
+Brasil||casa|172|3|1|0|simples|pronto|nao|230000|05/2026|OLX|Casa 172m2 Brasil
+Brasil||casa|82|2|1|3|simples|pronto|nao|290000|05/2026|OLX|Duplex Jardim Guanabara 82m2
+Brasil||casa|95|3|1|2|simples|pronto|nao|350000|05/2026|OLX|Casa Solta Brasil 95m2 b
+Brasil||casa|95|3|0|1|simples|pronto|nao|237000|04/2026|OLX|Casa 3/4 95m2
+Brasil||casa|125|3|1|2|medio|pronto|nao|490000|06/2026|OLX|Casa 343m2 terreno 125m2
+Brasil||casa|70|3|0|0|simples|pronto|nao|260000|01/2026|OLX|Casa Geminada Brasil 70m2
+Campinhos|Rua A|casa|65|3|1|2|simples|pronto|nao|280225|06/2026|OLX|Duo Jardim Paradiso 65m2
+Campinhos|Rua A|casa|65|3|1|2|simples|pronto|nao|273000|06/2026|ChavesNaMao|Casa Rua A Campinhos 65m2
+Campinhos|Cond Duo Jardim Paradiso|casa|65|3|1|2|simples|pronto|nao|269818|11/2025|OLX|Casa Duo Jardim Paradiso 65m2
+Campinhos|Lagoa Azul|casa|60|2|0|1|simples|pronto|nao|65000|05/2026|OLX|Casa Lagoa Azul 60m2
+Campinhos||casa|53|2|1|1|simples|pronto|nao|240000|05/2026|OLX|Casa Campinhos 53m2
+Centro|Rua Goes Calmon 274|casa|743|5|2|0|alto|pronto|nao|2800000|06/2026|Wimoveis|Casa Goes Calmon 743m2
+Centro|Praca Joaquim Correia|comercial|414|0|0|0|medio|pronto|sim|1000000|06/2026|ChavesNaMao|Predio Praca Joaquim Correia 414m2
+Centro|Rua Machado de Assis|casa|180|3|1|1|medio|pronto|nao|450000|06/2026|VivaReal|Casa Machado de Assis 180m2
+Centro|Rua da Conceicao|casa|186|4|3|1|medio|pronto|nao|350000|06/2026|Imovelweb|Casa Rua da Conceicao 186m2
+Centro|Rua Laudicineia Gusmao|casa|169|2|0|1|medio|pronto|sim|450000|05/2026|OLX|Casa area comercial Laudicineia 169m2
+Centro||casa|210|4|3|5|alto|pronto|nao|1050000|06/2026|OLX|Casa Centro 4/4 3 suites 210m2
+Centro||casa|180|4|4|3|alto|pronto|nao|800000|06/2026|OLX|Casa Centro 180m2 4/4
+Centro||casa|267|5|2|3|alto|pronto|nao|800000|06/2026|OLX|Casa Centro 267m2
+Centro||casa|299|4|4|4|alto|pronto|nao|890000|08/2025|OLX|Casa Centro 299m2
+Centro||casa|200|3|1|3|medio|pronto|nao|559900|05/2026|OLX|Casa 200m2 prox CEASA
+Centro||casa|388|3|3|4|medio|pronto|nao|490000|10/2025|OLX|Lar de Luxo Centro 388m2
+Centro||casa|175|3|1|1|medio|pronto|nao|320000|06/2026|OLX|Casa 175m2 Centro
+Centro||casa|271|5|2|3|medio|pronto|nao|550000|05/2026|OLX|Sobrado 271m2 Centro
+Centro||casa|180|3|1|2|simples|pronto|nao|290000|01/2026|OLX|Casa 180m2 Centro
+Centro||casa|52|2|0|2|simples|pronto|nao|180000|05/2026|OLX|Casa Vivendas Espatodeas 52m2
+Centro||casa|361|3|2|3|medio|pronto|sim|780000|02/2026|OLX|Casa Comercial 361m2
+Cruzeiro|Rua C|casa|300|4|4|5|alto|pronto|nao|1800000|06/2026|ChavesNaMao|Casa Duplex Rua C 300m2
+Cruzeiro|Rua da Corrente|apartamento|43|2|1|1|simples|pronto|nao|220000|06/2026|Imovelweb|Apt Rua da Corrente 43m2

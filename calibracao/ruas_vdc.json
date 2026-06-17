@@ -28,6 +28,48 @@
       "popular": ["Rua Senhorinha Cairo", "Rua C", "Rua da Corrente", "Rua Duarte da Costa", "Rua Tonico Lemos", "2a Travessa Santo Amaro", "Cond Belvedere"],
       "comercial": [],
       "obs": "Sem corredor comercial consolidado. Santa Cecilia = maior concentracao (casas 350-590k). Belvedere = aptos populares 48m2 175-235k. Alphaville 2 duplex R$4.412/m2."
+    },
+    "ayrton_senna": {
+      "perfil": "popular_medio_baixo",
+      "premium": ["Rua Radial Sul D"],
+      "popular": ["Rua 3", "Rua Radial do Norte C", "Vila do Marques"],
+      "comercial": [],
+      "obs": "Popular/medio-baixo. Rua 3 = casas MCMV 200-250k. Vila do Marques 225-260k. Casa Ayrton Senna 603m2 R$1.8M (excecao)."
+    },
+    "bateias": {
+      "perfil": "popular_crescimento",
+      "premium": ["Cond Vivant"],
+      "popular": ["Av Modelo", "Rua E", "Rua T", "Rua Esau Matos", "Lot Cidade Modelo", "Lot Remanso"],
+      "comercial": ["Av Modelo"],
+      "obs": "Vetor de crescimento oeste. Cidade Modelo domina (230-390k). Vivant duplex R$1.419M (premium). Av Modelo = acesso/uso misto."
+    },
+    "brasil": {
+      "perfil": "popular_medio",
+      "premium": [],
+      "popular": ["Travessa Guanabara", "Av Itabuna", "Av Serrinha", "Rua Macarani"],
+      "comercial": ["Av Ilheus", "ponto comercial 335m2"],
+      "obs": "Popular/medio zona sul. Av Ilheus = predio/comercial. Ponto comercial 335m2 R$900k. Casas 190-490k."
+    },
+    "campinhos": {
+      "perfil": "popular_periferico",
+      "premium": [],
+      "popular": ["Rua A", "Cond Duo Jardim Paradiso", "Lagoa Azul"],
+      "comercial": [],
+      "obs": "Periferico, poucos anuncios. Duo Jardim Paradiso domina (65m2 ~270k). Lagoa Azul popular extremo (60-65k)."
+    },
+    "centro": {
+      "perfil": "misto_residencial_comercial",
+      "premium": ["Rua Goes Calmon", "Praca Joaquim Correia"],
+      "popular": ["Rua Machado de Assis", "Rua da Conceicao", "Rua Laudicineia Gusmao"],
+      "comercial": ["Av Deputado Ulisses Guimaraes", "Praca Joaquim Correia", "corredor comercial geral"],
+      "obs": "Uso misto. Goes Calmon = mais valorizada (casa 743m2 R$2.8M). Praca Joaquim Correia predio comercial R$1M. Residencial antigo barato (290-490k)."
+    },
+    "cruzeiro": {
+      "perfil": "medio",
+      "premium": ["Rua C"],
+      "popular": ["Rua da Corrente", "Rua Caxias", "Travessa Boa Vista"],
+      "comercial": [],
+      "obs": "Pequeno/medio. Rua C duplex 300m2 R$1.8M (premium). Rua da Corrente apt 43m2 R$220k."
     }
   }
 }
