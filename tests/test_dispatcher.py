@@ -33,11 +33,10 @@ def test_gemini_disponivel_com_chave(monkeypatch: pytest.MonkeyPatch) -> None:
     assert ClienteGemini().available() is True
 
 
-def test_info_vdc_usa_gemini_com_google_search(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("GOOGLE_API_KEY", "fake-key")
+def test_info_vdc_usa_claude() -> None:
+    # Gemini removido (18/06) — INFO_VDC agora roda no Claude Sonnet.
     cliente = cliente_para(Rota.INFO_VDC)
-    assert isinstance(cliente, ClienteGemini)
-    assert cliente.use_google_search is True
+    assert isinstance(cliente, ClienteClaude)
 
 
 def test_classificador_prioriza_info_vdc_em_pergunta_de_mercado_local() -> None:
