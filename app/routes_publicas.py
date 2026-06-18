@@ -695,6 +695,23 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
     # Numero que nao parece telefone real (ex.: LID/grupo com 18 digitos) — ignora.
     _so_digitos = "".join(c for c in remote if c.isdigit())
     if len(_so_digitos) < 10 or len(_so_digitos) > 15:
+        # DIAGNOSTICO TEMPORARIO (18/06): pega mensagem real que chega via @lid e e
+        # descartada calado. Loga jid cru + nome + texto pra confirmar se contato da
+        # Priscila esta caindo aqui. Remover depois de diagnosticar.
+        try:
+            _mc = msg.get("message") or {}
+            _txt_dbg = (
+                _mc.get("conversation")
+                or (_mc.get("extendedTextMessage") or {}).get("text")
+                or (_mc.get("imageMessage") or {}).get("caption")
+                or "[sem texto/midia]"
+            )
+            _log.warning(
+                "[DIAG-LID] mensagem DESCARTADA (jid nao-telefone): jid=%r push=%r texto=%r",
+                _jid, msg.get("pushName"), str(_txt_dbg)[:120],
+            )
+        except Exception:
+            pass
         return {"ignorado": True, "motivo": "remetente nao e telefone (lid/grupo)"}
 
     # IDEMPOTENCIA: o Evolution pode re-disparar o MESMO evento (mesmo key.id). Se ja

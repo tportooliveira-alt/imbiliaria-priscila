@@ -8,6 +8,52 @@
 - **Regra de comportamento (lição de hoje):** VERIFICAR de verdade antes de reportar; CONFIRMAR antes
   de executar (infra/segurança/dado). Nada de "soar alarme" sem checar. (memória `verificar-antes-de-falar`)
 
+## 🔧 ROBUSTEZ DA ANA — sessão 18/06 NOITE (o MAIS RECENTE, leia primeiro)
+
+### Disciplina / organização (feito)
+- **Karpathy agora é GLOBAL** → `~/.claude/CLAUDE.md` (vale pra TODO projeto, sempre ligado).
+- **ECC desinstalado do global** → vira **referência** só (`/root/everything-claude-code`); como/quando
+  puxar em `docs/REFERENCIA-ECC.md`. 4 agentes ECC soltos no projeto → removidos. (commit `8040707`)
+- **Skill global nova:** `~/.claude/skills/disciplina-de-trabalho/SKILL.md` — o "como eu trabalho"
+  (5 protocolos, cada um com o erro real que ensinou). Produzida com 2 agentes (1 estudou o projeto,
+  1 revisou). É o **como**; a `contexto-imobiliaria` é o **onde** (não duplicam).
+
+### Diagnóstico read-only das conversas reais (14 leads, 139 msgs)
+- **R1 (resposta dobrada + re-saudação) JÁ ESTAVA FEITO** (commit `fec68e3`, no ar 17/06 17:55):
+  idempotência + debounce no webhook + regra "não se reapresentar". As dobras na base são de ANTES disso.
+- **🚨 CAPTAÇÃO tratada como lead frio (grave):** a 🍀 ("Priscila... amiga", "tenho casas prontas") foi
+  tratada como compradora — Ana disse "acho que me confundiu" e saiu qualificando. Contato/parceiro que
+  OFERECE imóvel é OURO, não lead frio.
+- **🚨 VISÃO NUNCA FUNCIONOU:** 0 de 28 imagens descritas — todas ficaram em "[mídia recebida]". Causa:
+  `whatsapp.baixar_midia_base64` volta vazio CALADO (download da Evolution falha; o `except` engolia o
+  erro). **Não é o leitor (Claude vê bem) — é o download que não acontece.**
+- **Suspeita @lid:** o webhook descarta remetente cujo número não tem 10-15 dígitos (linha 697) — contato
+  via `@lid` do WhatsApp some calado. Pode ser por que mensagem do contato "some". (a confirmar pelo log)
+- Observação: vários leads `temperatura=quente` mas `score=0` (desencontro a investigar).
+
+### Subido HOJE (deploy — `verificar.sh` verde: 38 testes + site 200 + Ana não-fallback; restart OK)
+1. **`app/prompts.py` — regra de CAPTAÇÃO:** acolhe, NÃO trata como lead frio, pede FOTOS + descrição
+   curta de cada imóvel (bairro/quartos/metragem/valor), adianta pra Priscila e o cadastro.
+   ✅ **Testada ao vivo** — Ana respondeu certinho ("a Priscila vai adorar... me manda as fotos...").
+2. **`app/routes_publicas.py` — log `[DIAG-LID]` (TEMPORÁRIO):** grava jid cru + nome + texto de toda
+   mensagem descartada por "não é telefone". Pra pegar contato via @lid.
+3. **`app/whatsapp.py` — log `[DIAG-MIDIA]` (TEMPORÁRIO):** grava o erro real do download da Evolution.
+   Pra descobrir por que a visão falha.
+
+### DECISÃO de design (dono concordou — "você está certo")
+**O gargalo da visão é o DOWNLOAD, não o leitor.** NÃO adicionar serviço/agente externo de imagem agora.
+Degraus: (1) próximo upload cai no `[DIAG-MIDIA]` → conserto o download (Ana passa a enxergar);
+(2) captação usa visão **Sonnet** (descrição mais rica, troca de 1 linha); (3) só depois, um agente
+"montador de cadastro" (fotos+descrição → ficha pronta pra Priscila).
+
+### 🔜 Próximo (a fazer)
+- [ ] Esperar a próxima imagem/contato cair nos logs `[DIAG-MIDIA]`/`[DIAG-LID]` → consertar o download
+  da Evolution e o caso @lid.
+- [ ] **REMOVER os 2 logs temporários** depois de diagnosticar (não deixar no ar pra sempre).
+- [ ] Captação: subir visão Haiku→Sonnet.
+- [ ] "Colocar na MCP" (pedido do dono, pendente) — definir o quê: tag `contato_priscila`? captação no panorama?
+- [ ] Investigar `score=0` vs `temperatura=quente`.
+
 ## ✅ O que foi feito nesta sessão (17→18/06)
 1. **👁️ Ana enxerga imagem** (visão multimodal, Claude Haiku) — baixa a mídia + descreve no contexto de
    lead, sem inventar. `app/visao.py` + `whatsapp.baixar_midia_base64` + webhook.

@@ -144,7 +144,11 @@ def baixar_midia_base64(msg: dict) -> tuple[bytes, str] | None:
             return None
         mime = (data.get("mimetype") or "").split(";")[0].strip() or "image/jpeg"
         return _b64.b64decode(b64), mime
-    except Exception:
+    except Exception as _e:
+        # DIAGNOSTICO TEMPORARIO (18/06): visao nunca funcionou (0/28 imagens). Loga o
+        # erro real do download da Evolution pra descobrir o motivo. Remover depois.
+        import logging as _lg
+        _lg.getLogger("app.whatsapp").warning("[DIAG-MIDIA] baixar_midia_base64 falhou: %r", _e)
         return None
 
 
