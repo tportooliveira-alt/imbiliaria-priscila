@@ -26,6 +26,7 @@ load_dotenv()
 from fastmcp import FastMCP  # noqa: E402
 
 from app import agenda as agenda_repo  # noqa: E402
+from app import conversas as conversas_repo  # noqa: E402
 from app import depoimentos as depoimentos_repo  # noqa: E402
 from app import empreendimentos as emp_repo  # noqa: E402
 from app import financeiro as financeiro_repo  # noqa: E402
@@ -139,6 +140,24 @@ def listar_empreendimentos(incluir_inativos: bool = False) -> list:
 def listar_depoimentos(incluir_inativos: bool = False) -> list:
     """Lista os depoimentos de clientes."""
     return _j(depoimentos_repo.listar(somente_ativos=not incluir_inativos))
+
+
+@mcp.tool
+def listar_conversas_ia(limite: int = 30, stage: str | None = None, busca: str | None = None) -> dict:
+    """Lista as CONVERSAS da Ana com os clientes (Operação IA). Filtra por stage ou texto (busca)."""
+    return _j(conversas_repo.listar_conversas(limit=min(limite, 100), stage=stage, busca=busca))
+
+
+@mcp.tool
+def detalhar_conversa_ia(conversa_id: int) -> dict | None:
+    """Detalhe de UMA conversa da Ana — todas as mensagens trocadas (o que o cliente disse e a Ana respondeu)."""
+    return _j(conversas_repo.detalhar_conversa(conversa_id))
+
+
+@mcp.tool
+def metricas_ia(horas: int = 24) -> dict:
+    """Métricas da Operação IA (Ana) nas últimas N horas: volume, rotas, modelos, fallback, etc."""
+    return conversas_repo.metricas_operacao_ia(horas=horas)
 
 
 @mcp.tool
