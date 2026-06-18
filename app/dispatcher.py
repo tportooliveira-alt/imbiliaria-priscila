@@ -1,16 +1,16 @@
 """Despacha mensagem classificada para o LLM apropriado.
 
-Mapa rota → cliente:
-    TRIAGEM     → Gemini 2.5 Flash
-    INFO_VDC    → Gemini 2.5 Pro
+Mapa rota → cliente (SÓ Claude — Gemini removido 18/06, decisão do dono):
+    TRIAGEM     → Claude Haiku
+    INFO_VDC    → Claude Sonnet
     NEGOCIACAO  → Claude Sonnet
     DESCRICAO   → Claude Sonnet
     FOLLOWUP    → Claude Haiku
-    VISAO       → Gemini 2.5 Pro
+    VISAO       → Claude Haiku
 """
 from __future__ import annotations
 
-from app.clients import ClienteClaude, ClienteFallback, ClienteGemini, LLMClient, RespostaLLM
+from app.clients import ClienteClaude, ClienteFallback, LLMClient, RespostaLLM
 from app.lead import qualify_lead, track_stage
 from app.prompts import analysis_prompt, system_prompt
 
@@ -126,28 +126,28 @@ def _contexto_momento(nome_cliente: str | None = None) -> str:
 from app.router import Rota, classificar
 
 
-MODEL_GEMINI_FAST = "gemini-2.5-flash"
-MODEL_GEMINI_PRO = "gemini-2.5-pro"
 MODEL_CLAUDE_SONNET = "claude-sonnet-4-5"
 MODEL_CLAUDE_HAIKU = "claude-haiku-4-5"
 
 
 # Mapa rota → fábrica de cliente (lazy)
+# SEM Gemini — a Ana roda no CLAUDE (decisao do dono, 18/06). Sonnet onde precisa de
+# qualidade (info/negociacao/descricao), Haiku no resto; Haiku como reserva (failover).
 _FABRICAS: dict[Rota, callable] = {
-    Rota.TRIAGEM: lambda: ClienteGemini(MODEL_GEMINI_FAST),
-    Rota.INFO_VDC: lambda: ClienteGemini(MODEL_GEMINI_PRO, use_google_search=True),
+    Rota.TRIAGEM: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
+    Rota.INFO_VDC: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
     Rota.NEGOCIACAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
     Rota.DESCRICAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
     Rota.FOLLOWUP: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
-    Rota.VISAO: lambda: ClienteGemini(MODEL_GEMINI_PRO),
+    Rota.VISAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
 }
 
 _FABRICAS_FAILOVER: dict[Rota, callable] = {
     Rota.TRIAGEM: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.INFO_VDC: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
-    Rota.NEGOCIACAO: lambda: ClienteGemini(MODEL_GEMINI_FAST),
-    Rota.DESCRICAO: lambda: ClienteGemini(MODEL_GEMINI_FAST),
-    Rota.FOLLOWUP: lambda: ClienteGemini(MODEL_GEMINI_FAST),
+    Rota.NEGOCIACAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
+    Rota.DESCRICAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
+    Rota.FOLLOWUP: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.VISAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
 }
 
@@ -201,7 +201,7 @@ def _sem_markdown(t: str) -> str:
 
 def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem: bool = False,
               nome_cliente: str | None = None, memoria_lead: str | None = None) -> dict:
-    """Pipeline completo: classifica → cascata Gemini → Claude → fallback.
+    """Pipeline completo: classifica → cascata Claude → fallback.
     memoria_lead: ficha viva do cliente (o que a Ana já sabe dele de conversas anteriores)."""
     cls = classificar(mensagem, tem_imagem=tem_imagem)
     lead = qualify_lead(mensagem, history=historico)
@@ -230,14 +230,14 @@ def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem:
 
 
 def analisar_pos_conversa(historico: list[dict]) -> dict:
-    """Resume e qualifica uma conversa finalizada (cascata Gemini → Claude)."""
+    """Resume e qualifica uma conversa finalizada (Claude)."""
     joined = "\n".join(f"{m.get('role', 'user')}: {m.get('content', '')}" for m in historico)
     lead = qualify_lead("", history=historico)
     system = analysis_prompt()
 
     resp: RespostaLLM = ClienteFallback().gerar(system, joined)
 
-    primario = ClienteGemini(MODEL_GEMINI_PRO)
+    primario = ClienteClaude(MODEL_CLAUDE_HAIKU)
     if primario.available():
         tentativa = primario.gerar(system, joined)
         if not tentativa.fallback:
