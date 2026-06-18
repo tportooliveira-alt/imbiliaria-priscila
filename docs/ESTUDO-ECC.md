@@ -1,0 +1,54 @@
+# 📚 ESTUDO — ECC (Everything Claude Code) + Karpathy
+
+Cérebro de estudo. **Cresce a cada rodada do `/loop estude mais`.** Objetivo: extrair o que adotar
+no nosso projeto (Python/FastAPI + Claude Code + MCP), do jeito mais SIMPLES (Karpathy #2).
+Repos clonados: `/root/everything-claude-code` (ECC) · `/root/andrej-karpathy-skills` (Karpathy).
+
+## O que é o ECC
+"Sistema operacional de agentes": 30 agentes especializados, 135 skills, 60 comandos, hooks
+automáticos. Filosofia = **orquestração ESTRUTURADA com gates e escalation**, não "N agentes soltos".
+
+## 5 princípios centrais (SOUL.md)
+1. **Agent-First** — mandar a tarefa pro especialista certo o quanto antes.
+2. **Test-Driven** — testar antes de confiar na implementação.
+3. **Security-First** — validar input, proteger segredo, default seguro.
+4. **Immutability** — transição de estado explícita, não mutação.
+5. **Plan Before Execute** — quebrar mudança complexa em fases deliberadas.
+
+## Fluxo multi-agente (o coração)
+`PLAN → IMPLEMENT → REVIEW → VERIFY → loop até passar`
+- **planner** → reafirma requisito, avalia risco, plano em passos (confirmar antes de tocar código).
+- **tdd/implement** → testes primeiro, implementação mínima.
+- **code-reviewer** → revisa logo após escrever (qualidade/segurança/manutenção; severidade CRITICAL→LOW).
+- **agent-evaluator** → pontua o trabalho em 5 eixos (Accuracy, Completeness, Clarity, Actionability,
+  Conciseness), 1-5, com evidência. Veredito: entrega / corrige N / refaz.
+- **verify** → build, lint, test, type-check.
+- Paralelo só pra tarefas independentes (ex.: architect + security-reviewer).
+
+## loop-operator (rodar loop com FREIO)
+- Começar de padrão explícito + modo + **condições de parada** claras.
+- **Checkpoints** a cada iteração; detectar **travamento** (2 checkpoints sem progresso) e **retry storm**
+  (mesma falha repetida) → PAUSAR, reduzir escopo, replay com critério explícito.
+- Só retomar com: quality gate ativo, baseline de eval, caminho de rollback, isolamento (branch/worktree).
+- **Escalar** pro humano: sem progresso em 2 checkpoints / falhas idênticas repetidas / custo fora do
+  orçamento / conflito de merge travando.
+- Anti-padrão: re-tentar 3× mudando só a frase. Bom: capturar → classificar → 1 check → mudar plano.
+
+## Disciplina (Karpathy) — JÁ adotada no nosso CLAUDE.md
+1. Pensar antes (não assumir, perguntar, verificar antes de afirmar).
+2. Simplicidade (código mínimo, nada especulativo).
+3. Mudança cirúrgica (mexer só no necessário, casar o estilo).
+4. Meta + loop (critério verificável, plano `passo → verificar:`).
+
+## O que JÁ adotamos
+- Disciplina Karpathy no `CLAUDE.md`.
+- `.claude/agents/`: planner, code-reviewer, agent-evaluator, loop-operator (4 de 67, mínimo).
+- Detalhe técnico: cada agente do ECC tem um "Prompt Defense Baseline" no topo (anti prompt-injection) —
+  bom pra Ana também (já temos "verdade com discrição"; isso reforça).
+
+## 🔜 Próximas rodadas de estudo (a fazer)
+- [ ] Adaptar os 4 agentes pro nosso contexto Python/FastAPI (hoje vêm com sabor JS/npm).
+- [ ] Estudar os HOOKS do ECC e qual quality-gate leve cabe (pytest/ruff em PostToolUse/Stop).
+- [ ] Estudar skills úteis (agentic-engineering, continuous-learning) e o `agent-evaluator` a fundo.
+- [ ] Definir 1 comando/fluxo que amarra `plan→review→loop` pro nosso uso.
+- [ ] Model tiering pro nosso caso (Haiku exploração / Sonnet implementação / Opus arquitetura).
