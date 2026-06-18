@@ -49,7 +49,14 @@
 - MCP: 17 ferramentas leitura, sem senha, read-only, dados frescos. URL:
   `https://pvscelosimobiliaria.com/mcp-bLFsLPlqXgJt1itB2vr3tpIseITl8F8Q`
 
+## 🛠️ Feito autônomo (18/06 madrugada, sem o dono)
+- **Checagem dos 5 empreendimentos:** todos têm foto + descrição + bairro, mas **NENHUM tem
+  tipologia/preço** cadastrado → no site aparecem sem valores. (ação do dono abaixo)
+- **Carrossel 1 pronto:** `docs/CARROSSEL-1-MAISON-BORDEAUX.md` — pacote completo (8 slides + legenda,
+  dado real, identidade da marca) pro cowork gerar no PC. Sem preço (não cadastrado).
+
 ## 🔲 Pendente / ação do dono
+- **Cadastrar tipologias/preços** dos 5 empreendimentos no admin (hoje aparecem sem valor no site).
 - **Reconectar o cowork** no claude.ai (remover → adicionar com a URL limpa acima). 1x.
 - **`git pull`** no PC (pega CLAUDE.md/contexto novo).
 - **Cadastrar a biometria** no admin (Priscila, 1 clique).
