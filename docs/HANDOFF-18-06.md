@@ -61,3 +61,10 @@
 - Memória Degrau 2 da Ana (retrato que acumula) → `DEGRAU-ANA-MEMORIA-2.md`.
 - Escrita do MCP (liga sob demanda).
 - Carrosséis: o cowork gera no PC com `CENTRO-MARCA-MARKETING.md` + dados do MCP.
+
+## 🗑️ Limpeza de docs (18/06) — APAGUEI estes (superados; git guarda o histórico)
+Pra não atrapalhar (só ficou o que tem qualidade/é atual). Apaguei porque viraram os handoffs/CLAUDE.md:
+`PLANO-AMANHA-15-06.md`, `PLANO-AMANHA-16-06.md` (planos de dias passados) · `RESUMO-SESSAO-15-06-NOITE.md`
+(resumo antigo) · `FEITO.md`, `FALTA.md`, `PENDENCIAS.md`, `ROTA-PROXIMA.md`, `QUEBRA-CABECA.md`
+(snapshots de status → substituídos por este handoff) · `GANHOS-DOS-ESTUDOS.md` (balanço antigo) ·
+`HANDOFF-16-06.md` (substituído por 17 e 18). De 56 docs → **46**.
