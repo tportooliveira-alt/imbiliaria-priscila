@@ -19,6 +19,10 @@ Ao abrir este projeto, JÁ tenha o contexto, sem o usuário pedir:
 5. **Divulgação / marketing / design / carrossel:** leia **`docs/CENTRO-MARCA-MARKETING.md`** — quem é a
    Priscila, a marca (cores/fontes), o que já existe (carrosséis, Instagram, Meta Pixel) e como gerar
    conteúdo (dados reais do MCP, nunca inventar, identidade visual fixa).
+6. **📝 REGISTRE TODA AÇÃO no `.md` (regra fixa do dono):** toda coisa feita ou decidida DEVE ser anotada
+   no **HANDOFF do dia** (`docs/HANDOFF-<data>.md` — se não existe o de hoje, crie copiando a estrutura do
+   último). Registre: o que foi feito + a DECISÃO e o porquê. E ao apagar/refazer algo, anote "apaguei X
+   porque Y". O handoff é o cérebro vivo do projeto — nada de ação sem registro.
 
 ## 🧰 Ferramentas e plugins disponíveis — USAR o que for preciso (não fazer na mão)
 - **🔌 Conector MCP "Imobiliária Priscila"** (servidor MCP da VPS, `docs/MCP-SERVER.md`) — **30 ferramentas**, é a
