@@ -46,6 +46,13 @@ automáticos. Filosofia = **orquestração ESTRUTURADA com gates e escalation**,
 - Detalhe técnico: cada agente do ECC tem um "Prompt Defense Baseline" no topo (anti prompt-injection) —
   bom pra Ana também (já temos "verdade com discrição"; isso reforça).
 
+## ✅ Aplicado (log das rodadas do loop)
+- **R2 (18/06):** ECC instalado GLOBAL (`~/.claude/`: 67 agentes, 92 comandos, 74 skills, sem hooks JS).
+  Skill `verification-loop` → criado `scripts/verificar.sh` (py_compile + pytest + smoke site/Ana).
+  Pegou 2× a remoção incompleta do Gemini (teste quebrado) e me barrou de dizer "pronto" sem verde.
+- **Agentes/skills são SELETIVOS** (Agent-First): os 67/74 NÃO rodam juntos — cada um tem "quando usar";
+  o sistema invoca o certo por tarefa. Instalar = disponibilizar; usar = filtrar por relevância.
+
 ## 🔜 Próximas rodadas de estudo (a fazer)
 - [ ] Adaptar os 4 agentes pro nosso contexto Python/FastAPI (hoje vêm com sabor JS/npm).
 - [ ] Estudar os HOOKS do ECC e qual quality-gate leve cabe (pytest/ruff em PostToolUse/Stop).
