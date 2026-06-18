@@ -47,6 +47,21 @@ Ao abrir este projeto, JÁ tenha o contexto, sem o usuário pedir:
 - Ao mexer em DESIGN, seguir a paleta: navy `#16284B` + dourado `#c9943a` + Playfair/Inter; imóvel-primeiro,
   marca da Priscila destacada, IA discreta. Deploy da home: editar `assets/preview.html` → regenerar `v3-editorial/index.html`.
 
+## 🧠 DISCIPLINA DE TRABALHO (princípios do Karpathy — ler SEMPRE)
+Antídoto pros erros mais comuns (assumir sem conferir, complicar, mexer no que não devia). Referência
+clonada em `/root/andrej-karpathy-skills` (o `CLAUDE.md` dele) e `/root/everything-claude-code` (ECC, orquestração).
+1. **Pensar antes de agir.** Não assumir; se houver dúvida ou várias interpretações, **PARAR e perguntar**.
+   Mostrar tradeoffs. Discordar quando fizer sentido. **Verificar de verdade ANTES de afirmar** (testar, conferir,
+   olhar o git) — nunca soar alarme nem dizer "pronto" sem prova. (mem: `verificar-antes-de-falar`)
+2. **Simplicidade.** Código/solução mínima que resolve. Nada especulativo, sem abstração à toa, sem fazer
+   mais do que foi pedido. "Um sênior diria que isso está complicado demais?" Se sim, simplifica.
+3. **Mudanças cirúrgicas.** Mexer SÓ no necessário; cada linha alterada tem que rastrear ao pedido. Não
+   "melhorar" código vizinho, não refatorar o que não está quebrado, casar o estilo existente. Código morto
+   alheio: avisar, NÃO apagar sem pedir. Mudança em infra/segurança/comportamento da Ana: **confirmar antes**.
+4. **Execução por meta + loop.** Virar a tarefa em critério verificável e **loopar até passar**. Tarefa com
+   vários passos: declarar o plano curto `1. passo → verificar: X`. Usar **lista de tarefas** (TaskCreate) e,
+   quando couber, **agentes que dividem e revisam** (padrões do ECC).
+
 ## ⛔ Regras de ouro (NÃO violar)
 1. **NUNCA inventar dado.** A Ana só pode oferecer/afirmar ter imóveis que existem no banco
    (tabela `imoveis`, `ativo=1`) ou números que estão em `data/dados_financeiros.md`. Faltou
