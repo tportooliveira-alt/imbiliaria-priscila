@@ -8,6 +8,18 @@ Repos clonados: `/root/everything-claude-code` (ECC) · `/root/andrej-karpathy-s
 "Sistema operacional de agentes": 30 agentes especializados, 135 skills, 60 comandos, hooks
 automáticos. Filosofia = **orquestração ESTRUTURADA com gates e escalation**, não "N agentes soltos".
 
+## 🧐 CRÍTICA + DECISÃO (18/06) — ECC fica como REFERÊNCIA, NÃO instalado
+- **Inchaço:** 3244 arquivos, regras de angular/cpp/dart/csharp... — ~90% irrelevante pro nosso Python.
+  Irônico: viola a própria simplicidade que prega.
+- **JS/TS-centric** (hooks rodam tsc/prettier/biome) — não encaixa no Python.
+- **Cheiro de produto/hype** (211k estrelas, tier pago, npm, site, sponsors) → ceticismo saudável.
+- **Frágil de instalar** (TROUBLESHOOTING, "não empilhe métodos", reset/uninstall).
+- **A melhor coisa é o `CLAUDE.md` do Karpathy** (60 linhas, afiado), NÃO os 3244 arquivos do ECC.
+- **DECISÃO DO DONO:** ECC **não é instalado**. Tentei instalar global e o dono corrigiu — **desinstalei**
+  (505 arquivos removidos do `~/.claude/`). Fica como **pasta de referência** (`/root/everything-claude-code`),
+  só puxar **quando o dono chamar**. Adotado de verdade (nosso, não ECC ativo): disciplina Karpathy no
+  `CLAUDE.md` + `scripts/verificar.sh` (verification-loop, já provou valor).
+
 ## 5 princípios centrais (SOUL.md)
 1. **Agent-First** — mandar a tarefa pro especialista certo o quanto antes.
 2. **Test-Driven** — testar antes de confiar na implementação.

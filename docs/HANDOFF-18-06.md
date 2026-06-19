@@ -46,11 +46,35 @@ Degraus: (1) próximo upload cai no `[DIAG-MIDIA]` → conserto o download (Ana 
 (2) captação usa visão **Sonnet** (descrição mais rica, troca de 1 linha); (3) só depois, um agente
 "montador de cadastro" (fotos+descrição → ficha pronta pra Priscila).
 
+### 💧 Marca d'água (FEITO 19/06 — degrau 1)
+- **Selo redondo da marca (`assets/logo-selo.jpeg`, fundo preto removido) carimbado em TODAS as 1076
+  fotos** webp (imóveis + empreendimentos, todos os tamanhos), **centralizado, ~20% (transparente)**.
+  **No site também** (decisão do dono: "em todas"). 0 falhas.
+- **Originais preservados:** o `original.jpg` de cada pasta ficou intacto + backup completo em
+  `data/backups/fotos-originais-20260619.tar.gz` (272M, fora do git). Posse `priscila` mantida (0 root).
+- Verificado: site 200, foto webp 200. Selo transparente reutilizável em `/tmp/selo-transparente.png`.
+- ⚠️ Git ainda tem os webp SEM marca (não commitei os 1076 — é 272M de binário). Decidir se commita.
+- **Degrau 2 (a fazer):** a Ana **ENVIAR a foto** do imóvel. Precisa `whatsapp.enviar_imagem` (Evolution
+  `sendMedia`) + flow no webhook. As fotos já saem carimbadas.
+  **REGRA DE OURO (dono, não importunar):** a Ana SÓ manda foto se o cliente (a) PEDIR e (b) mostrar
+  INTERESSE real no imóvel; e mesmo assim ela **PERGUNTA antes** ("quer que eu te mande as fotos?") e só
+  envia se ele ACEITAR. Nunca mandar foto não-solicitada, nunca em rajada, nunca insistir. Cuidado
+  máximo pra não ser invasiva — melhor não mandar do que importunar.
+  **COMO ENTREGAR (dono):** se o cliente veio de FORA (WhatsApp), a Ana pergunta se ele quer o **LINK
+  do site** (onde estão todas as fotos) **ou** as **fotos aqui mesmo** — e manda conforme a escolha.
+  Se a pessoa já está conversando **pelo próprio site**, não precisa mandar nada: as fotos já estão na
+  página do imóvel — é só apontar/mostrar ali.
+
 ### 🔜 Próximo (a fazer)
 - [ ] Esperar a próxima imagem/contato cair nos logs `[DIAG-MIDIA]`/`[DIAG-LID]` → consertar o download
   da Evolution e o caso @lid.
 - [ ] **REMOVER os 2 logs temporários** depois de diagnosticar (não deixar no ar pra sempre).
 - [ ] Captação: subir visão Haiku→Sonnet.
+- [ ] **Escalonar a inteligência por COMPLEXIDADE/TAMANHO da conversa** (dono): hoje o modelo é fixo
+  por rota. Adicionar regra: se a conversa ficou longa (muitos turnos) OU complexa (financiamento,
+  negociação, lead quente, mensagens longas) → subir pro **Sonnet** mesmo que tenha começado no Haiku.
+  Barato no simples/curto, forte quando precisa. Sinais fáceis: nº de turnos do histórico + temperatura
+  do lead. Mudança no `dispatcher` — desenhar e mostrar antes (produção).
 - [ ] "Colocar na MCP" (pedido do dono, pendente) — definir o quê: tag `contato_priscila`? captação no panorama?
 - [ ] Investigar `score=0` vs `temperatura=quente`.
 
