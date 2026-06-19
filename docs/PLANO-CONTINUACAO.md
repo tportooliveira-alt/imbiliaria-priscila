@@ -21,6 +21,10 @@
   skill `disciplina-de-trabalho`, `scripts/verificar.sh`.
 - [x] **README** reescrito (completo/atual) + backups (pequeno no chat, completo via SSH).
 - [x] `codigo-da-virada` desligado · tudo no GitHub (sem segredos).
+- [x] **🚀 SITE NOVO NO AR (go-live 19/06)** — React/Vite, capa do Thiago + motor real (catálogo, Detalhe
+  com mapa, Lançamentos, Ana, avaliação→lead, captação, link compartilhável, mapa interativo do catálogo).
+  nginx: `/` → `design-recebido/pvscelos-imobiliaria/dist`; `/api/`+`/admin/`+`/assets/` intactos no motor;
+  antigo em `/v3-editorial/`. ROLLBACK: reverter o bloco `location /` (backup em `/root/nginx-imobiliaria.bak-golive-20260619`).
 
 ## 🔜 PRÓXIMOS DEGRAUS (em ordem, um de cada vez)
 
@@ -32,6 +36,25 @@
 - [ ] **3. Ana ENVIAR foto/link do imóvel** (degrau 2). REGRA DE OURO: só se o cliente pedir + mostrar
   interesse; pergunta antes; nunca importunar. WhatsApp = perguntar "link do site ou foto aqui?"; site =
   só mostrar na página. Precisa `whatsapp.enviar_imagem`. **Desenhar e mostrar antes de subir.**
+  - **OBS (19/06, dono testou no SITE):** no chat do site a Ana **diz que tem as fotos mas não manda**.
+    A gente combinou que, quando o cliente PEDE, ela MANDA (foto e/ou link). Vale pro **chat do site**
+    também (mandar foto/link no chat), não só no WhatsApp. Não esquecer — focar no site primeiro, depois isto.
+- [ ] **3b. AVALIAÇÃO do site → manda no WhatsApp da pessoa (auto)** [dono pediu 19/06]: quando o cliente
+  preenche o form de "Avalie seu imóvel" (site novo), o backend deve **calcular a AVM e MANDAR a avaliação
+  no WhatsApp dela** (não na tela). Mensagem detalhada com a regra: avaliação criteriosa é COM a Priscila;
+  **laudo** formal ela faz e **cobra**; mas se for pra **colocar à venda com ela**, ela faz todo o processo
+  (avaliação + divulgação) sem custo. É BACKEND + WhatsApp outbound (sensível, risco de ban Evolution) →
+  desenhar, mostrar a mensagem e confirmar antes de ligar. Hoje o form só cria o lead (Priscila segue manual).
+- [ ] **3c. "Evolução da Obra" (timelapse Planta→3D→Obra) nos Lançamentos** [dono pediu 19/06]: estava no
+  design original, REMOVIDO na galeria nova por falta de imagem real (eram placeholders). Trazer de volta
+  com **imagens reais de cada fase** (planta, render 3D, foto da obra) por empreendimento — o dono provê.
+  Forte pros "na planta" (Bauhaus/Chalé Entre Nuvens). É só frontend (capa) quando as imagens chegarem.
+- [ ] **3d. ÁREA DO CLIENTE (portal/dashboard)** [dono enviou o design 19/06]: dashboard lindo (patrimônio,
+  coleção salva, simulador IA, documentos, private broker). DEPENDE de backend que NÃO existe: (a) **login
+  de cliente OTP** (hoje só tem auth da corretora) + (b) **dados por cliente** (carteira, favoritos, docs).
+  O "Simulador IA" do design chama **Gemini** direto no front (não funciona + Gemini foi removido) → trocar
+  pela **Ana** (`/api/chat`, já existe). É um PROJETO (backend de portal) — fazer quando o dono quiser; até
+  lá o Login fica "em breve". NÃO subir dashboard com patrimônio/broker FALSO num site real.
 - [ ] **4. Escalonar Haiku→Sonnet por complexidade/tamanho** da conversa (não só por rota). Sinais:
   nº de turnos + temperatura do lead + financiamento/negociação. Mudança no `dispatcher`.
 - [ ] **5. Captação: visão Haiku→Sonnet** (descrição mais rica do imóvel pro cadastro).

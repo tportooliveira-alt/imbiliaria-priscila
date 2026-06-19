@@ -51,6 +51,18 @@
 
 **Lição:** Repetir ao treinar Ana — qualificar TIPO (cliente vs fornecedor) ANTES de BANT.
 
+### [PRI-586] Lead 558002020354 — REJEIÇÃO (erro de canal)
+
+**Achado crítico:** Conversa começa com "Olá! Bem-vindo ao canal oficial do Vivo Controle!" — é mensagem de TELECOM, não cliente imobiliário.
+
+**Triagem executada:**
+1. ✅ Identificado erro de canal (padrão [PRI-579])
+2. ✅ Comentário de rejeição + análise
+3. ✅ Status atualizado para `done` (descarte)
+4. ✅ Memória: [lead-pri-586-invalido]
+
+**Próximo passo:** nenhum (descarte)
+
 ## 🔜 Próximo (a fazer)
 
 - [ ] **Priscila** confirmar: Thiago 704 vai para CAPTAÇÃO ou rejeita? ([PRI-578])
@@ -63,4 +75,4 @@
 
 ---
 
-**Próximo handoff:** 20/06, registrando: decisão Priscila (Thiago 704), resultado Karen call, re-engajamentos Letícia
+**Próximo handoff:** 20/06, registrando: decisão Priscila (Thiago 704), resultado Karen call, re-engajamentos Letícia, PRI-586 rejeitado

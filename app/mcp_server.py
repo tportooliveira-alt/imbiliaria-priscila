@@ -212,6 +212,33 @@ def panorama_geral() -> dict:
     return pan
 
 
+@mcp.tool
+def saude_ads() -> dict:
+    """Verifica ao vivo se GA4, Google Ads e Meta Pixel estão carregando no site.
+    Retorna status de cada tag + se o evento generate_lead está no bundle JS."""
+    import urllib.request as _ur
+    url = "https://pvscelosimobiliaria.com/"
+    resultado = {"url": url, "tags": {}, "erro": None}
+    try:
+        with _ur.urlopen(url, timeout=10) as r:
+            html = r.read().decode("utf-8", errors="ignore")
+        resultado["tags"]["GA4"] = "G-RDZY8DPY32" in html
+        resultado["tags"]["Google_Ads"] = "AW-18124594477" in html
+        resultado["tags"]["Meta_Pixel"] = "27844979038460971" in html
+        # verifica bundle JS
+        import re as _re
+        bundle = _re.search(r'/app/index-[^"]+\.js', html)
+        if bundle:
+            js_url = "https://pvscelosimobiliaria.com" + bundle.group()
+            with _ur.urlopen(js_url, timeout=10) as r2:
+                js = r2.read().decode("utf-8", errors="ignore")
+            resultado["tags"]["generate_lead_no_bundle"] = "generate_lead" in js
+            resultado["tags"]["fbq_Lead_no_bundle"] = "fbq" in js
+    except Exception as e:
+        resultado["erro"] = str(e)
+    return resultado
+
+
 # ═══════════════ ESCRITA / CORREÇÃO (só com MCP_WRITE_ENABLED=1) ═══════════════
 if WRITE:
     # ── Agenda ──
