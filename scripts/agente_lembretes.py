@@ -86,6 +86,46 @@ def executar_ciclo() -> dict:
     return {"total": len(pendentes), "enviados": enviados, "falhas": falhas, "fallback": False}
 
 
+def enviar_lembretes_priscila_1h() -> dict:
+    """~1h antes de cada compromisso, lembra a PRISCILA no WhatsApp dela (pra nao perder horario)."""
+    import datetime as _dt
+
+    pri = "".join(c for c in os.getenv("PRISCILA_WHATSAPP", "") if c.isdigit())
+    janela = int(os.getenv("AGENTE_LEMBRETE_PRISCILA_MIN", "60"))
+    itens = agenda_repo.lembretes_1h_priscila(janela_min=janela)
+    if not itens:
+        return {"total": 0, "enviados": 0}
+    if not pri or not whatsapp.disponivel():
+        log.warning("Lembrete 1h Priscila: %s pendente(s) sem numero/Evolution.", len(itens))
+        return {"total": len(itens), "enviados": 0, "fallback": True}
+
+    enviados = 0
+    for item in itens:
+        hora = ""
+        try:  # horario em Brasilia (UTC-3)
+            ini = _dt.datetime.fromisoformat(str(item["inicio"]).replace("Z", "+00:00"))
+            if ini.tzinfo is None:
+                ini = ini.replace(tzinfo=_dt.timezone.utc)
+            hora = ini.astimezone(_dt.timezone(_dt.timedelta(hours=-3))).strftime("%H:%M")
+        except Exception:
+            hora = ""
+        com = ""
+        if item.get("lead_id"):
+            lead = leads_repo.detalhar(int(item["lead_id"])) or {}
+            nome = (lead.get("nome") or "").split()
+            if nome:
+                com = f" com {nome[0]}"
+        hora_txt = f" as {hora}" if hora else ""
+        msg = f"⏰ Priscila, daqui a ~1h: {item['titulo']}{hora_txt}{com}. Nao esquece! \U0001f60a"
+        resp = whatsapp.enviar_mensagem(pri, msg)
+        if resp.enviado:
+            agenda_repo.marcar_lembrete_1h_enviado(int(item["id"]))
+            enviados += 1
+        else:
+            log.warning("Falha lembrete 1h Priscila agenda_id=%s: %s", item["id"], resp.erro)
+    return {"total": len(itens), "enviados": enviados, "fallback": False}
+
+
 def main() -> None:
     signal.signal(signal.SIGTERM, _parar)
     signal.signal(signal.SIGINT, _parar)
@@ -102,6 +142,9 @@ def main() -> None:
             resumo = executar_ciclo()
             if resumo["total"]:
                 log.info("Ciclo concluido: %s", resumo)
+            resumo_pri = enviar_lembretes_priscila_1h()
+            if resumo_pri["total"]:
+                log.info("Lembrete 1h Priscila: %s", resumo_pri)
         except Exception:
             log.exception("Erro no ciclo do agente")
         time.sleep(INTERVALO_SEGUNDOS)

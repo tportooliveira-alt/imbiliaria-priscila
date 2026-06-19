@@ -150,3 +150,29 @@ def marcar_lembrete_enviado(item_id: int) -> None:
             "UPDATE agenda SET lembrete_enviado = 1, atualizado_em = ? WHERE id = ?",
             (_agora_iso(), item_id),
         )
+
+
+def lembretes_1h_priscila(*, janela_min: int = 60) -> list[dict]:
+    """Compromissos que comecam dentro dos proximos N minutos e ainda nao avisaram a
+    Priscila (lembrete de 1h, separado do de 24h pro cliente)."""
+    agora = datetime.now(timezone.utc)
+    limite = agora + timedelta(minutes=janela_min)
+    with db_session() as conn:
+        rows = conn.execute(
+            """SELECT * FROM agenda
+               WHERE lembrete_1h_enviado = 0
+                 AND status IN ('agendado', 'confirmado')
+                 AND inicio >= ?
+                 AND inicio <= ?
+               ORDER BY inicio ASC""",
+            (agora.isoformat(), limite.isoformat()),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def marcar_lembrete_1h_enviado(item_id: int) -> None:
+    with db_session() as conn:
+        conn.execute(
+            "UPDATE agenda SET lembrete_1h_enviado = 1, atualizado_em = ? WHERE id = ?",
+            (_agora_iso(), item_id),
+        )

@@ -412,6 +412,8 @@ def init_db() -> None:
         _migrar_coluna(conn, "imoveis", "tour_360_url", "TEXT")
         # Ponte Google Calendar: id do evento espelhado no Google (NULL = nao espelhado)
         _migrar_coluna(conn, "agenda", "gcal_event_id", "TEXT")
+        # Lembrete 1h antes PRA PRISCILA (separado do lembrete_enviado de 24h pro cliente)
+        _migrar_coluna(conn, "agenda", "lembrete_1h_enviado", "INTEGER NOT NULL DEFAULT 0")
         # Biometria (passkey/WebAuthn) + 2FA por e-mail do admin
         conn.execute(
             """CREATE TABLE IF NOT EXISTS passkeys (

@@ -65,6 +65,16 @@ Degraus: (1) próximo upload cai no `[DIAG-MIDIA]` → conserto o download (Ana 
   Se a pessoa já está conversando **pelo próprio site**, não precisa mandar nada: as fotos já estão na
   página do imóvel — é só apontar/mostrar ali.
 
+### ⏰ Lembrete 1h pra Priscila (FEITO 19/06)
+- Novo lembrete: **~1h antes de QUALQUER compromisso**, o agente avisa a **Priscila** no WhatsApp dela
+  (`PRISCILA_WHATSAPP`) pra ela não perder o horário. Mensagem: "⏰ Priscila, daqui a ~1h: [titulo] as
+  [HH:MM] com [cliente]. Nao esquece!". Horário em Brasília, dedup (não repete).
+- Cobre **os dois caminhos**: visita marcada pelo cliente (Ana) E marcação da Priscila (João) — ambos
+  gravam na mesma tabela `agenda`. O lembrete de 24h pro CLIENTE continua intacto.
+- Implementação: coluna `agenda.lembrete_1h_enviado` (migração) + `agenda.lembretes_1h_priscila()` +
+  `scripts/agente_lembretes.py::enviar_lembretes_priscila_1h()`. Janela env `AGENTE_LEMBRETE_PRISCILA_MIN`
+  (default 60). **Testado** (sem enviar) + `verificar.sh` verde + agente reiniciado. NÃO commitado ainda.
+
 ### 🔜 Próximo (a fazer)
 - [ ] Esperar a próxima imagem/contato cair nos logs `[DIAG-MIDIA]`/`[DIAG-LID]` → consertar o download
   da Evolution e o caso @lid.
