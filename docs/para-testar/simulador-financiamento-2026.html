@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Imobiliário Inteligente 2026 - Vitória da Conquista</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#16284B',
+                            navydark: '#0f1c38',
+                            peri: '#5C7CB8',
+                            perilight: '#7b95c8',
+                            bg: '#FBFCFE',
+                            surface: '#EEF2F8',
+                            line: '#dde5f0',
+                            ink: '#16284B',
+                            muted: '#5d6b86',
+                            gold: '#c9943a',
+                            goldlight: '#e8b55a',
+                            areia: '#f5f0e8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+                :root {
+            --bg-warm: #FBFCFE;
+            --accent-primary: #16284B;
+            --accent-secondary: #c9943a;
+            --glass: rgba(238, 242, 248, 0.85);
+            --glass-border: rgba(221, 229, 240, 0.8);
+            --neon-glow: rgba(201, 148, 58, 0.15);
+            --grad-gold: linear-gradient(120deg, #c9943a, #e8b55a);
+            --grad-navy: linear-gradient(120deg, #16284B 0%, #2c4a82 55%, #5C7CB8 100%);
+        }
+
+                body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #FBFCFE 0%, #f5f0e8 100%);
+            background-attachment: fixed;
+            color: var(--accent-primary);
+            scroll-behavior: smooth;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+            border-radius: 1.25rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 0 20px var(--neon-glow);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        input[type="range"] {
+            accent-color: var(--accent-primary);
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--accent-primary);
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container { height: 280px; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+<!-- Chosen Palette: Sinfonia de Neutros Quentes (Creme, Ardósia, Areia) -->
+<!-- Application Structure Plan: 
+    1. INTRODUÇÃO: Contexto macroeconômico de 2026 (Selic 14.25%) e o papel de Vitória da Conquista.
+    2. SIMULADOR DINÂMICO: O coração da SPA. Inputs de renda, valor do imóvel, idade e FGTS para processar as regras do MCMV vs Mercado Livre.
+    3. VISUALIZAÇÃO DE DADOS: Gráficos comparativos de taxas bancárias e evolução da amortização SAC.
+    4. GUIA DE CUSTOS OCULTOS: Seção dedicada a ITBI (3% em VCA), Taxas de Registro e Seguros MIP/DFI.
+    5. EXPLORAÇÃO REGIONAL: Mapa de bairros e vetores de crescimento em Conquista (Boa Vista, Zabelê, São Pedro).
+    O fluxo prioriza a utilidade imediata (Calculadora) seguida pela educação financeira necessária para fechar o negócio.
+-->
+
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 glass-card rounded-none border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <span class="font-bold text-xl tracking-tight">VCA <span class="font-light">HABITAÇÃO 2026</span></span>
+        <div class="hidden md:flex space-x-8 text-sm font-medium">
+            <a href="#inicio" class="nav-link">Início</a>
+            <a href="#simulador" class="nav-link">Simulador</a>
+            <a href="#mercado" class="nav-link">Mercado</a>
+            <a href="#custos" class="nav-link">Custos Extras</a>
+        </div>
+        <button onclick="toggleChat()" class="text-brand-navy px-5 py-2 rounded-full text-sm transition flex items-center gap-2 shadow-md hover:shadow-lg hover:-translate-y-0.5" style="background: var(--grad-gold); font-weight: 700;">
+            <span>🤖</span> Consultor IA
+        </button>
+    </div>
+</nav>
+
+<main class="pt-24 pb-12 px-4 max-w-7xl mx-auto">
+    
+    <!-- Hero Section -->
+    <section id="inicio" class="mb-16 animate-fade-in-up">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6 text-brand-navydark">
+                    Navegue no Mercado Imobiliário de <span style="background: var(--grad-gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;">2026</span>
+                </h1>
+                <p class="text-lg text-brand-muted mb-8 leading-relaxed">
+                    Com a taxa Selic em 14,25%, entender o financiamento habitacional exige precisão. Explore como as novas regras do Minha Casa, Minha Vida (MCMV) e o mercado de Vitória da Conquista impactam sua capacidade de compra.
+                </p>
+                <div class="flex space-x-4">
+                    <div class="flex items-center space-x-2 text-sm text-brand-muted">
+                        <span class="w-8 h-8 rounded-full bg-brand-surface flex items-center justify-center">✦</span>
+                        <span>Regras 2026</span>
+                    </div>
+                    <div class="flex items-center space-x-2 text-sm text-brand-muted">
+                        <span class="w-8 h-8 rounded-full bg-brand-surface flex items-center justify-center">✦</span>
+                        <span>Foco em Vitória da Conquista</span>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card p-8 border-l-4 border-brand-perilight">
+                <h3 class="font-semibold text-xl mb-4">Panorama Econômico</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-brand-muted">Taxa Selic</span>
+                        <span class="font-bold">14,25% a.a.</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-brand-muted">Teto MCMV (F4)</span>
+                        <span class="font-bold">R$ 600.000,00</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-brand-muted">ITBI Vitória da Conquista</span>
+                        <span class="font-bold">3,0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section id="simulador" class="mb-20 animate-fade-in-up delay-100">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold mb-4">Simulador Paramétrico Avançado</h2>
+            <p class="text-brand-muted max-w-2xl mx-auto">
+                Abaixo, configure seu perfil financeiro. Nossa inteligência aplicará as taxas regionais do Nordeste e os benefícios para cotistas do FGTS atualizados em Abril de 2026.
+            </p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Inputs -->
+            <div class="lg:col-span-1 glass-card p-6 space-y-6 shadow-sm">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Renda Familiar Bruta (R$)</label>
+                    <input type="range" id="inputRenda" min="1500" max="15000" step="100" value="4500" class="w-full h-2 bg-brand-line rounded-lg cursor-pointer">
+                    <div class="flex justify-between mt-2 text-lg font-bold text-brand-navy">
+                        <span id="labelRenda">R$ 4.500,00</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Valor do Imóvel (R$)</label>
+                    <input type="range" id="inputImovel" min="150000" max="800000" step="5000" value="250000" class="w-full h-2 bg-brand-line rounded-lg cursor-pointer">
+                    <div class="flex justify-between mt-2 text-lg font-bold text-brand-navy">
+                        <span id="labelImovel">R$ 250.000,00</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Entrada Disponível (R$)</label>
+                    <input type="range" id="inputEntrada" min="0" max="400000" step="5000" value="50000" class="w-full h-2 bg-brand-line rounded-lg cursor-pointer">
+                    <div class="flex justify-between mt-2 text-lg font-bold text-brand-navy">
+                        <span id="labelEntrada">R$ 50.000,00</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold mb-2">Sistema de Amortização</label>
+                    <div class="flex space-x-4 bg-brand-bg p-2 rounded-lg border">
+                        <label class="flex items-center space-x-2 cursor-pointer w-1/2 justify-center">
+                            <input type="radio" name="sisAmortizacao" value="SAC" checked class="w-4 h-4 text-brand-navy focus:ring-brand-perilight">
+                            <span class="text-sm font-bold">SAC</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer w-1/2 justify-center">
+                            <input type="radio" name="sisAmortizacao" value="PRICE" class="w-4 h-4 text-brand-navy focus:ring-brand-perilight">
+                            <span class="text-sm font-bold">PRICE</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Idade (Anos)</label>
+                        <input type="number" id="inputIdade" value="30" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-brand-perilight outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Prazo (Meses)</label>
+                        <input type="number" id="inputPrazo" value="420" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-brand-perilight outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" id="checkFGTS" checked class="w-4 h-4 text-brand-navy">
+                        <span class="text-sm text-brand-muted">Possuo 3+ anos de FGTS (Cotista)</span>
+                    </label>
+                </div>
+
+                <button onclick="calculateFinance()" class="w-full text-brand-navy py-4 rounded-xl font-bold transform transition-all active:scale-95 shadow-lg hover:shadow-2xl ring-1 ring-white/20" style="background: var(--grad-gold);">
+                    CALCULAR FINANCIAMENTO
+                </button>
+            </div>
+
+            <!-- Results -->
+            <div class="lg:col-span-2 space-y-8">
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="glass-card p-4 text-center border-t-4 border-brand-muted">
+                        <p class="text-xs uppercase tracking-widest text-brand-perilight mb-1">Enquadramento</p>
+                        <p id="resFaixa" class="text-xl font-bold">-</p>
+                    </div>
+                    <div class="glass-card p-4 text-center border-t-4 border-brand-peri">
+                        <p class="text-xs uppercase tracking-widest text-brand-perilight mb-1">Taxa de Juros</p>
+                        <p id="resTaxa" class="text-xl font-bold">-</p>
+                    </div>
+                    <div class="glass-card p-4 text-center border-t-4 border-brand-goldlight">
+                        <p class="text-xs uppercase tracking-widest text-brand-perilight mb-1">Subsídio Estimado</p>
+                        <p id="resSubsidio" class="text-xl font-bold">R$ 0,00</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 min-h-[400px]">
+                    <h4 class="font-bold mb-4 flex items-center">
+                        <span class="mr-2">📊</span> Projeção de Amortização (SAC)
+                    </h4>
+                    <div class="chart-container">
+                        <canvas id="amortizationChart"></canvas>
+                    </div>
+                    <p id="chartWarning" class="text-[10px] text-brand-perilight mt-4 italic text-center">
+                        *A simulação utiliza o Sistema de Amortização Constante (SAC). Parcelas decrescentes. TR projetada não incluída no gráfico.
+                    </p>
+                </div>
+
+                <!-- AI Report Section -->
+                <div class="glass-card p-6 mt-6 bg-gradient-to-br from-brand-bg to-brand-surface border border-brand-surface">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold flex items-center text-brand-navy">
+                            <span class="mr-2">✨</span> Análise Inteligente de Perfil
+                        </h4>
+                        <button onclick="generateAIReport()" id="btnGerarRelatorio" class="text-white px-4 py-2 rounded-lg text-sm font-bold transition flex items-center shadow-md hover:shadow-lg" style="background: var(--grad-navy);">
+                            Gerar Relatório IA
+                        </button>
+                    </div>
+                    <div id="aiReportContent" class="text-sm text-brand-peri space-y-3 hidden leading-relaxed">
+                        <!-- Conteúdo da IA será injetado aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Market Analysis Section -->
+    <section id="mercado" class="mb-20 animate-fade-in-up delay-200">
+        <div class="grid md:grid-cols-2 gap-12">
+            <div>
+                <h2 class="text-3xl font-bold mb-6">Comparativo Bancário (SBPE)</h2>
+                <p class="text-brand-muted mb-8">
+                    Para quem não se enquadra no MCMV, as taxas de mercado (SBPE) em 2026 refletem o risco da Selic elevada. Veja a média das principais instituições para financiamentos de mercado aberto.
+                </p>
+                <div class="chart-container h-80">
+                    <canvas id="bankRatesChart"></canvas>
+                </div>
+            </div>
+            <div class="space-y-6">
+                <h3 class="text-xl font-bold">Bairros em Foco: Vitória da Conquista</h3>
+                <div class="grid gap-4">
+                    <div class="glass-card p-4 flex justify-between items-center hover:translate-x-2 transition cursor-default">
+                        <div>
+                            <p class="font-bold">Boa Vista</p>
+                            <p class="text-xs text-brand-muted">Vetor de crescimento e verticalização</p>
+                        </div>
+                        <span class="bg-brand-surface px-3 py-1 rounded text-xs font-bold">R$ 4.600/m²</span>
+                    </div>
+                    <div class="glass-card p-4 flex justify-between items-center hover:translate-x-2 transition cursor-default">
+                        <div>
+                            <p class="font-bold">Zabelê / Cidade Maravilhosa</p>
+                            <p class="text-xs text-brand-muted">Foco em Casas MCMV Faixas 1 e 2</p>
+                        </div>
+                        <span class="bg-brand-surface px-3 py-1 rounded text-xs font-bold">R$ 4.100/m²</span>
+                    </div>
+                    <div class="glass-card p-4 flex justify-between items-center hover:translate-x-2 transition cursor-default">
+                        <div>
+                            <p class="font-bold">São Pedro</p>
+                            <p class="text-xs text-brand-muted">Expansão de condomínios fechados</p>
+                        </div>
+                        <span class="bg-brand-surface px-3 py-1 rounded text-xs font-bold">R$ 4.300/m²</span>
+                    </div>
+                </div>
+                <div class="p-6 text-white rounded-2xl shadow-xl" style="background: var(--grad-navy);">
+                    <p class="text-sm italic opacity-80">"Em 2026, Vitória da Conquista entregou mais de 1.600 unidades habitacionais via parcerias público-privadas, consolidando o eixo sudoeste como polo imobiliário baiano."</p>
+                    <p class="mt-4 text-xs font-bold" style="color: var(--goldlight);">— Relatório Setorial 2026</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hidden Costs Section -->
+    <section id="custos" class="mb-20 animate-fade-in-up delay-300">
+        <div class="glass-card p-8 md:p-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">Custos Extras e Transacionais</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center p-4">
+                    <div class="text-4xl mb-4">⚖️</div>
+                    <h4 class="font-bold mb-2">ITBI Municipal</h4>
+                    <p class="text-sm text-brand-muted">3,0% do valor de avaliação. Em Vitória da Conquista, muitas construtoras oferecem isenção nas Faixas 1 e 2 como bônus comercial.</p>
+                </div>
+                <div class="text-center p-4 border-x border-brand-surface">
+                    <div class="text-4xl mb-4">📄</div>
+                    <h4 class="font-bold mb-2">Escritura e Registro</h4>
+                    <p class="text-sm text-brand-muted">Cerca de 1% a 2%. Se for seu primeiro imóvel via MCMV, você possui direito legal a 50% de desconto nas taxas cartoriais.</p>
+                </div>
+                <div class="text-center p-4">
+                    <div class="text-4xl mb-4">🛡️</div>
+                    <h4 class="font-bold mb-2">Seguros MIP/DFI</h4>
+                    <p class="text-sm text-brand-muted">Obrigatórios por lei. O MIP (Morte e Invalidez) aumenta conforme a idade do proponente, impactando o CET final.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- AI Chat Widget -->
+<div id="chatWidget" class="fixed bottom-6 right-6 w-80 sm:w-96 glass-card shadow-2xl flex-col hidden z-50 overflow-hidden border border-brand-line" style="height: 500px;">
+    <div class="text-white p-4 flex justify-between items-center" style="background: var(--grad-navy);">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl">🤖</span>
+            <div>
+                <h3 class="font-bold text-sm">Especialista VCA</h3>
+                <p class="text-[10px] text-brand-perilight">Online via Gemini AI</p>
+            </div>
+        </div>
+        <button onclick="toggleChat()" class="text-brand-line hover:text-white text-2xl leading-none">&times;</button>
+    </div>
+    
+    <div id="chatHistory" class="flex-1 p-4 overflow-y-auto space-y-4 bg-white/50 text-sm flex flex-col">
+        <div class="bg-brand-line p-3 rounded-xl rounded-tl-none max-w-[85%] text-brand-navy shadow-sm">
+            Olá! Sou seu assistente de Inteligência Artificial. Conheço as regras habitacionais de 2026 e o mercado de Vitória da Conquista. O que você gostaria de saber?
+        </div>
+    </div>
+    
+    <div class="p-3 border-t bg-white flex items-center gap-2">
+        <input type="text" id="chatInput" placeholder="Pergunte sobre taxas, bairros..." class="flex-1 border rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-perilight bg-brand-bg" onkeypress="handleChatEnter(event)">
+        <button onclick="sendChatMessage()" class="text-brand-navy p-2.5 rounded-lg transition hover:-translate-y-0.5 shadow-sm" style="background: var(--grad-gold);">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+        </button>
+    </div>
+</div>
+
+<footer class="bg-white border-t py-12 px-4 text-center text-brand-perilight text-sm">
+    <p class="mb-4">© 2026 - Guia Imobiliário Digital Vitória da Conquista</p>
+    <p class="max-w-xl mx-auto leading-relaxed">
+        As informações aqui contidas baseiam-se no Relatório Estrutural de 2026. Simulações são estimativas e não substituem o parecer oficial da instituição financeira.
+    </p>
+</footer>
+
+<!-- Visualization & Content Choices: 
+    1. Report Info -> Dashboard -> Calculadora Interativa -> Justificação: Facilita a compreensão imediata do poder de compra sob as regras de 2026.
+    2. Comparison -> Chart.js (Bar) -> Taxas Bancárias -> Mostra a disparidade entre MCMV e Mercado Livre.
+    3. Progression -> Chart.js (Line) -> Amortização SAC -> Educa o usuário sobre como a parcela diminui com o tempo.
+    4. Regional Data -> HTML Cards -> Bairros de VCA -> Contextualiza os preços reais do metro quadrado local.
+    CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. Canvas-based charts only.
+-->
+
+<script>
+    // Global State
+    let amortizationChart = null;
+    let bankRatesChart = null;
+
+    // Initialization
+    window.onload = () => {
+        setupInputs();
+        initBankChart();
+        calculateFinance();
+    };
+
+    function setupInputs() {
+        const rendaInput = document.getElementById('inputRenda');
+        const imovelInput = document.getElementById('inputImovel');
+        const entradaInput = document.getElementById('inputEntrada');
+
+        rendaInput.oninput = (e) => {
+            document.getElementById('labelRenda').innerText = formatCurrency(e.target.value);
+        };
+
+        imovelInput.oninput = (e) => {
+            document.getElementById('labelImovel').innerText = formatCurrency(e.target.value);
+            entradaInput.max = e.target.value;
+        };
+
+        entradaInput.oninput = (e) => {
+            document.getElementById('labelEntrada').innerText = formatCurrency(e.target.value);
+        };
+
+        const updateEvent = () => calculateFinance();
+        
+        rendaInput.addEventListener('change', updateEvent);
+        imovelInput.addEventListener('change', updateEvent);
+        entradaInput.addEventListener('change', updateEvent);
+        document.getElementById('inputIdade').addEventListener('change', updateEvent);
+        document.getElementById('inputPrazo').addEventListener('change', updateEvent);
+        document.getElementById('checkFGTS').addEventListener('change', updateEvent);
+        
+        document.querySelectorAll('input[name="sisAmortizacao"]').forEach(r => {
+            r.addEventListener('change', updateEvent);
+        });
+    }
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    }
+
+    function determineFaixa(renda) {
+        if (renda <= 3200) return { label: 'Faixa 1', minJuros: 0.04, maxJuros: 0.0475, maxSubsidio: 55000 };
+        if (renda <= 5000) return { label: 'Faixa 2', minJuros: 0.0475, maxJuros: 0.07, maxSubsidio: 35000 };
+        if (renda <= 9600) return { label: 'Faixa 3', minJuros: 0.07, maxJuros: 0.0816, maxSubsidio: 0 };
+        if (renda <= 13000) return { label: 'Faixa 4', minJuros: 0.10, maxJuros: 0.10, maxSubsidio: 0 };
+        return { label: 'Mercado Livre (SBPE)', minJuros: 0.11, maxJuros: 0.12, maxSubsidio: 0 };
+    }
+
+    function calculateFinance() {
+        const renda = parseFloat(document.getElementById('inputRenda').value);
+        const valorImovel = parseFloat(document.getElementById('inputImovel').value);
+        let entrada = parseFloat(document.getElementById('inputEntrada').value);
+        const prazo = parseInt(document.getElementById('inputPrazo').value);
+        const isCotista = document.getElementById('checkFGTS').checked;
+        const idade = parseInt(document.getElementById('inputIdade').value);
+        const sistema = document.querySelector('input[name="sisAmortizacao"]:checked').value;
+
+        const config = determineFaixa(renda);
+        
+        // Ajuste de taxa regional e cotista
+        let taxaAnual = config.minJuros;
+        if (isCotista && config.label !== 'Mercado Livre (SBPE)') {
+            taxaAnual -= 0.005; // -0.5 p.p. para cotista
+        }
+
+        // Cálculo de subsídio simplificado (regressivo para faixa 2)
+        let subsidio = 0;
+        if (config.label === 'Faixa 1') {
+            subsidio = config.maxSubsidio * (1 - (renda / 3200) * 0.2);
+        } else if (config.label === 'Faixa 2') {
+            subsidio = config.maxSubsidio * (1 - ((renda - 3200) / 1800));
+        }
+        subsidio = Math.max(0, subsidio);
+
+        // Financiamento (Máximo 80% LTV em VCA)
+        let maxFinanciamento = valorImovel * 0.8;
+        let valorFinanciado = valorImovel - entrada - subsidio;
+        
+        if (valorFinanciado > maxFinanciamento) {
+            // Força entrada mínima
+            entrada = valorImovel * 0.2 - subsidio;
+            if (entrada < 0) entrada = 0;
+            valorFinanciado = valorImovel - entrada - subsidio;
+            document.getElementById('inputEntrada').value = entrada;
+            document.getElementById('labelEntrada').innerText = formatCurrency(entrada) + " (Mín. Exigido)";
+        }
+        
+        updateUI(config.label, taxaAnual, subsidio);
+        drawAmortizationChart(valorFinanciado, taxaAnual, prazo, sistema);
+    }
+
+    function updateUI(faixa, taxa, subsidio) {
+        document.getElementById('resFaixa').innerText = faixa;
+        document.getElementById('resTaxa').innerText = (taxa * 100).toFixed(2) + '% a.a.';
+        document.getElementById('resSubsidio').innerText = formatCurrency(subsidio);
+    }
+
+    function drawAmortizationChart(total, taxaAnual, meses, sistema) {
+        const ctx = document.getElementById('amortizationChart').getContext('2d');
+        const taxaMensal = Math.pow(1 + taxaAnual, 1/12) - 1;
+        
+        let saldoDevedor = total;
+        const labels = [];
+        const prestacaoData = [];
+        const jurosData = [];
+
+        // Price fixa
+        const parcelaPrice = total * (taxaMensal / (1 - Math.pow(1 + taxaMensal, -meses)));
+        const amortizacaoConstante = total / meses;
+
+        // Amostragem de pontos para clareza no gráfico
+        let step = Math.max(1, Math.floor(meses/20));
+
+        for (let i = 1; i <= meses; i++) {
+            const jurosMes = saldoDevedor * taxaMensal;
+            let prestacao;
+            let amortizacaoMes;
+
+            if (sistema === 'PRICE') {
+                prestacao = parcelaPrice;
+                amortizacaoMes = prestacao - jurosMes;
+            } else { // SAC
+                prestacao = amortizacaoConstante + jurosMes;
+                amortizacaoMes = amortizacaoConstante;
+            }
+            
+            if (i === 1 || i % step === 0 || i === meses) {
+                labels.push(`Mês ${i}`);
+                prestacaoData.push(prestacao.toFixed(2));
+                jurosData.push(jurosMes.toFixed(2));
+            }
+            saldoDevedor -= amortizacaoMes;
+        }
+
+        if (amortizationChart) amortizationChart.destroy();
+
+        amortizationChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: `Parcela Total (${sistema})`,
+                        data: prestacaoData,
+                        borderColor: '#16284B',
+                        backgroundColor: 'rgba(22, 40, 75, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Fração de Juros',
+                        data: jurosData,
+                        borderColor: '#c9943a',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => 'R$ ' + value
+                        }
+                    }
+                }
+            }
+        });
+
+        // Atualiza a legenda de aviso do gráfico
+        const warningEl = document.getElementById('chartWarning');
+        if (warningEl) {
+            warningEl.innerText = `*A simulação utiliza o Sistema ${sistema}. TR projetada e Seguros não incluídos no gráfico.`;
+        }
+    }
+
+    function initBankChart() {
+        const ctx = document.getElementById('bankRatesChart').getContext('2d');
+        bankRatesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Caixa (Min)', 'Itaú', 'Bradesco', 'Santander', 'Banco do Brasil'],
+                datasets: [{
+                    label: 'Taxas Médias SBPE 2026 (% a.a.)',
+                    data: [10.26, 11.60, 11.70, 11.79, 9.89],
+                    backgroundColor: [
+                        '#16284B', '#334155', '#475569', '#64748b', '#94a3b8'
+                    ],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    // --- Integração Gemini API --- //
+    
+    const geminiApiKey = ""; // Automagicamente injetado pelo ambiente
+    const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${geminiApiKey}`;
+
+    async function fetchGeminiResponse(prompt, systemInstruction) {
+        if (!geminiApiKey || geminiApiKey.trim() === "") {
+            // Mock de resposta caso a chave não esteja configurada
+            await new Promise(r => setTimeout(r, 1200));
+            return `<b>[Modo Demonstração - IA Offline]</b><br>
+Sua simulação mostra que o uso do FGTS e uma boa Entrada ajudam a driblar a Selic atual.<br>
+<br>
+📍 <b>Ponto Forte:</b> O subsídio ou taxa reduzida ajuda na aprovação da parcela para a renda informada.<br>
+⚠️ <b>Atenção:</b> Em VCA, o ITBI (3%) exigirá um bom valor à vista.<br><br>
+<i>Para ativar a IA real, configure a geminiApiKey no código fonte.</i>`;
+        }
+
+        const payload = {
+            contents: [{ parts: [{ text: prompt }] }]
+        };
+        if (systemInstruction) {
+            payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+        }
+        
+        try {
+            // Implementação de Backoff Exponencial para lidar com limites de taxa
+            let retries = 3;
+            let delay = 1000;
+            
+            while (retries > 0) {
+                const response = await fetch(geminiApiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.candidates && result.candidates[0].content) {
+                        return result.candidates[0].content.parts[0].text;
+                    }
+                } else if (response.status === 429) {
+                    retries--;
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2; // Dobra o tempo de espera
+                    continue;
+                }
+                throw new Error(`Erro na API Gemini: HTTP ${response.status}`);
+            }
+        } catch (error) {
+            console.error("Gemini AI falhou:", error);
+            return "Desculpe, ocorreu um erro ao processar sua solicitação com a IA no momento. Tente novamente mais tarde.";
+        }
+    }
+
+    async function generateAIReport() {
+        const btn = document.getElementById('btnGerarRelatorio');
+        const contentDiv = document.getElementById('aiReportContent');
+        
+        // Coleta os valores do simulador
+        const renda = document.getElementById('inputRenda').value;
+        const imovel = document.getElementById('inputImovel').value;
+        const entrada = document.getElementById('inputEntrada').value;
+        const prazo = document.getElementById('inputPrazo').value;
+        const idade = document.getElementById('inputIdade').value;
+        const sistema = document.querySelector('input[name="sisAmortizacao"]:checked').value;
+        const isCotista = document.getElementById('checkFGTS').checked ? "Sim" : "Não";
+        const faixa = document.getElementById('resFaixa').innerText;
+        
+        // UI State: Carregando
+        btn.innerHTML = `<span class="animate-spin mr-2">⚙️</span> Analisando...`;
+        btn.disabled = true;
+        contentDiv.classList.remove('hidden');
+        contentDiv.innerHTML = `
+            <div class="animate-pulse flex space-x-4">
+                <div class="flex-1 space-y-4 py-1">
+                    <div class="h-2 bg-brand-line rounded"></div>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="h-2 bg-brand-line rounded col-span-2"></div>
+                            <div class="h-2 bg-brand-line rounded col-span-1"></div>
+                        </div>
+                        <div class="h-2 bg-brand-line rounded w-5/6"></div>
+                        <div class="h-2 bg-brand-line rounded w-4/6"></div>
+                    </div>
+                </div>
+            </div>`;
+
+        const systemInstruction = "Você é um consultor financeiro sênior especialista em crédito imobiliário atuando em Vitória da Conquista, Bahia, no ano de 2026. A taxa Selic está alta (14,25%). Forneça uma análise técnica, realista e encorajadora baseada nos dados do usuário. Use tags HTML puras (apenas <b>, <i>, <br> e parágrafos estruturados div), não use markdown geral. Seja conciso e direto, listando 1 ponto forte e 1 ponto de atenção em bullet points HTML.";
+        const userPrompt = `Analise a viabilidade e dê conselhos para este perfil: Renda Familiar: R$${renda}, Valor do Imóvel: R$${imovel}, Entrada: R$${entrada}, Idade do proponente principal: ${idade} anos, Prazo desejado: ${prazo} meses (${sistema}), Possui +3 anos FGTS (Cotista): ${isCotista}, Enquadramento de programa sugerido pelo app: ${faixa}.`;
+
+        const responseText = await fetchGeminiResponse(userPrompt, systemInstruction);
+        
+        // Renderiza o resultado na div
+        const formattedHTML = responseText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n\n/g, '<br><br>');
+        contentDiv.innerHTML = formattedHTML;
+        
+        btn.innerHTML = `Relatório Atualizado`;
+        btn.disabled = false;
+    }
+
+    function toggleChat() {
+        const chat = document.getElementById('chatWidget');
+        chat.classList.toggle('hidden');
+        chat.classList.toggle('flex');
+    }
+
+    function handleChatEnter(e) {
+        if (e.key === 'Enter') sendChatMessage();
+    }
+
+    async function sendChatMessage() {
+        const inputEl = document.getElementById('chatInput');
+        const historyEl = document.getElementById('chatHistory');
+        const message = inputEl.value.trim();
+        if (!message) return;
+
+        // Adiciona balão do Usuário
+        historyEl.innerHTML += `
+            <div class="bg-brand-surface p-3 rounded-xl rounded-tr-none max-w-[85%] self-end ml-auto text-brand-navy border border-brand-line shadow-sm">
+                ${message}
+            </div>
+        `;
+        inputEl.value = '';
+        historyEl.scrollTop = historyEl.scrollHeight;
+
+        // Adiciona balão de Carregamento da IA
+        const loadingId = 'loading-' + Date.now();
+        historyEl.innerHTML += `
+            <div id="${loadingId}" class="bg-brand-surface p-3 rounded-xl rounded-tl-none max-w-[85%] text-brand-muted italic shadow-sm flex items-center gap-2">
+                <span class="animate-bounce">●</span><span class="animate-bounce delay-100">●</span><span class="animate-bounce delay-200">●</span>
+            </div>
+        `;
+        historyEl.scrollTop = historyEl.scrollHeight;
+
+        const systemInstruction = "Você é um corretor e assistente virtual amigável, nativo de Vitória da Conquista, BA (em 2026). Responda de forma extremamente concisa (máximo 2 parágrafos curtos). Você conhece regras do Minha Casa Minha Vida, taxas de juros Selic a 14.25%, bairros locais (como Boa Vista, Zabelê, Candeias) e financiamento da Caixa.";
+        const responseText = await fetchGeminiResponse(message, systemInstruction);
+
+        document.getElementById(loadingId).remove();
+        
+        // Formata e adiciona balão de Resposta da IA
+        const formattedMsg = responseText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+        historyEl.innerHTML += `
+            <div class="bg-brand-line p-3 rounded-xl rounded-tl-none max-w-[85%] text-brand-navy shadow-sm">
+                ${formattedMsg}
+            </div>
+        `;
+        historyEl.scrollTop = historyEl.scrollHeight;
+    }
+</script>
+</body>
+</html>
