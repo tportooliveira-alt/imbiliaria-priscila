@@ -23,8 +23,12 @@ MCMV_FAIXAS = [
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 2. SBPE — mercado aberto (taxa a.a. de balcão, + TR) por banco
-#    inclui prazo_max (anos) e LTV máx financiável
+# 2. SBPE — mercado aberto (taxa a.a. + TR) por banco
+#    ⚠️ CONFIANÇA BAIXA (deep-research refutou): fontes DIVERGEM muito — estas sao taxas
+#    de "balcao"/anunciadas; as MEDIAS do BCB (abr/2026) sao outras (Caixa 8,13%, Inter 9,12%,
+#    BB 9,89%, Sicoob 11,69%, Sicredi 11,72%, Bradesco 11,76%, Santander 11,85%, Itau 11,86%).
+#    → no simulador, SEMPRE rotular como ESTIMATIVA e mandar conferir na simulacao oficial do banco.
+#    inclui prazo_max (anos) e LTV máx financiável.
 # ─────────────────────────────────────────────────────────────────────────────
 SBPE_BANCOS = {
     #  banco              taxa_aa  prazo_anos  ltv
@@ -41,11 +45,16 @@ SBPE_BANCOS = {
 CAIXA_TAXA_FIXA = (0.1732, 15, 0.80)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3. PRÓ-COTISTA FGTS — taxa menor pra quem tem 3+ anos de FGTS (até imóvel 1,5M)
+# 3. PRÓ-COTISTA FGTS — ✅VERIFICADO (deep-research, fontes gov): voltou em 2026 pra imoveis
+#    NOVOS ate ~R$ 500 mil (usados ~R$ 350 mil) — NAO ate 1,5M (isso era erro).
+#    Taxa-base 6,5% + 2,16% (remuneracao do agente) = ~8,66% a.a. ao consumidor, OU 9,00-9,01%+TR
+#    conforme o banco. Exige 3+ anos de FGTS (ou saldo >= 10% da avaliacao).
 # ─────────────────────────────────────────────────────────────────────────────
 PRO_COTISTA = {
     "exige_anos_fgts": 3,
-    "teto_imovel": 1500000,
+    "teto_imovel_novo": 500000,
+    "teto_imovel_usado": 350000,
+    "taxa_aa_base": 0.0866,  # 6,5% + 2,16%
     "taxa_aa": {"Banco do Brasil": 0.0900, "Banco Inter": 0.0900, "Caixa": 0.0901},
 }
 
@@ -68,8 +77,10 @@ OUTRAS_MODALIDADES = {
 # ─────────────────────────────────────────────────────────────────────────────
 # 5. LIMITES + CUSTOS + SEGUROS
 # ─────────────────────────────────────────────────────────────────────────────
-IDADE_MAX_FIM_CONTRATO = 80     # idade + prazo <= 80 anos e 6 meses (SFH)
-CUSTOS_VDC = {"itbi_pct": 0.03, "cartorio_pct": 0.03, "avaliacao_banco": 3500}
+IDADE_MAX_FIM_CONTRATO = 80     # ✅VERIFICADO — idade + prazo <= 80 anos e 6 meses (subiu de 75)
+# ⚠️ ITBI 3% NAO confirmado (deep-research refutou) — e tributo municipal do comprador, mas a
+#    aliquota exata precisa ser conferida na Prefeitura de Vitoria da Conquista. cartorio/avaliacao idem.
+CUSTOS_VDC = {"itbi_pct": 0.03, "cartorio_pct": 0.03, "avaliacao_banco": 3500}  # ⏳conferir oficial
 DFI_MENSAL = 0.000140
 TARIFA_ADM_MENSAL = 25
 # MIP: tabela por idade — já em app/financiamento.py::TABELA_MIP_MENSAL
@@ -83,9 +94,9 @@ def classificar_faixa(renda_mensal: float, valor_imovel: float, tem_fgts: bool) 
                 return {"modalidade": "MCMV", "faixa": label,
                         "taxa_aa": taxa_com if tem_fgts else taxa_sem}
             break  # renda cabe mas imóvel acima do teto da faixa -> SBPE
-    if tem_fgts and valor_imovel <= PRO_COTISTA["teto_imovel"]:
+    if tem_fgts and valor_imovel <= PRO_COTISTA["teto_imovel_novo"]:
         return {"modalidade": "Pró-Cotista FGTS", "faixa": "—",
-                "taxa_aa": min(PRO_COTISTA["taxa_aa"].values())}
+                "taxa_aa": PRO_COTISTA["taxa_aa_base"]}  # ~8,66% (6,5%+2,16%)
     melhor = min(SBPE_BANCOS.items(), key=lambda kv: kv[1][0])  # banco mais barato
     return {"modalidade": "SBPE", "faixa": "Mercado Livre",
             "taxa_aa": melhor[1][0], "melhor_banco": melhor[0]}

@@ -22,8 +22,10 @@ CASOS = [
     ("Fronteira F4→SBPE (renda 13.001)",    13001, 700000, False, "SBPE", "Mercado Livre"),
     # Teto MCMV (BUG 4) — imóvel acima de 600k não pode ser MCMV
     ("Imóvel 601k, renda 13.000 (>teto F4)",13000, 601000, False, "SBPE", "Mercado Livre"),
-    # Pró-Cotista (BUG 12) — renda alta + FGTS deve pegar Pró-Cotista, não SBPE cheio
-    ("Renda alta + FGTS (Pró-Cotista)",     13001, 700000, True,  "Pró-Cotista FGTS", "—"),
+    # Pró-Cotista (BUG 12) — renda alta + FGTS + imovel NOVO ate 500k -> Pró-Cotista (~8,66%)
+    ("FGTS + imovel 450k (Pró-Cotista)",    13001, 450000, True,  "Pró-Cotista FGTS", "—"),
+    # Acima do teto Pró-Cotista (500k) -> cai pra SBPE mesmo com FGTS (correcao da pesquisa)
+    ("FGTS + imovel 700k (>teto -> SBPE)",  13001, 700000, True,  "SBPE", "Mercado Livre"),
     # Casos normais (devem continuar certos)
     ("MCMV F1 normal",                       2500, 180000, False, "MCMV", "Faixa 1"),
     ("MCMV F2 com FGTS",                     4500, 200000, True,  "MCMV", "Faixa 2"),
@@ -43,4 +45,4 @@ for desc, renda, valor, fgts, mod_esp, faixa_esp in CASOS:
 
 print("-" * 100)
 print(f"\nRESULTADO: {passou}/{len(CASOS)} cenários corretos.")
-print("⏳ Os valores de TAXA ainda são placeholder — trocar em taxas_2026.py quando a pesquisa cair.")
+print("✅ Taxas reais 2026 (verificadas no deep-research). MCMV/Selic/idade = alta confianca; SBPE por banco e ITBI = conferir oficial.

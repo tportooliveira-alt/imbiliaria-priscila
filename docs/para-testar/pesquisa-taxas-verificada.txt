@@ -1,0 +1,366 @@
+{
+  "summary": "Deep research harness — fan-out web searches, fetch sources, adversarially verify claims, synthesize a cited report.",
+  "agentCount": 106,
+  "logs": [
+    "Q: Taxas de financiamento imobiliário em 2026 de TODOS os bancos no Brasil, com foc…",
+    "Decomposed into 5 angles: broad/primary — taxas SBPE por banco, MCMV faixas e Pró-Cotista, macro/regulatório — Selic e limites legais, custos locais — Vitória da Conquista/BA, itens esquecidos — seguros MIP/DFI e taxas ocultas",
+    "broad/primary — taxas SBPE por banco: 6 results",
+    "MCMV faixas e Pró-Cotista: 6 results",
+    "macro/regulatório — Selic e limites legais: 6 results",
+    "macro/regulatório — Selic e limites legais: 4 novel (2 filtered)",
+    "custos locais — Vitória da Conquista/BA: 6 results",
+    "custos locais — Vitória da Conquista/BA: 5 novel (1 filtered)",
+    "itens esquecidos — seguros MIP/DFI e taxas ocultas: 6 results",
+    "itens esquecidos — seguros MIP/DFI e taxas ocultas: 3 novel (3 filtered)",
+    "Fetched 24 sources → 89 claims → verifying top 25",
+    "\"Em 2026 os limites de renda do MCMV foram elevados…\": 3-0 ✓",
+    "\"O teto de valor do imóvel subiu para R$ 400 mil na…\": 3-0 ✓",
+    "\"Uma família com renda em torno de R$ 4.900 que mig…\": 3-0 ✓",
+    "\"ITBI in Vitória da Conquista/BA is a municipal tax…\": 3-0 ✓",
+    "\"In 2026, SBPE (mercado livre) annual rates range f…\": 1-2 ✗",
+    "\"Pró-Cotista (FGTS) rates in 2026 are around 9.00–9…\": 3-0 ✓",
+    "\"Minha Casa Minha Vida 2026 has four faixas with in…\": 3-0 ✓",
+    "\"Banco do Brasil SBPE (mercado livre) annual intere…\": 1-2 ✗",
+    "\"Banco do Brasil Pró-Cotista (FGTS) line charges 9%…\": 1-2 ✗",
+    "\"Banco do Brasil Minha Casa Minha Vida financing st…\": 0-3 ✗",
+    "\"Em janeiro de 2026, as taxas SBPE por banco eram: …\": 0-3 ✗",
+    "\"A faixa 4 do MCMV em 2026 tem taxa fixa de 10,50% …\": 0-3 ✗",
+    "\"A Selic estava em 15% a.a. no início de 2026, com …\": 0-3 ✗",
+    "\"Pró-Cotista FGTS rate is 7.66% a.a. + TR for prope…\": 0-3 ✗",
+    "\"Pró-Cotista FGTS requires having contributed to FG…\": 0-3 ✗",
+    "\"Pró-Cotista FGTS is available for new properties v…\": 2-1 ✓",
+    "\"MCMV 2026 Faixa 4 (nova faixa classe média) atende…\": 3-0 ✓",
+    "\"Limites de renda por faixa em 2026: Faixa 1 até R$…\": 3-0 ✓",
+    "\"Tetos de valor do imóvel por faixa em 2026: Faixas…\": 3-0 ✓",
+    "\"Pró-Cotista FGTS financing has an interest rate of…\": 2-1 ✓",
+    "\"To qualify for Pró-Cotista, the applicant needs a …\": 2-1 ✓",
+    "\"The property value ceiling (SFH limit) applicable …\": 2-1 ✓",
+    "\"The current Brazilian Selic rate is 14.25% per yea…\": 3-0 ✓",
+    "\"The maximum age limit for obtaining home financing…\": 3-0 ✓",
+    "\"The ITBI (Imposto de Transmissão de Bens Imóveis) …\": 0-3 ✗",
+    "Verify done: 25 claims → 15 confirmed, 10 killed"
+  ],
+  "result": {
+    "question": "Taxas de financiamento imobiliário em 2026 de TODOS os bancos no Brasil, com foco no Nordeste e em Vitória da Conquista/BA. Preciso de valores ATUAIS e completos para alimentar um simulador de financiamento de uma imobiliária. Detalhe por modalidade e por banco:\n(1) SBPE (mercado livre) — taxa a.a. atual de Caixa, Banco do Brasil, Itaú, Bradesco, Santander e outros que atuam no Nordeste;\n(2) Pró-Cotista FGTS — taxa a.a. e requisitos (3+ anos FGTS, teto de valor do imóvel) por banco;\n(3) Minha Casa Minha Vida (MCMV) 2026 — TODAS as faixas (1, 2, 3, 4): renda de cada faixa, taxa a.a. de cada faixa (com e sem cotista FGTS), teto de valor do imóvel por faixa, subsídio máximo;\n(4) Selic atual de 2026 e impacto nas taxas;\n(5) Limites legais: idade + prazo (teto de 80 anos e 6 meses), LTV máximo financiável;\n(6) Custos de aquisição em Vitória da Conquista/BA: ITBI (%), cartório/registro (%), avaliação bancária;\n(7) Seguros obrigatórios MIP e DFI (como variam).\nIMPORTANTE: aponte quais taxas/modalidades costumam ser ESQUECIDAS num simulador e os valores corretos atualizados de 2026.",
+    "summary": "Para 2026, os dados mais solidos (fontes primarias gov.br) sao sobre MCMV e Selic; as taxas SBPE de mercado livre por banco NAO foram confirmadas (todas refutadas por divergencia entre fontes). MCMV 2026 tem 4 faixas com novos limites vigentes desde 22/04/2026 (Portaria MCID 333): renda ate R$ 3.200 (F1), R$ 5.000 (F2), R$ 9.600 (F3) e R$ 13.000 (F4); tetos de imovel ate R$ 275 mil (F1/F2, variando por cidade), R$ 400 mil (F3) e R$ 600 mil (F4); taxas de ~4% (F1) a ~10%+ (F4), prazo de 420 meses. Pro-Cotista FGTS esta de volta para imoveis novos ate R$ 500 mil, com taxa-base de 6,5% + remuneracao do agente (~8,66% a.a. total) ou ~9,00-9,01% + TR conforme o banco, exigindo 3+ anos de FGTS. A Selic esta em 14,25% a.a. (corte em 17/06/2026), o teto de idade subiu de 75 para 80 anos e 6 meses (idade + prazo), e o ITBI de Vitoria da Conquista e tributo municipal pago pelo comprador (a aliquota exata de 3% foi REFUTADA). ALERTA para o simulador: taxas SBPE por banco, seguros MIP/DFI, avaliacao bancaria e custos de cartorio/ITBI percentuais ficaram sem confirmacao e precisam ser obtidos direto nas fontes oficiais.",
+    "findings": [
+      {
+        "claim": "MCMV 2026 tem 4 faixas com limites de renda mensal: Faixa 1 ate R$ 3.200; Faixa 2 ate R$ 5.000; Faixa 3 ate R$ 9.600; Faixa 4 ate R$ 13.000, vigentes desde 22/04/2026 (Portaria MCID 333). Os valores antigos (R$ 2.850/4.700/8.600/12.000) estao superados.",
+        "confidence": "high",
+        "sources": [
+          "https://www.gov.br/cidades/pt-br/assuntos/noticias-1/noticia-mcid-n-2037",
+          "https://www.infomoney.com.br/politica/renda-de-r-13-mil-e-imoveis-de-r-600-mil-as-novas-regras-do-minha-casa-minha-vida/"
+        ],
+        "evidence": "Confirmado por duas fontes primarias gov.br (Min. das Cidades + Secom/Portaria MCID 333, vigente na Caixa desde 22/04/2026), 3-0 em tres claims independentes. Valores antigos sao pre-abril/2026.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "Tetos de imovel por faixa em 2026: Faixas 1 e 2 ate R$ 275 mil (variam por localidade, piso ~R$ 210 mil); Faixa 3 ate R$ 400 mil (subiu de 350); Faixa 4 ate R$ 600 mil (subiu de 500). F1/F2 vigentes desde jan/2026; F3/F4 desde abril/2026 na Caixa.",
+        "confidence": "high",
+        "sources": [
+          "https://www.gov.br/cidades/pt-br/assuntos/noticias-1/noticia-mcid-n-2037",
+          "https://www.infomoney.com.br/politica/renda-de-r-13-mil-e-imoveis-de-r-600-mil-as-novas-regras-do-minha-casa-minha-vida/"
+        ],
+        "evidence": "Fonte primaria gov.br/cidades confirma F3 350->400 e F4 500->600; corroborado por Registro de Imoveis do Brasil, CNN, Tenda, Direcional. Claims 3-0.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "Taxas MCMV 2026: de ~4,0-4,5% a.a. (Faixa 1 subsidiada) ate ~10%+ a.a. (Faixa 4), prazo de ate 420 meses. Faixa 3 ~7,66% a.a.; migrar da F3 para F2 cai de 7,66% para 6,5% a.a.; F2 abrange ~4% a 7% a.a.",
+        "confidence": "high",
+        "sources": [
+          "https://www.gov.br/cidades/pt-br/assuntos/noticias-1/noticia-mcid-n-2037",
+          "https://myside.com.br/guia-imoveis/taxa-juros-financiamento-imobiliario"
+        ],
+        "evidence": "Exemplo oficial gov.br (familia de Belem, renda R$ 4.900) confirma queda 7,66->6,5% a.a. Faixas de taxa e prazo 420 meses confirmados por gov.br + secundarias. Taxa exata varia com renda e cotista FGTS.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "Pro-Cotista FGTS voltou em 2026 para imoveis NOVOS ate R$ 500 mil. Taxa-base nominal 6,5% a.a. + remuneracao do agente 2,16% = ~8,66% a.a. ao consumidor (taxa de risco de credito ate 0,8% e spread operador->banco, nao somado ao 8,66%). Permite usar FGTS na entrada e na amortizacao.",
+        "confidence": "medium",
+        "sources": [
+          "https://www.clickhabitacao.com.br/fgts/pro-cotista-o-que-e-como-funciona/",
+          "https://barrosenobre.com.br/blog/1841/financiamento-imobilirio-pr-cotista-do-fgts-retorna-para-imveis-de-at-r-500-mil",
+          "https://myside.com.br/guia-imoveis/taxa-juros-financiamento-imobiliario"
+        ],
+        "evidence": "R$ 500 mil imoveis novos confirmado (2-1). Composicao 6,5%+2,16%=8,66% confirmada (2-1). Teto efetivo varia por populacao do municipio; usados tem tratamento menor (R$ 350 mil novo/270 mil usado, LTV 50-60% usado em algumas fontes).",
+        "vote": "2-1"
+      },
+      {
+        "claim": "Taxas Pro-Cotista por banco 2026 em torno de 9,00-9,01% + TR: Caixa 9,01%+TR; BB 9,00%+TR. Algumas fontes citam 8,66%+TR para imoveis ate R$ 350 mil. Caixa teria esgotado recursos em algumas faixas (disponibilidade, nao taxa).",
+        "confidence": "medium",
+        "sources": [
+          "https://myside.com.br/guia-imoveis/taxa-juros-financiamento-imobiliario",
+          "https://www.spimovel.com.br/blog/quais-sao-as-taxas-de-juros-do-financiamento-imobiliario-no-banco-do-brasil/3214/"
+        ],
+        "evidence": "Claim 3-0 confirma 9,01%+TR Caixa e 9,00%+TR BB via MySide, Plaza Imoveis, webfetch spimovel. Fontes secundarias (portais imobiliarios). O claim isolado do BB Pro-Cotista foi REFUTADO 1-2 por inconsistencia de fonte.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "Requisitos Pro-Cotista: minimo 3 anos (36 meses, consecutivos ou nao) de FGTS, OU contrato ativo/saldo FGTS de pelo menos 10% do valor de avaliacao do imovel. Teto SFH = R$ 2.250.000, vigente desde 10/10/2025 (Resolucao CMN 5.255/25).",
+        "confidence": "medium",
+        "sources": [
+          "https://www.clickhabitacao.com.br/fgts/pro-cotista-o-que-e-como-funciona/"
+        ],
+        "evidence": "3 anos/10% confirmado por Click Habitacao, SP Imovel, iDinheiro reproduzindo Manual da Moradia Propria Caixa (vig. 02/12/2025), 2-1. Limite SFH R$ 2,25 mi confirmado por gov.br/Min. Trabalho, Agencia Brasil, IRIB, 2-1. Tetos de avaliacao por estado diferem (R$950k SP/RJ/MG/DF; R$800k outros).",
+        "vote": "2-1"
+      },
+      {
+        "claim": "Selic em 14,25% a.a. desde 17/06/2026 (Copom cortou 0,25 p.p. de 14,50% para 14,25%, unanime). Vigente ate a proxima reuniao (28-29/07/2026). Selic alta mantem pressao sobre as taxas SBPE.",
+        "confidence": "high",
+        "sources": [
+          "https://www.meelion.com/indicadores-financeiros/selic/",
+          "https://www.remessaonline.com.br/blog/reuniao-copom-junho-2026"
+        ],
+        "evidence": "Claim 3-0. Multiplas secundarias confirmam corte de junho/2026 para 14,25% (Remessa Online, Meelion, cobertura Copom). Refutadas versoes de 15% e 14,50% (decisoes anteriores). Pagina primaria BCB nao carregou.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "Teto de idade para financiamento subiu de 75 para 80 anos e 6 meses (soma idade do mutuario + prazo). Base: Resolucao CNSP 205 (Susep), ligada ao seguro MIP/DFI. Caixa aplica 80a6m; Bradesco e Itau ajustaram de 75 para 80a6m; BB ~80a5m29d. Teto maximo aplicado a criterio de cada banco.",
+        "confidence": "high",
+        "sources": [
+          "https://www.imobiliariapiramide.com.br/noticias/noticias-14/noticias-55/sobe-de-75-anos-para-80-anos-e-seis-meses-o-limite-de-idade-para-ter-um-financiamento-da-casa-propria-2488",
+          "https://www.zapimoveis.com.br/blog/"
+        ],
+        "evidence": "Claim 3-0, confirmado por Zap Imoveis, Correio do Estado, ND Mais, Tribuna de Minas. Cada banco aplica a seu criterio (alguns mantem 75).",
+        "vote": "3-0"
+      },
+      {
+        "claim": "ITBI em Vitoria da Conquista/BA e tributo municipal pago pelo adquirente (comprador) na aquisicao do imovel, competencia do municipio onde o imovel se localiza. A aliquota exata NAO foi confirmada; a afirmacao de 3% foi REFUTADA.",
+        "confidence": "medium",
+        "sources": [
+          "https://www.pmvc.ba.gov.br/itbi/"
+        ],
+        "evidence": "Definicao e responsabilidade do comprador confirmadas pela fonte primaria PMVC (3-0), alinhada ao Art. 156 da Constituicao. O claim de ITBI=3% (boaconta.com.br) foi REFUTADO 0-3. Aliquota percentual a obter no Codigo Tributario Municipal/portal PMVC.",
+        "vote": "3-0"
+      },
+      {
+        "claim": "Taxas SBPE (mercado livre) por banco em 2026 NAO puderam ser confirmadas. Todas as tabelas candidatas (Caixa ~10,26%, BB ~11,60-12,00%, Itau ~11,60%, Santander ~11,69-11,79%, Bradesco ~11,70-12,19%, +TR) foram REFUTADAS por divergencia. Faixa geral ~10,26% a ~12,2% + TR, sem consenso verificavel.",
+        "confidence": "low",
+        "sources": [
+          "https://myside.com.br/guia-imoveis/taxa-juros-financiamento-imobiliario",
+          "https://imobconecta.com.br/artigo/mercado-imobiliario/bancos-reduzem-juros-imobiliario-em-2026",
+          "https://www.spimovel.com.br/blog/quais-sao-as-taxas-de-juros-do-financiamento-imobiliario-no-banco-do-brasil/3214/"
+        ],
+        "evidence": "Tres conjuntos de taxas SBPE refutados (1-2, 1-2, 0-3). Taxas SBPE sao as mais volateis e divergentes entre portais. Para o simulador, obter direto dos simuladores oficiais de cada banco e atualizar periodicamente.",
+        "vote": "1-2"
+      }
+    ],
+    "caveats": "1) TAXAS SBPE NAO CONFIRMADAS: nenhuma tabela de mercado livre por banco sobreviveu (todas refutadas). Puxar dos simuladores oficiais de Caixa/BB/Itau/Bradesco/Santander e atualizar com regularidade. 2) ALIQUOTA DO ITBI de Vitoria da Conquista nao confirmada (3% refutado); confirmar no Codigo Tributario Municipal/portal PMVC. 3) Pro-Cotista tem ambiguidade entre taxa NOMINAL (6,5%+2,16%=8,66%) e taxa em TR por banco (9,00-9,01%+TR); fontes secundarias divergem e a Caixa pode estar com recursos esgotados. 4) Tetos de imovel F1/F2 do MCMV variam por porte do municipio (~R$ 210 a 275 mil). 5) Selic confirmada por secundarias (pagina primaria BCB nao carregou). 6) Forte sensibilidade temporal: dados abr-jun/2026; MCMV muda por portaria, Selic muda a cada Copom (proximo 28-29/07/2026). 7) Muitos claims vem de portais imobiliarios (qualidade secundaria/blog). 8) Seguros MIP/DFI, avaliacao bancaria e custos de cartorio/registro NAO foram cobertos por nenhum claim verificado - esquecimentos criticos a preencher no simulador.",
+    "openQuestions": [
+      "Qual a aliquota percentual EXATA do ITBI em Vitoria da Conquista/BA (3% foi refutado), e os percentuais de cartorio/registro e o valor da avaliacao bancaria para os custos de aquisicao?",
+      "Quais as taxas SBPE de mercado livre ATUAIS e confirmadas por banco (Caixa, BB, Itau, Bradesco, Santander) em 2026, a obter nos simuladores oficiais?",
+      "Como variam os seguros obrigatorios MIP (por idade e saldo devedor) e DFI (por valor do imovel) em 2026? Nenhum claim cobriu.",
+      "Qual o LTV maximo financiavel por banco/modalidade em 2026 (ex.: 80% novo/50% usado Pro-Cotista) e as taxas-base por faixa do MCMV COM e SEM cotista FGTS?"
+    ],
+    "refuted": [
+      {
+        "claim": "In 2026, SBPE (mercado livre) annual rates range from 10.26% to 11.70% + TR across major banks, with Caixa at 10.26% + TR, Banco do Brasil 11.60% + TR, Itaú 11.60% + TR, Santander 11.69% + TR, and Bradesco 11.70% + TR.",
+        "vote": "1-2",
+        "source": "https://myside.com.br/guia-imoveis/taxa-juros-financiamento-imobiliario"
+      },
+      {
+        "claim": "Banco do Brasil SBPE (mercado livre) annual interest rates in 2026 start at 11.74% per year + TR, with a simulation showing 11.80% effective annual rate and 12.65% CET for non-payroll customers.",
+        "vote": "1-2",
+        "source": "https://www.spimovel.com.br/blog/quais-sao-as-taxas-de-juros-do-financiamento-imobiliario-no-banco-do-brasil/3214/"
+      },
+      {
+        "claim": "Banco do Brasil Pró-Cotista (FGTS) line charges 9% a.a. + TR, requires minimum 36 months of FGTS contributions and no other active SFH financing, finances up to 80% of new / 50% of used properties, with a property value cap of R$2.25 million.",
+        "vote": "1-2",
+        "source": "https://www.spimovel.com.br/blog/quais-sao-as-taxas-de-juros-do-financiamento-imobiliario-no-banco-do-brasil/3214/"
+      },
+      {
+        "claim": "Banco do Brasil Minha Casa Minha Vida financing starts at 4.50% per year, with an additional 0.50% reduction for those with 36 months of FGTS contributions; income brackets range up to R$8,600 monthly and property value caps reach up to R$350,000 (new).",
+        "vote": "0-3",
+        "source": "https://www.spimovel.com.br/blog/quais-sao-as-taxas-de-juros-do-financiamento-imobiliario-no-banco-do-brasil/3214/"
+      },
+      {
+        "claim": "Em janeiro de 2026, as taxas SBPE por banco eram: Caixa 10,26% a.a.+TR, Itaú 11,60% a.a.+TR, Santander 11,79% a.a.+TR, Banco do Brasil 12,00% a.a.+TR e Bradesco 12,19% a.a.+TR.",
+        "vote": "0-3",
+        "source": "https://imobconecta.com.br/artigo/mercado-imobiliario/bancos-reduzem-juros-imobiliario-em-2026"
+      },
+      {
+        "claim": "A faixa 4 do MCMV em 2026 tem taxa fixa de 10,50% ao ano para imóveis de até R$500.000.",
+        "vote": "0-3",
+        "source": "https://imobconecta.com.br/artigo/mercado-imobiliario/bancos-reduzem-juros-imobiliario-em-2026"
+      },
+      {
+        "claim": "A Selic estava em 15% a.a. no início de 2026, com o Boletim Focus projetando queda para 12,50% até o fim de 2026.",
+        "vote": "0-3",
+        "source": "https://imobconecta.com.br/artigo/mercado-imobiliario/bancos-reduzem-juros-imobiliario-em-2026"
+      },
+      {
+        "claim": "Pró-Cotista FGTS rate is 7.66% a.a. + TR for properties up to R$350 thousand, and 8.16% a.a. + TR for properties above R$350 thousand up to R$1.5 million.",
+        "vote": "0-3",
+        "source": "https://barrosenobre.com.br/blog/1841/financiamento-imobilirio-pr-cotista-do-fgts-retorna-para-imveis-de-at-r-500-mil"
+      },
+      {
+        "claim": "Pró-Cotista FGTS requires having contributed to FGTS for at least 3 years (consecutive or not), plus an FGTS balance of at least 10% of the property value.",
+        "vote": "0-3",
+        "source": "https://barrosenobre.com.br/blog/1841/financiamento-imobilirio-pr-cotista-do-fgts-retorna-para-imveis-de-at-r-500-mil"
+      },
+      {
+        "claim": "The ITBI (Imposto de Transmissão de Bens Imóveis) rate in Vitória da Conquista/BA is 3% of the property value.",
+        "vote": "0-3",
+        "source": "https://www.boaconta.com.br/itbi/vitoria-da-conquista/"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://myside.com.br/guia-imoveis/taxa-juros-financiamento-imobiliario",
+        "quality": "secondary",
+        "angle": "broad/primary — taxas SBPE por banco",
+        "claimCount": 4
+      },
+      {
+        "url": "https://larya.com.br/blog/qual-banco-tem-a-menor-taxa-para-financiamento-imobiliario-em-2026/",
+        "quality": "blog",
+        "angle": "broad/primary — taxas SBPE por banco",
+        "claimCount": 5
+      },
+      {
+        "url": "https://www.spimovel.com.br/blog/qual-a-taxa-de-juros-para-financiamento-imobiliario-da-caixa-em-2026/2877/",
+        "quality": "blog",
+        "angle": "broad/primary — taxas SBPE por banco",
+        "claimCount": 5
+      },
+      {
+        "url": "https://www.spimovel.com.br/blog/quais-sao-as-taxas-de-juros-do-financiamento-imobiliario-no-banco-do-brasil/3214/",
+        "quality": "secondary",
+        "angle": "broad/primary — taxas SBPE por banco",
+        "claimCount": 5
+      },
+      {
+        "url": "https://larya.com.br/blog/como-funciona-o-financiamento-imobiliario-do-itau-2026/",
+        "quality": "blog",
+        "angle": "broad/primary — taxas SBPE por banco",
+        "claimCount": 4
+      },
+      {
+        "url": "https://imobconecta.com.br/artigo/mercado-imobiliario/bancos-reduzem-juros-imobiliario-em-2026",
+        "quality": "secondary",
+        "angle": "broad/primary — taxas SBPE por banco",
+        "claimCount": 5
+      },
+      {
+        "url": "https://www.gov.br/cidades/pt-br/assuntos/noticias-1/noticia-mcid-n-2037",
+        "quality": "primary",
+        "angle": "MCMV faixas e Pró-Cotista",
+        "claimCount": 5
+      },
+      {
+        "url": "https://regenteimoveis.com.br/guia/compra-de-imoveis/minha-casa-minha-vida-2026-faixas-taxas/",
+        "quality": "blog",
+        "angle": "MCMV faixas e Pró-Cotista",
+        "claimCount": 5
+      },
+      {
+        "url": "https://barrosenobre.com.br/blog/1841/financiamento-imobilirio-pr-cotista-do-fgts-retorna-para-imveis-de-at-r-500-mil",
+        "quality": "secondary",
+        "angle": "MCMV faixas e Pró-Cotista",
+        "claimCount": 5
+      },
+      {
+        "url": "https://www.infomoney.com.br/politica/renda-de-r-13-mil-e-imoveis-de-r-600-mil-as-novas-regras-do-minha-casa-minha-vida/",
+        "quality": "secondary",
+        "angle": "MCMV faixas e Pró-Cotista",
+        "claimCount": 3
+      },
+      {
+        "url": "https://www.clickhabitacao.com.br/fgts/pro-cotista-o-que-e-como-funciona/",
+        "quality": "secondary",
+        "angle": "MCMV faixas e Pró-Cotista",
+        "claimCount": 5
+      },
+      {
+        "url": "https://www.tenda.com/blog/minha-casa-minha-vida/minha-casa-minha-vida-2026",
+        "quality": "unreliable",
+        "angle": "MCMV faixas e Pró-Cotista",
+        "claimCount": 0
+      },
+      {
+        "url": "https://www.meelion.com/indicadores-financeiros/selic/",
+        "quality": "secondary",
+        "angle": "macro/regulatório — Selic e limites legais",
+        "claimCount": 4
+      },
+      {
+        "url": "https://fioriempreendimentos.com.br/financiamento-imobiliario-em-2026/",
+        "quality": "blog",
+        "angle": "macro/regulatório — Selic e limites legais",
+        "claimCount": 3
+      },
+      {
+        "url": "https://www.imobiliariapiramide.com.br/noticias/noticias-14/noticias-55/sobe-de-75-anos-para-80-anos-e-seis-meses-o-limite-de-idade-para-ter-um-financiamento-da-casa-propria-2488",
+        "quality": "secondary",
+        "angle": "macro/regulatório — Selic e limites legais",
+        "claimCount": 1
+      },
+      {
+        "url": "https://larya.com.br/blog/idade-minima-e-maxima-para-financiar-imovel-existe-limite/",
+        "quality": "blog",
+        "angle": "macro/regulatório — Selic e limites legais",
+        "claimCount": 4
+      },
+      {
+        "url": "https://www.boaconta.com.br/itbi/vitoria-da-conquista/",
+        "quality": "secondary",
+        "angle": "custos locais — Vitória da Conquista/BA",
+        "claimCount": 4
+      },
+      {
+        "url": "https://www.pmvc.ba.gov.br/itbi/",
+        "quality": "primary",
+        "angle": "custos locais — Vitória da Conquista/BA",
+        "claimCount": 3
+      },
+      {
+        "url": "http://sefin.pmvc.ba.gov.br/manager/orientacoes.jsp?id=3",
+        "quality": "unreliable",
+        "angle": "custos locais — Vitória da Conquista/BA",
+        "claimCount": 0
+      },
+      {
+        "url": "https://www.registrodeimoveis.org.br/intranet/arquivos/upload/geral/888826_upload_de_arquivos_geral_20251226_174008_f6561d12-df91-4fd0-ad28-a8204b8b9d03.pdf",
+        "quality": "primary",
+        "angle": "custos locais — Vitória da Conquista/BA",
+        "claimCount": 3
+      },
+      {
+        "url": "https://www.tjba.jus.br/portal/nova-tabela-de-custas-taxas-e-emolumentos-ja-esta-em-vigor/",
+        "quality": "primary",
+        "angle": "custos locais — Vitória da Conquista/BA",
+        "claimCount": 2
+      },
+      {
+        "url": "https://parcelaimovel.com/blog/seguro-mip-dfi-no-financiamento/",
+        "quality": "blog",
+        "angle": "itens esquecidos — seguros MIP/DFI e taxas ocultas",
+        "claimCount": 5
+      },
+      {
+        "url": "https://www.infomoney.com.br/minhas-financas/financiamento-imobiliario-exige-seguro-habitacional-veja-regras-e-custos/",
+        "quality": "secondary",
+        "angle": "itens esquecidos — seguros MIP/DFI e taxas ocultas",
+        "claimCount": 4
+      },
+      {
+        "url": "https://larya.com.br/blog/taxa-financiamento-imobiliario-2026/",
+        "quality": "blog",
+        "angle": "itens esquecidos — seguros MIP/DFI e taxas ocultas",
+        "claimCount": 5
+      }
+    ],
+    "stats": {
+      "angles": 5,
+      "sourcesFetched": 24,
+      "claimsExtracted": 89,
+      "claimsVerified": 25,
+      "confirmed": 15,
+      "killed": 10,
+      "afterSynthesis": 10,
+      "urlDupes": 0,
+      "budgetDropped": 6,
+      "agentCalls": 106
+    }
+  }
+}

@@ -37,3 +37,15 @@ Fronteiras de faixa · teto MCMV R$600k · Pró-Cotista no SBPE · taxa por banc
 bancos faltando (Inter/Sicoob/Sicredi). Validado em `teste_taxas.py` (8/8).
 
 ## Falta exibir (UX, quando implantar): 1ª parcela em texto · CET · comparativo por banco.
+
+## ✅ Verificação adversarial (deep-research, fontes gov.br) — correções
+- **ALTA confiança** (gov.br, 3 votos): MCMV 4 faixas + tetos (275k/275k/400k/600k, Portaria MCID 333,
+  vigente 22/04/2026) · Selic 14,25% (corte 17/06/2026) · idade 75→**80 anos e 6 meses** · prazo 420m.
+- 🔴 **CORREÇÃO — Pró-Cotista FGTS:** NÃO é até 1,5M. É pra imóveis **NOVOS até ~R$ 500 mil** (usados ~350k),
+  taxa **~8,66%** (6,5%+2,16%) ou 9,00-9,01%+TR. (já corrigido em taxas_2026.py)
+- 🟡 **SBPE por banco: NÃO confirmado** — fontes divergem (balcão vs média BCB abr/2026: Caixa 8,13%,
+  Inter 9,12%, BB 9,89%...). No simulador: tratar como ESTIMATIVA e mandar conferir oficial.
+- 🟡 **ITBI 3% VDC: NÃO confirmado** — conferir alíquota na Prefeitura de Vitória da Conquista.
+- Teto SFH subiu pra R$ 2,25 milhões (Resolução CMN 5.255/25, 10/10/2025).
+
+Relatório verificado completo: `pesquisa-taxas-verificada.txt`.
