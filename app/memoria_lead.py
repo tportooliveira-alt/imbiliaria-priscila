@@ -49,13 +49,23 @@ def ficha_viva(lead_id: int | None) -> str:
     if uteis:
         linhas.append("Marcadores: " + ", ".join(uteis[:8]))
 
-    # O que o cliente já te disse (só mensagens recebidas, ignora mídia/sistema)
+    # O que o cliente já te disse (só mensagens recebidas, ignora mídia/sistema).
+    # TRAVA DE TEMPO: só as últimas 36h — evita puxar intenção velha (ex.: "comprar apto"
+    # de 5 dias atrás) e a Ana assumir contexto que já não vale.
+    import datetime as _dtm
+    _corte_fv = _dtm.datetime.now() - _dtm.timedelta(hours=36)
+    def _fresco(_it):
+        try:
+            return _dtm.datetime.fromisoformat(str(_it.get("criado_em") or "")) >= _corte_fv
+        except Exception:
+            return False
     recebidas = [
         (i.get("descricao") or "").strip()
         for i in (d.get("interacoes") or [])
         if i.get("tipo") == "whatsapp_recebido"
         and (i.get("descricao") or "").strip()
         and not (i.get("descricao") or "").startswith("[")
+        and _fresco(i)
     ]
     if recebidas:
         # interacoes vêm do mais recente pro mais antigo. A 1ª coisa que o cliente disse
@@ -74,6 +84,9 @@ def ficha_viva(lead_id: int | None) -> str:
     quem = f" ({nome})" if nome else ""
     return (
         f"O QUE VOCÊ JÁ SABE DESTE CLIENTE{quem} — use com JOGO DE CINTURA: não jogue na "
-        "cara como se fosse do agora, confirme com leveza antes de assumir:\n- "
+        "cara como se fosse do agora, confirme com leveza antes de assumir.\n"
+        "REGRA: se a mensagem dele for VAGA (só 'oi', 'bom dia', 'tudo bem'), apenas "
+        "CUMPRIMENTE e pergunte como pode ajudar HOJE — NÃO despeje imóvel/valor/pitch baseado "
+        "nessa memória. Use a memória só pra não repetir pergunta quando ele RETOMAR o assunto.\n- "
         + "\n- ".join(linhas)
     )
