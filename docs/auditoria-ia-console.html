@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandbox de Auditoria IA - VDC Imóveis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --primary: #0f172a; --accent: #2563eb; }
+        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 1); }
+        .audit-tag { padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 0.75rem; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-900">Console de Auditoria IA</h1>
+            <p class="text-slate-500 mt-2">Valide as respostas da "Ana" antes de colocar em produção.</p>
+        </header>
+
+        <div class="glass-panel p-6 rounded-3xl shadow-xl">
+            <!-- Input Area -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-slate-700 mb-2">Mensagem da IA para auditar:</label>
+                <textarea id="aiInput" class="w-full p-4 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-all" rows="4" placeholder="Cole a resposta da IA aqui..."></textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="auditarMensagem()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-colors">
+                    🔍 Auditar Qualidade
+                </button>
+                <button onclick="sugerirReescrita()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-500 transition-colors">
+                    ✨ Sugerir Reescrita (Curta)
+                </button>
+            </div>
+
+            <!-- Result Area -->
+            <div id="results" class="mt-8 hidden border-t border-slate-200 pt-6">
+                <h2 class="text-lg font-bold text-slate-900 mb-4">Relatório de Auditoria</h2>
+                <div id="auditOutput" class="prose prose-slate max-w-none text-slate-700 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <!-- Results injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações de Auditoria
+        const SYSTEM_PROMPT_AUDIT = `Você é um auditor sênior de atendimento imobiliário para a cidade de Vitória da Conquista.
+        Sua tarefa é analisar a mensagem fornecida e verificar se ela respeita as seguintes regras:
+        1. É curta e objetiva (máx 2 frases)?
+        2. Fez apenas 1 pergunta por vez?
+        3. NÃO fez simulações financeiras ou cálculos de taxas?
+        4. O tom é humano e local (VDC)?
+
+        Se a mensagem falhar em algum desses pontos, explique o porquê de forma direta.`;
+
+        const SYSTEM_PROMPT_REWRITE = `Você é um especialista em copy para WhatsApp imobiliário.
+        Reescreva a mensagem fornecida para torná-la:
+        1. Extremamente curta (WhatsApp-style).
+        2. Apenas uma pergunta final.
+        3. Natural, evitando linguagem robótica.
+        4. Sem estimativas financeiras.`;
+
+        async function callGemini(prompt, userMessage) {
+            const apiKey = ""; // Insira a chave API
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userMessage }] }],
+                        systemInstruction: { parts: [{ text: prompt }] }
+                    })
+                });
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (err) {
+                return "Erro de conexão: Verifique a API Key.";
+            }
+        }
+
+        async function auditarMensagem() {
+            const input = document.getElementById('aiInput').value;
+            if(!input) return;
+
+            showLoading();
+            const result = await callGemini(SYSTEM_PROMPT_AUDIT, input);
+            displayResult(result);
+        }
+
+        async function sugerirReescrita() {
+            const input = document.getElementById('aiInput').value;
+            if(!input) return;
+
+            showLoading();
+            const result = await callGemini(SYSTEM_PROMPT_REWRITE, input);
+            displayResult(`<strong>Sugestão de Reescrita:</strong><br><br>${result}`);
+        }
+
+        function showLoading() {
+            const container = document.getElementById('results');
+            container.classList.remove('hidden');
+            document.getElementById('auditOutput').innerHTML = "Analisando com critério...";
+        }
+
+        function displayResult(html) {
+            document.getElementById('auditOutput').innerHTML = html;
+        }
+    </script>
+</body>
+</html>
