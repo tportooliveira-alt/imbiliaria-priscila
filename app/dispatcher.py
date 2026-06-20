@@ -88,9 +88,9 @@ def _montar_contexto_carteira() -> str:
                 if carac:
                     linhas.append(f"      diferenciais: {', '.join(carac[:8])}")
                 # Resumo da descricao real (ex.: 'colado no Shopping Conquista Sul')
-                desc = _limpar(r["descricao"] or "")
-                if desc:
-                    linhas.append(f"      detalhes: {desc[:500]}")
+                # NAO injeta a prosa de marketing da descricao (vem cheia de "sofisticado",
+                # "alto padrao", "exclusividade") — a Ana acabava repetindo isso. Os fatos
+                # uteis ja estao nas caracteristicas acima (piscina, energia solar, etc.).
         return "\n".join(linhas)
     except Exception:
         return ""
