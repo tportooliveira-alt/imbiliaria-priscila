@@ -1,105 +1,91 @@
 """TABELA PARAMETRIZADA DE TAXAS 2026 — fonte única da verdade (PARA TESTE).
 
-Objetivo: tirar as taxas chumbadas do JavaScript do simulador e centralizar TUDO aqui,
-num lugar só, fácil de atualizar quando a pesquisa profunda (deep-research) retornar.
+Valores REAIS de 2026 (jun/2026), do relatório de varredura completa (Sonnet/PC + MySide/BCB/Caixa).
+Centraliza TUDO aqui pra tirar as taxas chumbadas do JavaScript do simulador.
 
-⚠️ Os valores abaixo são PLACEHOLDER (mistura do que já temos + o relatório de auditoria).
-Marcados com:  # ⏳PESQUISA  = trocar pelo valor confirmado de 2026 quando o relatório chegar.
-              # ✅CONFIRM  = já validado.
-
-Plano: depois de preenchido e testado, isto vira `app/taxas_2026.py` e o
-`app/financiamento.py` passa a importar daqui (uma fonte só). O simulador HTML chama
-`/api/simular-financiamento`, que usa estes parâmetros — acabam os 12 bugs do JS.
+Plano: depois de testado, vira `app/taxas_2026.py` e o `app/financiamento.py` importa daqui.
+O simulador HTML chama `/api/simular-financiamento`, que usa estes parâmetros — acabam os bugs.
 """
 from __future__ import annotations
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 1. MACRO
-# ─────────────────────────────────────────────────────────────────────────────
-SELIC_AA = 0.1425          # ⏳PESQUISA — Selic 2026 (relatório citou 14,25%)
-DATA_REFERENCIA = "2026-06"  # carimbo da última atualização das taxas
+SELIC_AA = 0.1425            # Selic 2026
+DATA_REFERENCIA = "2026-06"  # jun/2026
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 2. MINHA CASA MINHA VIDA (MCMV) — por FAIXA
-#    renda_max: teto de renda mensal da faixa
-#    taxa_aa / taxa_aa_cotista: taxa ao ano (sem / com 3+ anos de FGTS)
-#    teto_imovel: valor MÁXIMO do imóvel pra se enquadrar na faixa
-#    subsidio_max: subsídio máximo possível na faixa
+# 1. MCMV — Minha Casa Minha Vida (por FAIXA)
+#    (label, renda_max, taxa_sem_fgts, taxa_com_fgts, teto_imovel, prazo_meses, subsidio_max)
 # ─────────────────────────────────────────────────────────────────────────────
 MCMV_FAIXAS = [
-    # label,      renda_max, taxa_aa,  taxa_aa_cotista, teto_imovel, subsidio_max
-    ("Faixa 1",     3200,    0.0400,   0.0400,          264000,      55000),   # ⏳PESQUISA (relatório: real 4,0-4,5%)
-    ("Faixa 2",     5000,    0.0475,   0.0475,          264000,      35000),   # ⏳PESQUISA (real 4,75-5,5%)
-    ("Faixa 3",     9600,    0.0766,   0.0766,          350000,      0),       # ⏳PESQUISA (real 7,66%)
-    ("Faixa 4",    13000,    0.1000,   0.0900,          600000,      0),       # ⏳PESQUISA (teto F4 = 600k)
+    ("Faixa 1",  3200, 0.0450, 0.0400, 275000, 420, 55000),
+    ("Faixa 2",  5000, 0.0550, 0.0475, 275000, 420, 35000),
+    ("Faixa 3",  9600, 0.0766, 0.0650, 400000, 420, 0),
+    ("Faixa 4", 13000, 0.1000, 0.0950, 600000, 420, 0),
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3. SBPE (mercado livre) — taxa a.a. por banco (financiamentos acima do teto MCMV)
+# 2. SBPE — mercado aberto (taxa a.a. de balcão, + TR) por banco
+#    inclui prazo_max (anos) e LTV máx financiável
 # ─────────────────────────────────────────────────────────────────────────────
 SBPE_BANCOS = {
-    "Caixa":            0.1026,   # ⏳PESQUISA (relatório: 10,26% mín — ✅bate)
-    "Banco do Brasil":  0.1160,   # ⏳PESQUISA (relatório: BUG, JS mostrava 9,89%; real ~11,60%)
-    "Itau":             0.1160,   # ✅CONFIRM (relatório OK)
-    "Bradesco":         0.1170,   # ✅CONFIRM
-    "Santander":        0.1169,   # ⏳PESQUISA (relatório: real 11,69%, JS mostrava 11,79%)
+    #  banco              taxa_aa  prazo_anos  ltv
+    "Caixa":            (0.1026,  35, 0.90),
+    "Sicredi":          (0.1033,  30, 0.80),
+    "Sicoob":           (0.1050,  30, 0.80),
+    "Banco do Brasil":  (0.1160,  30, 0.80),
+    "Itau":             (0.1160,  30, 0.80),
+    "Santander":        (0.1169,  30, 0.80),
+    "Bradesco":         (0.1170,  30, 0.80),
+    "Banco Inter":      (0.1376,  30, 0.75),
 }
+# Caixa Taxa Fixa (SEM TR, previsibilidade total): 17,32% a.a., prazo 15 anos.
+CAIXA_TAXA_FIXA = (0.1732, 15, 0.80)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 4. PRO-COTISTA FGTS — taxa menor pra quem tem 3+ anos de FGTS (renda alta/SBPE)
-#    (o simulador atual ESQUECE isso — BUG 12)
+# 3. PRÓ-COTISTA FGTS — taxa menor pra quem tem 3+ anos de FGTS (até imóvel 1,5M)
 # ─────────────────────────────────────────────────────────────────────────────
 PRO_COTISTA = {
     "exige_anos_fgts": 3,
-    "teto_imovel": 1500000,        # ⏳PESQUISA (tinhamos 1,5 mi)
-    "taxa_aa": {
-        "Caixa":           0.0901,  # ⏳PESQUISA
-        "Banco do Brasil": 0.0900,  # ⏳PESQUISA
-    },
+    "teto_imovel": 1500000,
+    "taxa_aa": {"Banco do Brasil": 0.0900, "Banco Inter": 0.0900, "Caixa": 0.0901},
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. LIMITES LEGAIS
+# 4. MODALIDADES ALTERNATIVAS (faltavam no simulador) — referência
 # ─────────────────────────────────────────────────────────────────────────────
-IDADE_MAX_FIM_CONTRATO = 80     # ✅CONFIRM (idade + prazo <= 80 anos e 6 meses)
-LTV_MAX = 0.80                  # ⏳PESQUISA — % máx financiável (tínhamos 80%)
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 6. CUSTOS DE AQUISIÇÃO — Vitória da Conquista/BA (pagos UMA vez)
-# ─────────────────────────────────────────────────────────────────────────────
-CUSTOS_VDC = {
-    "itbi_pct": 0.03,            # ✅CONFIRM — ITBI 3% em VDC
-    "cartorio_pct": 0.03,        # ⏳PESQUISA (1-2%? 3%? confirmar)
-    "avaliacao_banco": 3500,     # ⏳PESQUISA (~R$ 3.500)
+OUTRAS_MODALIDADES = {
+    "SFI (imovel > 1,5M)":      {"taxa_aa": (0.12, 0.16), "fgts": False, "obs": "alto padrão, negociável"},
+    "IPCA + spread (Inter)":    {"taxa": "9,5% a.a. + IPCA", "obs": "classe média digital"},
+    "Home Equity":              {"taxa_am": (0.0112, 0.0180), "prazo_anos": 20, "ltv": 0.60,
+                                 "obs": "garantia de imóvel quitado (Santander/Inter/Itaú/Creditas)"},
+    "Consorcio":                {"juros": 0.0, "taxa_adm_aa": (0.015, 0.020),
+                                 "obs": "sem juros, sem pressa, disciplinado"},
+    "VCA Facilita (LOCAL VDC)": {"taxa": "sem IGPM/INCC", "parcelas": 240, "entrada_parcelada": 36,
+                                 "obs": "programa local p/ autônomo/MEI/sem renda formal"},
+    "Direto construtora (VDC)": {"obs": "Gráfico, AGRA, JC Imóveis — parcelado, INCC durante a obra"},
+    "INCC (imóvel na planta)":  {"taxa_aa": 0.065, "obs": "índice da construção durante a obra"},
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 7. SEGUROS OBRIGATÓRIOS (já tratados no app/financiamento.py com tabela por idade)
+# 5. LIMITES + CUSTOS + SEGUROS
 # ─────────────────────────────────────────────────────────────────────────────
-DFI_MENSAL = 0.000140           # ✅CONFIRM (0,014% a.m. sobre valor avaliação)
-TARIFA_ADM_MENSAL = 25          # ⏳PESQUISA (R$ 25/mês)
+IDADE_MAX_FIM_CONTRATO = 80     # idade + prazo <= 80 anos e 6 meses (SFH)
+CUSTOS_VDC = {"itbi_pct": 0.03, "cartorio_pct": 0.03, "avaliacao_banco": 3500}
+DFI_MENSAL = 0.000140
+TARIFA_ADM_MENSAL = 25
 # MIP: tabela por idade — já em app/financiamento.py::TABELA_MIP_MENSAL
 
 
-def classificar_faixa(renda_mensal: float, valor_imovel: float, tem_fgts: bool):
-    """Classifica a operação (corrige os BUGs 1-5 do simulador: fronteiras + teto MCMV).
-
-    Retorna dict: {modalidade, faixa, taxa_aa, teto_ok}.
-    Regra: se renda <= teto da faixa E imóvel <= teto_imovel da faixa -> MCMV.
-           senão -> SBPE (com Pró-Cotista se tiver FGTS).
-    """
-    for label, renda_max, taxa, taxa_cot, teto_imovel, _sub in MCMV_FAIXAS:
+def classificar_faixa(renda_mensal: float, valor_imovel: float, tem_fgts: bool) -> dict:
+    """Classifica a operação — corrige os bugs: fronteiras de faixa + teto MCMV + Pró-Cotista."""
+    for label, renda_max, taxa_sem, taxa_com, teto_imovel, _prazo, _sub in MCMV_FAIXAS:
         if renda_mensal <= renda_max:
             if valor_imovel <= teto_imovel:
-                return {
-                    "modalidade": "MCMV",
-                    "faixa": label,
-                    "taxa_aa": taxa_cot if tem_fgts else taxa,
-                }
-            break  # renda cabe na faixa mas imóvel acima do teto -> cai pra SBPE
-    # SBPE — Pró-Cotista se tiver FGTS e imóvel dentro do teto
+                return {"modalidade": "MCMV", "faixa": label,
+                        "taxa_aa": taxa_com if tem_fgts else taxa_sem}
+            break  # renda cabe mas imóvel acima do teto da faixa -> SBPE
     if tem_fgts and valor_imovel <= PRO_COTISTA["teto_imovel"]:
         return {"modalidade": "Pró-Cotista FGTS", "faixa": "—",
                 "taxa_aa": min(PRO_COTISTA["taxa_aa"].values())}
+    melhor = min(SBPE_BANCOS.items(), key=lambda kv: kv[1][0])  # banco mais barato
     return {"modalidade": "SBPE", "faixa": "Mercado Livre",
-            "taxa_aa": min(SBPE_BANCOS.values())}
+            "taxa_aa": melhor[1][0], "melhor_banco": melhor[0]}
