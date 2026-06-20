@@ -234,7 +234,13 @@ def simular(payload: SimulacaoRequest) -> dict:
         "custos_aquisicao": r.custos_aquisicao,
         "comparativo_bancos": comparativo,
         "fonte_taxas": "Sites oficiais dos bancos (SBPE) - abril/2026",
+        "aviso_estimativa": (
+            "⚠️ ESTIMATIVA — estes valores são apenas uma simulação aproximada. A taxa real, a "
+            "parcela e a aprovação só o banco confirma na análise do seu perfil de crédito (score, "
+            "renda, relacionamento, FGTS). Pode variar. A Priscila faz a simulação oficial com você."
+        ),
         "observacoes": [
+            "Esta simulacao e uma ESTIMATIVA — os numeros reais quem confirma e o banco na analise do seu perfil.",
             "Parcela inclui MIP (seguro morte/invalidez), DFI (seguro do imovel) e tarifa adm.",
             "MIP varia com a idade do tomador — quanto mais velho, mais caro.",
             "Taxa real depende do seu relacionamento com o banco, score de credito e modalidade (FGTS, SBPE, MCMV).",
