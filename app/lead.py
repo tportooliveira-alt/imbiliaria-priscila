@@ -22,13 +22,21 @@ Bairro_TOKENS = {
     "alto maron", "guarani", "felicia", "felícia", "vitoria da conquista", "vitória da conquista", "vdc"
 }
 PRAZO_TOKENS = {
-    "este mes", "esse mes", "ainda esse ano", "ate", "até", "urgente", "logo", "sem pressa", "proximo ano"
+    "este mes", "esse mes", "ainda esse ano", "esse ano", "ate o fim", "até o fim",
+    "ate o ano", "até o ano", "urgente", "com pressa", "logo", "sem pressa",
+    "proximo ano", "próximo ano", "proximos meses", "próximos meses",
 }
 # Vendedor/proprietario: lead valioso (imovel pra captar) — nao pode cair como frio.
+# Alinhado com router.PALAVRAS_CAPTACAO pra a rota e o funil concordarem.
 SELLER_TOKENS = {
-    "quero vender", "vou vender", "vender minha", "vender meu", "vender a", "vender o",
-    "colocar a venda", "colocar à venda", "por a venda", "pôr à venda", "anunciar meu",
-    "anunciar minha", "avaliar meu imovel", "avaliar meu imóvel", "avaliar minha casa",
+    "quero vender", "vou vender", "gostaria de vender", "pra vender", "para vender",
+    "vender minha", "vender meu", "vender a", "vender o", "vendo meu", "vendo minha",
+    "colocar a venda", "colocar à venda", "por a venda", "pôr à venda",
+    "anunciar meu", "anunciar minha", "anunciar na sua carteira", "anunciar na carteira",
+    "cadastrar meu", "cadastrar minha", "quanto vale meu", "quanto vale minha",
+    "avaliar meu", "avaliar minha", "avaliar meu imovel", "avaliar meu imóvel", "avaliar minha casa",
+    "tenho um imovel", "tenho um imóvel", "tenho uma casa", "tenho um terreno",
+    "tenho um lote", "tenho um apartamento", "tenho um ape", "tenho um apê",
     "sou proprietario", "sou proprietária", "imovel pra vender", "imóvel pra vender",
 }
 PERMUTA_TOKENS = {"permuta", "permutar", "trocar por", "troca por", "como parte do pagamento", "dou meu"}
@@ -96,7 +104,7 @@ def qualify_lead(message: str, history: list[dict] | None = None) -> LeadSnapsho
     if has_timeline:
         score += 20
     if has_phone:
-        score += 35
+        score += 25  # telefone sozinho nao deve inflar (curioso/troll vira quente)
     # Locacao tem funil proprio: intencao clara de aluguel conta como interesse,
     # pra o lead de locacao nao cair em frio/0 so por nao citar orcamento de compra.
     if is_rental and score < 40:
@@ -115,7 +123,9 @@ def qualify_lead(message: str, history: list[dict] | None = None) -> LeadSnapsho
         score += 10
     score = min(100, score)
 
-    if score >= 80:
+    # pronto_proposta exige orcamento real (evita stage alto so por telefone+bairro).
+    # Pra vendedor, o "orcamento" e o preco que ele pede (has_budget pega "180 mil").
+    if score >= 80 and (has_budget or is_seller):
         stage = "pronto_proposta"
     elif score >= 60:
         stage = "pronto_visita"

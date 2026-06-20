@@ -18,9 +18,11 @@ class Rota(str, Enum):
     TRIAGEM = "triagem"           # cumprimento, dúvida geral curta
     INFO_VDC = "info_vdc"         # pergunta sobre Vitória da Conquista / bairro
     NEGOCIACAO = "negociacao"     # lead quente, intenção de compra
+    CAPTACAO = "captacao"         # proprietário quer vender/anunciar/avaliar o imóvel dele
     VISAO = "visao"               # imagem anexada
     DESCRICAO = "descricao"       # gerar descrição editorial de imóvel
     FOLLOWUP = "followup"         # retomada de conversa e follow-up
+    HANDOFF = "handoff"           # pedido de humano / frustração — transferir pra Priscila
 
 
 @dataclass(frozen=True)
@@ -38,6 +40,25 @@ PALAVRAS_NEGOCIACAO = {
     "financiamento", "entrada", "parcelar", "parcela", "interessado",
     "interessada", "quero esse", "quero este", "tô pronto", "estou pronto",
     "fechamos", "vamos fechar", "preço final", "desconto", "abaixar",
+}
+
+PALAVRAS_CAPTACAO = {
+    "quero vender", "vou vender", "gostaria de vender", "pra vender", "para vender",
+    "vender meu", "vender minha", "vender um imovel", "vender uma casa",
+    "vendo meu", "vendo minha", "anunciar meu", "anunciar minha", "anunciar um imovel",
+    "anunciar na sua carteira", "anunciar na carteira", "cadastrar meu", "cadastrar minha",
+    "colocar a venda", "colocar à venda", "por a venda", "quanto vale meu",
+    "quanto vale minha", "quanto vale a minha", "avaliar meu", "avaliar minha",
+    "avaliar minha casa", "tenho um imovel", "tenho um imóvel", "tenho uma casa",
+    "tenho um terreno", "tenho um lote", "tenho um apartamento", "tenho um ape",
+    "tenho um apê",
+}
+
+PALAVRAS_HANDOFF = {
+    "falar com humano", "falar com uma pessoa", "falar com alguem", "falar com alguém",
+    "atendente", "quero um atendente", "falar com a priscila", "falar com a corretora",
+    "falar com um corretor", "corretor de verdade", "pessoa real", "ser humano",
+    "quero falar com gente", "chama a priscila", "chamar a priscila",
 }
 
 PALAVRAS_DESCRICAO = {
@@ -95,9 +116,18 @@ def classificar(mensagem: str, *, tem_imagem: bool = False) -> Classificacao:
     if not texto:
         return Classificacao(Rota.TRIAGEM, 0.5, "mensagem vazia")
 
+    # Pedido explícito de humano — handoff tem prioridade máxima.
+    if any(p in texto for p in PALAVRAS_HANDOFF):
+        return Classificacao(Rota.HANDOFF, 0.95, "pedido de atendimento humano")
+
     # Descrição editorial (uso interno da Priscila)
     if any(p in texto for p in PALAVRAS_DESCRICAO):
         return Classificacao(Rota.DESCRICAO, 0.85, "pedido de redação")
+
+    # Captação: proprietário quer vender/anunciar/avaliar o próprio imóvel.
+    # Vem ANTES de bairro/negociação para não confundir vendedor com comprador.
+    if any(p in texto for p in PALAVRAS_CAPTACAO):
+        return Classificacao(Rota.CAPTACAO, 0.85, "intenção de venda/captação")
 
     # Follow-up (lead esfriando)
     if any(p in texto for p in PALAVRAS_FOLLOWUP):

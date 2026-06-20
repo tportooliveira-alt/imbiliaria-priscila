@@ -35,8 +35,8 @@ def _montar_contexto_carteira() -> str:
             destaques = conn.execute(
                 """SELECT titulo, bairro, preco, quartos, suites, vagas, area_util,
                           descricao, caracteristicas
-                   FROM imoveis WHERE ativo=1 AND destaque=1
-                   ORDER BY preco DESC LIMIT 5"""
+                   FROM imoveis WHERE ativo=1
+                   ORDER BY preco ASC LIMIT 40"""
             ).fetchall()
 
         if not total:
@@ -90,7 +90,43 @@ def _montar_contexto_carteira() -> str:
                 # Resumo da descricao real (ex.: 'colado no Shopping Conquista Sul')
                 desc = _limpar(r["descricao"] or "")
                 if desc:
-                    linhas.append(f"      detalhes completos: {desc[:1200]}")
+                    linhas.append(f"      detalhes: {desc[:500]}")
+        return "\n".join(linhas)
+    except Exception:
+        return ""
+
+
+def _buscar_matches(mensagem: str, historico: list[dict] | None) -> str:
+    """Busca na carteira real os imoveis que batem com o pedido (heuristica local).
+
+    Concatena historico + mensagem pra captar criterios ditos antes. Sem rede
+    (usar_ia=False). Retorna bloco pronto pro prompt ou string vazia.
+    """
+    try:
+        from app import busca_natural
+
+        texto = " ".join([h.get("content", "") for h in (historico or [])] + [mensagem])
+        res = busca_natural.buscar(texto, usar_ia=False, limite=6)
+        imoveis = res.get("imoveis") or res.get("result") or res.get("items") or []
+        if not imoveis:
+            return ""
+
+        def _fmt(p) -> str:
+            p = p or 0
+            return f"R$ {p/1_000_000:.2f} mi" if p >= 1_000_000 else f"R$ {p/1000:.0f} mil"
+
+        linhas = ["IMOVEIS DA CARTEIRA QUE BATEM COM O PEDIDO DELE (cite estes, sao reais):"]
+        for im in imoveis:
+            tipo = (im.get("tipo") or "Imovel").strip()
+            det = []
+            if im.get("quartos"):
+                det.append(f"{im.get('quartos')}q")
+            if im.get("area_util"):
+                det.append(f"{im.get('area_util')}m2")
+            extra = (", " + " ".join(det)) if det else ""
+            linhas.append(
+                f"  - [{tipo}] {im.get('titulo','')} — {im.get('bairro','')}{extra} — {_fmt(im.get('preco'))}"
+            )
         return "\n".join(linhas)
     except Exception:
         return ""
@@ -137,8 +173,10 @@ _FABRICAS: dict[Rota, callable] = {
     Rota.TRIAGEM: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.INFO_VDC: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
     Rota.NEGOCIACAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
+    Rota.CAPTACAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
     Rota.DESCRICAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
     Rota.FOLLOWUP: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
+    Rota.HANDOFF: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.VISAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
 }
 
@@ -146,8 +184,10 @@ _FABRICAS_FAILOVER: dict[Rota, callable] = {
     Rota.TRIAGEM: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.INFO_VDC: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.NEGOCIACAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
+    Rota.CAPTACAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.DESCRICAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.FOLLOWUP: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
+    Rota.HANDOFF: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.VISAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
 }
 
@@ -205,8 +245,16 @@ def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem:
     memoria_lead: ficha viva do cliente (o que a Ana já sabe dele de conversas anteriores)."""
     cls = classificar(mensagem, tem_imagem=tem_imagem)
     lead = qualify_lead(mensagem, history=historico)
+    # NAO injeta mais a ficha de dados financeiros (taxas/parcela): a Ana foi travada
+    # pra NUNCA cravar numero financeiro ao cliente — tirar a ficha mata a tentacao.
     _partes = [p for p in (memoria_lead, _contexto_momento(nome_cliente),
-                           _montar_contexto_carteira(), _ler_dados_financeiros()) if p]
+                           _montar_contexto_carteira()) if p]
+    # Rotas de compra/info: busca os imoveis reais que batem com o pedido e injeta
+    # — evita o "nao tenho" falso quando ha opcao de ticket medio/baixo na carteira.
+    if cls.rota in (Rota.NEGOCIACAO, Rota.INFO_VDC, Rota.TRIAGEM):
+        _m = _buscar_matches(mensagem, historico)
+        if _m:
+            _partes.append(_m)
     contexto = "\n\n".join(_partes)
     system = system_prompt(cls.rota, contexto=contexto or None)
 

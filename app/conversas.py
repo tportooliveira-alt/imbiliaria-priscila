@@ -379,6 +379,23 @@ def registrar_conversa_site(
             idempotency_key=f"lead.qualificado:{referencia}",
         )
 
+    # Handoff: cliente pediu humano -> sinaliza transferencia pra Priscila (painel + tag).
+    if resposta.get("rota") == "handoff":
+        registrar_evento_funil(
+            "handoff.solicitado",
+            origem="chat",
+            lead_id=lead_id,
+            conversa_id=conversa_id,
+            payload={"motivo": "pedido_humano", "stage": resposta["lead_stage"]},
+            idempotency_key=f"handoff:{referencia}",
+        )
+        if lead_id:
+            try:
+                from app import leads as _leads
+                _leads.adicionar_tag(lead_id, "handoff")
+            except Exception:
+                pass
+
     registrar_execucao_ia(
         agente="chat",
         evento="chat.resposta_gerada",
