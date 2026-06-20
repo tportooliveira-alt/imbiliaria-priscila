@@ -58,8 +58,14 @@ def ficha_viva(lead_id: int | None) -> str:
         and not (i.get("descricao") or "").startswith("[")
     ]
     if recebidas:
-        ult = " | ".join(recebidas[:5])  # interacoes vêm do mais recente pro mais antigo
-        linhas.append("Já te falou (recente→antigo): " + ult[:500])
+        # interacoes vêm do mais recente pro mais antigo. A 1ª coisa que o cliente disse
+        # (a mais ANTIGA = última da lista) costuma trazer o "ouro" (metragem, lazer, intenção)
+        # e é justamente a que sai da janela curta. Por isso a fixamos sempre, separada.
+        primeira = recebidas[-1]
+        recentes = recebidas[:8]
+        if primeira and primeira not in recentes:
+            linhas.append("PRIMEIRA coisa que te disse (NÃO esqueça): " + primeira[:500])
+        linhas.append("Já te falou (recente→antigo): " + " | ".join(recentes)[:800])
 
     if not linhas:
         return ""

@@ -908,7 +908,7 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
     historico_raw = [
         it for it in (detalhe.get("interacoes") or [])
         if it.get("tipo") in ("whatsapp_recebido", "whatsapp_enviado") and _recente(it)
-    ][:6]
+    ][:20]
     historico: list[dict] = []
     # ordem cronologica (mais antiga primeiro), excluindo a mensagem atual
     for it in reversed(historico_raw):
@@ -938,7 +938,7 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
             except Exception:
                 _ficha = ""
             resposta = dispatcher.responder(
-                str(texto), historico=historico[-5:] or None, nome_cliente=_nome,
+                str(texto), historico=historico[-16:] or None, nome_cliente=_nome,
                 memoria_lead=_ficha or None,
             )
             texto_ia = (resposta.get("resposta") or "").strip()
