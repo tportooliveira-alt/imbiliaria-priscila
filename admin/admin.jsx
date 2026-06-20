@@ -740,12 +740,29 @@ function GerenciadorImagensEmp({ empreendimento, aoFechar }) {
   const [imagens, setImagens] = React.useState([]);
   const [enviando, setEnviando] = React.useState(0);
   const [over, setOver] = React.useState(false);
+  const [arrastando, setArrastando] = React.useState(null);
 
   React.useEffect(() => { recarregar(); }, []);
 
   async function recarregar() {
     const r = await api(`/api/empreendimentos/${empreendimento.slug}`);
     setImagens(r.imagens || []);
+  }
+
+  async function marcarCapa(id) {
+    await api(`/api/admin/empreendimentos/imagens/${id}`, { method: "PATCH", body: { tipo: "capa" } });
+    await recarregar();
+  }
+
+  async function reordenar(de, para) {
+    if (de === para || de == null) return;
+    const lista = [...imagens];
+    const [movido] = lista.splice(de, 1);
+    lista.splice(para, 0, movido);
+    setImagens(lista);
+    await api(`/api/admin/empreendimentos/${empreendimento.id}/imagens/ordem`, {
+      method: "PUT", body: { ordem: lista.map(i => i.id) },
+    });
   }
 
   async function enviar(arquivos) {
@@ -800,7 +817,7 @@ function GerenciadorImagensEmp({ empreendimento, aoFechar }) {
 
       {imagens.length > 0 && (
         <p style={{fontSize: 12, color: "#888", margin: "16px 0 8px"}}>
-          {imagens.length} {imagens.length === 1 ? "foto" : "fotos"}
+          {imagens.length} {imagens.length === 1 ? "foto" : "fotos"} · arraste os cards para reordenar · a ordem aqui e a ordem que aparece no site
         </p>
       )}
 
@@ -808,12 +825,23 @@ function GerenciadorImagensEmp({ empreendimento, aoFechar }) {
         {imagens.map((img, idx) => {
           const ehCapa = img.tipo === "capa";
           return (
-            <div key={img.id} className={`foto-card ${ehCapa ? "is-capa" : ""}`}>
+            <div key={img.id}
+              className={`foto-card ${ehCapa ? "is-capa" : ""} ${arrastando === idx ? "is-drag" : ""}`}
+              draggable
+              onDragStart={() => setArrastando(idx)}
+              onDragOver={e => e.preventDefault()}
+              onDrop={e => { e.preventDefault(); reordenar(arrastando, idx); setArrastando(null); }}
+            >
               <div className="foto-thumb" style={{backgroundImage: `url(/assets/${img.arquivo}/600.webp)`}}>
                 {ehCapa && <span className="foto-flag">★ CAPA</span>}
                 <span className="foto-pos">#{idx + 1}</span>
               </div>
               <div className="foto-acoes">
+                {!ehCapa && (
+                  <button type="button" className="btn-mini" onClick={() => marcarCapa(img.id)} title="Usar esta foto como capa">
+                    ★ Definir capa
+                  </button>
+                )}
                 <button type="button" className="btn-mini danger" onClick={() => remover(img.id)} title="Remover">
                   ✕ Remover
                 </button>

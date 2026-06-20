@@ -251,6 +251,30 @@ def chat(req: ChatRequest) -> ChatResponse:
         duracao_ms=int((time.perf_counter() - inicio) * 1000),
     )
     out.update(persistencia)
+    # Avisa Priscila no WhatsApp SÓ quando a conversa do site ESQUENTA (não toda hora).
+    # Toda conversa fica no banco e é lida pelo dashboard via MCP.
+    score = out.get("lead_score", 0)
+    stage = out.get("lead_stage", "frio")
+    if score >= 60 or stage in {"quente", "pronto_visita", "pronto_proposta"}:
+        import threading as _th, os as _os, logging as _lg
+        def _avisar_quente():
+            try:
+                num = _os.getenv("PRISCILA_WHATSAPP", "").strip()
+                if not num: return
+                from app import whatsapp as _wn
+                if not _wn.disponivel(): return
+                resposta_ana = out.get("resposta", "")[:120]
+                msg = (
+                    f"🔥 Lead QUENTE no SITE! (score {score} / {stage})\n"
+                    f"Cliente: *\"{req.message[:120]}\"*\n"
+                    f"Ana: \"{resposta_ana}\"\n"
+                    f"Veja a conversa: pvscelosimobiliaria.com/admin/"
+                )
+                r = _wn.enviar_mensagem(num, msg)
+                _lg.getLogger("imobiliaria").info("[REPASSE-SITE] quente enviado=%s", getattr(r, "enviado", r))
+            except Exception:
+                _lg.getLogger("imobiliaria").exception("[REPASSE-SITE] FALHOU")
+        _th.Thread(target=_avisar_quente, daemon=True).start()
     return ChatResponse(**out)
 
 

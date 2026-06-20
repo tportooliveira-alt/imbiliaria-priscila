@@ -213,6 +213,55 @@ def panorama_geral() -> dict:
 
 
 @mcp.tool
+def monitor_site_ao_vivo(limite: int = 8, com_mensagens: bool = True) -> dict:
+    """AO VIVO: o que está acontecendo AGORA nas conversas da Ana NO SITE (canal=site).
+    Traz as conversas mais recentes com score/temperatura, tempo e (se com_mensagens=True)
+    todas as mensagens trocadas. Pensado pra um dashboard que chama em loop e atualiza no segundo.
+    Use junto com metricas_ia() pra ter números + conteúdo."""
+    from app.db import db_session
+    import datetime as _dt
+    agora = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=-3)))
+    out: dict = {"gerado_em": agora.strftime("%Y-%m-%d %H:%M:%S"), "conversas": []}
+    with db_session() as conn:
+        linhas = conn.execute(
+            """SELECT c.id, c.sessao_id, c.ultimo_score, c.ultimo_stage, c.rota_atual,
+                      c.status, c.atualizado_em,
+                      (SELECT COUNT(*) FROM mensagens_conversa m WHERE m.conversa_id=c.id) AS msgs
+                 FROM conversas c
+                WHERE c.canal='site'
+                ORDER BY c.atualizado_em DESC
+                LIMIT ?""",
+            (min(limite, 30),),
+        ).fetchall()
+        for r in linhas:
+            d = dict(r)
+            item = {
+                "id": d["id"],
+                "sessao": d["sessao_id"],
+                "score": d["ultimo_score"],
+                "temperatura": d["ultimo_stage"],
+                "rota": d["rota_atual"],
+                "status": d["status"],
+                "atualizado_em": d["atualizado_em"],
+                "total_mensagens": d["msgs"],
+            }
+            if com_mensagens:
+                msgs = conn.execute(
+                    "SELECT papel, conteudo, criado_em FROM mensagens_conversa "
+                    "WHERE conversa_id=? ORDER BY id",
+                    (d["id"],),
+                ).fetchall()
+                item["mensagens"] = [
+                    {"quem": "cliente" if m["papel"] == "user" else "Ana",
+                     "texto": m["conteudo"], "em": m["criado_em"]}
+                    for m in msgs
+                ]
+            out["conversas"].append(item)
+    out["total_conversas_site"] = len(out["conversas"])
+    return out
+
+
+@mcp.tool
 def saude_ads() -> dict:
     """Verifica ao vivo se GA4, Google Ads e Meta Pixel estão carregando no site.
     Retorna status de cada tag + se o evento generate_lead está no bundle JS."""

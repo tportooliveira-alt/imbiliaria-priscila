@@ -407,6 +407,23 @@ def remover_imagem_empreendimento(imagem_id: int, _: dict = Depends(requer_admin
         raise HTTPException(status_code=404, detail="imagem nao encontrada")
 
 
+@router.patch("/api/admin/empreendimentos/imagens/{imagem_id}")
+def atualizar_imagem_empreendimento(imagem_id: int, body: ImagemUpdate, _: dict = Depends(requer_admin)) -> dict:
+    try:
+        out = emp.atualizar_imagem(imagem_id, tipo=body.tipo, legenda=body.legenda)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if not out:
+        raise HTTPException(status_code=404, detail="imagem nao encontrada")
+    return out
+
+
+@router.put("/api/admin/empreendimentos/{emp_id}/imagens/ordem")
+def reordenar_imagens_empreendimento(emp_id: int, body: ReordemPayload, _: dict = Depends(requer_admin)) -> dict:
+    emp.reordenar_imagens(emp_id, body.ordem)
+    return {"ok": True, "imagens": emp.listar_imagens(emp_id)}
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Descrição editorial (B.3) — gera texto pronto via Claude
 # ─────────────────────────────────────────────────────────────────────────────

@@ -254,6 +254,43 @@ def remover_imagem(imagem_id: int) -> bool:
         return cur.rowcount > 0
 
 
+def atualizar_imagem(imagem_id: int, *, tipo: str | None = None, legenda: str | None = None) -> dict | None:
+    """Atualiza tipo/legenda. Se virar 'capa', tira a capa anterior do mesmo empreendimento."""
+    with db_session() as conn:
+        row = conn.execute("SELECT * FROM empreendimento_imagens WHERE id = ?", (imagem_id,)).fetchone()
+        if not row:
+            return None
+        sets: list[str] = []
+        params: list = []
+        if tipo is not None:
+            if tipo not in _TIPOS_IMG:
+                raise ValueError(f"tipo invalido: {tipo}")
+            if tipo == "capa":
+                conn.execute(
+                    "UPDATE empreendimento_imagens SET tipo = 'sala' "
+                    "WHERE empreendimento_id = ? AND tipo = 'capa' AND id != ?",
+                    (row["empreendimento_id"], imagem_id),
+                )
+            sets.append("tipo = ?"); params.append(tipo)
+        if legenda is not None:
+            sets.append("legenda = ?"); params.append(legenda)
+        if not sets:
+            return dict(row)
+        params.append(imagem_id)
+        conn.execute(f"UPDATE empreendimento_imagens SET {', '.join(sets)} WHERE id = ?", params)
+        novo = conn.execute("SELECT * FROM empreendimento_imagens WHERE id = ?", (imagem_id,)).fetchone()
+    return dict(novo)
+
+
+def reordenar_imagens(emp_id: int, ordem_ids: list[int]) -> None:
+    with db_session() as conn:
+        for posicao, img_id in enumerate(ordem_ids):
+            conn.execute(
+                "UPDATE empreendimento_imagens SET ordem = ? WHERE id = ? AND empreendimento_id = ?",
+                (posicao, img_id, emp_id),
+            )
+
+
 def detalhar(slug_ou_id: str | int) -> dict | None:
     """Empreendimento completo: dados + tipologias + imagens. Aceita slug ou id."""
     emp = buscar_por_id(int(slug_ou_id)) if str(slug_ou_id).isdigit() else buscar_por_slug(str(slug_ou_id))
