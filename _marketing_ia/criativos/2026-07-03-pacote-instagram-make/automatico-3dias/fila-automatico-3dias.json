@@ -1,0 +1,110 @@
+[
+  {
+    "ordem": 1,
+    "status": "PENDENTE_REVISAO",
+    "canal": "instagram",
+    "tipo": "noticia_financiamento",
+    "titulo": "MCMV: novas condições",
+    "arquivo_local": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\automatico-3dias\\01-mcmv-novas-condicoes.jpg",
+    "media_url_prevista": "https://pvscelosimobiliaria.com/assets/marketing/instagram-2026-07-03/automatico-3dias/01-mcmv-novas-condicoes.jpg",
+    "legenda": "Financiamento muda a forma de olhar um imóvel. A CAIXA informou novas condições do Minha Casa, Minha Vida, com renda mensal de até R$ 13 mil e teto citado de até R$ 600 mil para a classe média. Antes de decidir, simule entrada, prazo e parcela.\n\nFonte: CAIXA Notícias, 17/04/2026, atualizada em 02/07/2026.\n\nPriscila Vasconcelos | CRECI-BA 29.231",
+    "publish_at": "2026-07-03T08:45-03:00",
+    "fonte": "https://caixanoticias.caixa.gov.br/Paginas/Not%C3%ADcias/2026/04-ABRIL/CAIXA-inicia-opera%C3%A7%C3%A3o-das-novas-condi%C3%A7%C3%B5es-do-Minha-Casa%2C-Minha-Vida-na-pr%C3%B3xima-quarta-feira-%2822%29.aspx"
+  },
+  {
+    "ordem": 2,
+    "status": "PENDENTE_REVISAO",
+    "canal": "instagram",
+    "tipo": "noticia_juros",
+    "titulo": "Selic em 14,25%",
+    "arquivo_local": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\automatico-3dias\\02-selic-1425-criterio.jpg",
+    "media_url_prevista": "https://pvscelosimobiliaria.com/assets/marketing/instagram-2026-07-03/automatico-3dias/02-selic-1425-criterio.jpg",
+    "legenda": "A Selic em 14,25% ao ano melhora o sinal, mas não elimina a necessidade de critério. Para comprar bem, compare entrada, prazo, parcela, renda e custo total.\n\nFonte: Agência Brasil, 17/06/2026.\n\nPriscila Vasconcelos | CRECI-BA 29.231",
+    "publish_at": "2026-07-03T12:30-03:00",
+    "fonte": "https://agenciabrasil.ebc.com.br/economia/noticia/2026-06/copom-reduz-taxa-selic-para-1425-ao-ano"
+  },
+  {
+    "ordem": 3,
+    "status": "PENDENTE_REVISAO",
+    "canal": "instagram",
+    "tipo": "noticia_local",
+    "titulo": "VDC em movimento",
+    "arquivo_local": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\automatico-3dias\\03-vdc-presidente-vargas.jpg",
+    "media_url_prevista": "https://pvscelosimobiliaria.com/assets/marketing/instagram-2026-07-03/automatico-3dias/03-vdc-presidente-vargas.jpg",
+    "legenda": "Vitória da Conquista está sempre mudando, e a leitura de um imóvel passa também pelo entorno. A Prefeitura registrou avanço no recapeamento da Avenida Presidente Vargas em 01/07/2026.\n\nFonte: PMVC.\n\nPriscila Vasconcelos | CRECI-BA 29.231",
+    "publish_at": "2026-07-03T19:30-03:00",
+    "fonte": "https://www.pmvc.ba.gov.br/page/8/"
+  },
+  {
+    "ordem": 4,
+    "status": "PENDENTE_REVISAO",
+    "canal": "instagram",
+    "tipo": "story_ia",
+    "titulo": "Comprar com calma",
+    "arquivo_local": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\automatico-3dias\\04-story-comprar-com-calma.jpg",
+    "media_url_prevista": "https://pvscelosimobiliaria.com/assets/marketing/instagram-2026-07-03/automatico-3dias/04-story-comprar-com-calma.jpg",
+    "legenda": "Story: comprar com calma. CTA: fale com a Priscila para entender se faz sentido para você.",
+    "publish_at": "2026-07-04T08:45-03:00",
+    "fonte": "Imagem de fundo gerada por IA para uso editorial, sem simular imóvel real."
+  },
+  {
+    "ordem": 5,
+    "status": "PENDENTE_REVISAO",
+    "canal": "instagram",
+    "tipo": "avaliacao",
+    "titulo": "Avaliação online",
+    "arquivo_local": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\automatico-3dias\\05-avaliacao-online-laudo.jpg",
+    "media_url_prevista": "https://pvscelosimobiliaria.com/assets/marketing/instagram-2026-07-03/automatico-3dias/05-avaliacao-online-laudo.jpg",
+    "legenda": "Pensando em vender? Comece por uma estimativa inicial online. Ela ajuda a abrir a conversa com critério. Laudo formal é outro serviço, técnico e pago, quando necessário.\n\nPriscila Vasconcelos | CRECI-BA 29.231",
+    "publish_at": "2026-07-04T12:30-03:00",
+    "fonte": "Regra interna da sala de marketing da Priscila."
+  },
+  {
+    "ordem": 6,
+    "status": "PENDENTE_REVISAO",
+    "canal": "instagram",
+    "tipo": "crm_termometro",
+    "titulo": "Termômetro da semana",
+    "arquivo_local": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\automatico-3dias\\06-termometro-semana.jpg",
+    "media_url_prevista": "https://pvscelosimobiliaria.com/assets/marketing/instagram-2026-07-03/automatico-3dias/06-termometro-semana.jpg",
+    "legenda": "Termômetro interno da semana, sem dados pessoais: 71 leads no funil, 35 quentes e 26 novos contatos nos últimos 7 dias. Quando há demanda ativa, apresentação e resposta rápida importam.\n\nPriscila Vasconcelos | CRECI-BA 29.231",
+    "publish_at": "2026-07-04T19:30-03:00",
+    "fonte": "MCP Imobiliária Priscila"
+  },
+  {
+    "ordem": 7,
+    "status": "PENDENTE_REVISAO",
+    "canal": "instagram",
+    "tipo": "bairro",
+    "titulo": "Candeias no radar",
+    "arquivo_local": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\automatico-3dias\\07-candeias-no-radar.jpg",
+    "media_url_prevista": "https://pvscelosimobiliaria.com/assets/marketing/instagram-2026-07-03/automatico-3dias/07-candeias-no-radar.jpg",
+    "legenda": "Candeias segue forte na carteira da Priscila: opções de apartamento e terreno, de R$ 500 mil a R$ 1,6 milhão nos imóveis ativos atuais. Fale com a Priscila para receber a ficha completa.\n\nCRECI-BA 29.231",
+    "publish_at": "2026-07-05T08:45-03:00",
+    "fonte": "MCP Imobiliária Priscila"
+  },
+  {
+    "ordem": 8,
+    "status": "PENDENTE_REVISAO",
+    "canal": "instagram",
+    "tipo": "vendedor",
+    "titulo": "Vender com critério",
+    "arquivo_local": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\automatico-3dias\\08-vender-com-criterio.jpg",
+    "media_url_prevista": "https://pvscelosimobiliaria.com/assets/marketing/instagram-2026-07-03/automatico-3dias/08-vender-com-criterio.jpg",
+    "legenda": "Vender bem começa antes do anúncio: preço, fotos, descrição, documentação e estratégia precisam conversar. Fale com a Priscila para começar com uma avaliação inicial.",
+    "publish_at": "2026-07-05T12:30-03:00",
+    "fonte": "Orientação interna"
+  },
+  {
+    "ordem": 9,
+    "status": "PENDENTE_REVISAO",
+    "canal": "instagram",
+    "tipo": "fim_de_semana",
+    "titulo": "Agenda de visitas",
+    "arquivo_local": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\automatico-3dias\\09-agenda-visitas-fim-de-semana.jpg",
+    "media_url_prevista": "https://pvscelosimobiliaria.com/assets/marketing/instagram-2026-07-03/automatico-3dias/09-agenda-visitas-fim-de-semana.jpg",
+    "legenda": "Fim de semana é bom para visitar com calma. Defina faixa de valor, compare perfil e olhe além da foto: planta, entorno, manutenção e documentação.\n\nPriscila Vasconcelos | CRECI-BA 29.231",
+    "publish_at": "2026-07-05T19:30-03:00",
+    "fonte": "Orientação interna"
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "gerado_em": "2026-07-03T18:56:19-03:00",
+  "data_referencia": "03/07/2026",
+  "marca": {
+    "navy": "#16284B",
+    "gold": "#c9943a",
+    "offwhite": "#f8f5ee",
+    "logo_usada": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\assets\\marketing\\logo-mono-offwhite.png"
+  },
+  "totais": {
+    "cards_imoveis": 12,
+    "carrosseis": 3,
+    "noticias_infograficos": 3,
+    "fila_make": 18
+  },
+  "arquivos": {
+    "pasta": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make",
+    "pasta_publica_assets": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\assets\\marketing\\instagram-2026-07-03",
+    "fila_json": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\fila-make-zapier\\fila.json",
+    "fila_csv": "C:\\Users\\Thiago Porto\\imbiliaria-priscila\\_marketing_ia\\criativos\\2026-07-03-pacote-instagram-make\\fila-make-zapier\\fila.csv"
+  }
+}
