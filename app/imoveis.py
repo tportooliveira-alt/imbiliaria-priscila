@@ -9,7 +9,10 @@ from typing import Any
 
 from app.db import db_session
 
-TIPOS_COMODO = {"capa", "sala", "cozinha", "quarto", "banheiro", "area_externa", "planta"}
+TIPOS_COMODO = {
+    "capa", "sala", "sala_estar", "cozinha", "area_gourmet", "quarto", "closet",
+    "banheiro", "banheiro_social", "lavabo", "lavanderia", "area_externa", "planta",
+}
 
 
 def slugify(texto: str) -> str:
@@ -53,7 +56,9 @@ def linha_para_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
     return d
 
 
-def listar_imoveis(*, somente_ativos: bool = True, bairro: str | None = None) -> list[dict]:
+def listar_imoveis(
+    *, somente_ativos: bool = True, bairro: str | None = None, finalidade: str | None = None
+) -> list[dict]:
     sql = "SELECT * FROM imoveis WHERE 1=1"
     params: list[Any] = []
     if somente_ativos:
@@ -61,6 +66,9 @@ def listar_imoveis(*, somente_ativos: bool = True, bairro: str | None = None) ->
     if bairro:
         sql += " AND lower(bairro) = lower(?)"
         params.append(bairro)
+    if finalidade:
+        sql += " AND lower(finalidade) = lower(?)"
+        params.append(finalidade)
     sql += " ORDER BY destaque DESC, atualizado_em DESC"
     with db_session() as conn:
         rows = conn.execute(sql, params).fetchall()
@@ -83,12 +91,13 @@ def criar_imovel(dados: dict) -> dict:
     slug = slug_unico(f"{dados['titulo']}-{dados.get('bairro', '')}")
     caract = json.dumps(dados.get("caracteristicas", []), ensure_ascii=False)
     with db_session() as conn:
+        finalidade = "aluguel" if str(dados.get("finalidade", "venda")).lower().startswith("alug") else "venda"
         cur = conn.execute(
             """INSERT INTO imoveis
                 (slug, titulo, bairro, tipo, quartos, suites, vagas,
                  area_util, preco, descricao, caracteristicas, destaque, ativo,
-                 tour_360_url)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                 tour_360_url, finalidade, video_url)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 slug,
                 dados["titulo"],
@@ -104,6 +113,8 @@ def criar_imovel(dados: dict) -> dict:
                 int(bool(dados.get("destaque", False))),
                 int(bool(dados.get("ativo", True))),
                 dados.get("tour_360_url"),
+                finalidade,
+                dados.get("video_url"),
             ),
         )
         novo_id = int(cur.lastrowid)
@@ -116,7 +127,7 @@ def atualizar_imovel(imovel_id: int, dados: dict) -> dict | None:
     campos_permitidos = {
         "titulo", "bairro", "tipo", "quartos", "suites", "vagas",
         "area_util", "preco", "descricao", "destaque", "ativo",
-        "tour_360_url",
+        "tour_360_url", "finalidade", "video_url",
     }
     sets: list[str] = []
     params: list[Any] = []
@@ -148,7 +159,7 @@ def desativar_imovel(imovel_id: int) -> bool:
 def adicionar_imagem(
     imovel_id: int, *, arquivo: str, tipo: str = "sala", legenda: str = "", ordem: int | None = None
 ) -> dict:
-    if tipo not in {"capa", "sala", "cozinha", "quarto", "banheiro", "area_externa", "planta"}:
+    if tipo not in TIPOS_COMODO:
         tipo = "sala"
     with db_session() as conn:
         if ordem is None:
@@ -184,7 +195,7 @@ def remover_imagem(imagem_id: int) -> bool:
 
 def atualizar_imagem(imagem_id: int, *, tipo: str | None = None, legenda: str | None = None) -> dict | None:
     """Atualiza tipo/legenda. Se virar 'capa', remove capa anterior do mesmo imovel."""
-    tipos_validos = {"capa", "sala", "cozinha", "quarto", "banheiro", "area_externa", "planta"}
+    tipos_validos = TIPOS_COMODO
     with db_session() as conn:
         row = conn.execute("SELECT * FROM imagens WHERE id = ?", (imagem_id,)).fetchone()
         if not row:

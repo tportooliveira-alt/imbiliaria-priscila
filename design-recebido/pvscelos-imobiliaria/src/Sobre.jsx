@@ -52,7 +52,7 @@ export default function Sobre({ onBack }) {
             </h1>
             
             <p className="text-lg text-[#5d6b86] font-light leading-relaxed max-w-lg">
-              A PVSCELOS nasceu da visão de Priscila Vasconcelos de transformar o mercado imobiliário em Vitória da Conquista. Nós acreditamos que a compra ou aluguel de um imóvel deve ser uma experiência humana, transparente e inesquecível.
+              Filha de corretor, Priscila Vasconcelos cresceu dentro do mercado imobiliário — e fez dele a sua vida. Ela transforma cada compra, venda ou aluguel numa experiência humana, transparente e segura, em Vitória da Conquista.
             </p>
           </div>
 
@@ -60,31 +60,63 @@ export default function Sobre({ onBack }) {
           <div className="w-full lg:w-1/2 relative">
             <div className="absolute inset-0 bg-[#c9943a] rounded-[2rem] translate-x-6 translate-y-6 opacity-20"></div>
             <img
-              src="/assets/priscila-sobre.jpg"
-              alt="Priscila Vasconcelos"
-              className="relative z-10 rounded-[2rem] shadow-2xl object-cover w-full h-[600px]"
+              src={`${import.meta.env.BASE_URL}priscila-sobre.jpg`}
+              alt="Priscila Vasconcelos e seu pai, o corretor Pedro Ronaldo Vasconcelos"
+              className="relative z-10 rounded-[2rem] shadow-2xl object-cover object-center w-full aspect-[4/3]"
             />
-            
-            {/* Card Flutuante de Autoridade */}
-            <div className="absolute -bottom-10 -left-10 bg-white p-6 rounded-2xl shadow-xl border border-[#dde5f0] z-20 flex items-center gap-6 max-w-[300px]">
-              <div className="w-14 h-14 bg-[#16284B] rounded-full flex items-center justify-center text-white shrink-0">
-                <span className="font-serif text-2xl">+10</span>
-              </div>
+          </div>
+        </div>
+      </header>
+
+      {/* A História de Priscila */}
+      <section className="py-20 lg:py-28 px-6">
+        <div className="max-w-3xl mx-auto">
+          <span className="text-[#c9943a] tracking-widest text-xs uppercase font-semibold mb-3 block">Minha história</span>
+          <h2 className="font-serif text-3xl md:text-4xl text-[#16284B] mb-6 leading-tight">
+            O legado e a paixão pelo <span className="italic text-[#c9943a]">mercado imobiliário</span>
+          </h2>
+          <div className="space-y-6 text-lg text-[#5d6b86] font-light leading-relaxed">
+            <p>
+              No mercado imobiliário, a confiança não se constrói apenas com contratos; ela se constrói com tempo, vivência e valores passados de geração em geração. A minha trajetória é, essencialmente, a história de uma vida dedicada à credibilidade.
+            </p>
+
+            <h3 className="font-serif text-2xl text-[#16284B] pt-4">De pai para filha: uma vida alicerçada na confiança</h3>
+            <p>
+              Sou filha de um homem que dedicou sua carreira à arte de encontrar lares e oportunidades: <strong className="font-medium text-[#16284B]">Pedro Ronaldo Vasconcelos</strong>. Como corretor com mais de 15 anos de atuação, meu pai não apenas me ensinou a profissão; ele me mostrou, na prática, o valor de um compromisso honrado.
+            </p>
+            <p>
+              Minhas primeiras lembranças no mercado são das tardes em que eu o acompanhava em visitas aos imóveis. Enquanto ele examinava cada detalhe com um olhar atento, eu absorvia a ética e o cuidado com que tratava cada pessoa. Todo esse aprendizado foi o alicerce sobre o qual construí a minha própria identidade profissional. Ao longo do caminho, tive o privilégio de conviver e aprender com <strong className="font-medium text-[#16284B]">grandes líderes do ramo imobiliário</strong> — experiências pelas quais sou profundamente grata e que moldaram a minha forma de atuar com excelência.
+            </p>
+
+            <h3 className="font-serif text-2xl text-[#16284B] pt-4">Meu foco: o cliente no centro de tudo</h3>
+            <p>
+              Mais do que mediar transações, a minha missão é ser uma facilitadora na jornada dos meus clientes. Entendo que, por trás de cada negociação — seja ela de <strong className="font-medium text-[#16284B]">compra, venda, aluguel</strong> ou uma avaliação estratégica de imóvel — existem sonhos, investimentos e expectativas que precisam ser respeitados.
+            </p>
+            <p>
+              O meu foco é proporcionar uma experiência clara, segura e eficiente. Acredito que o mercado imobiliário, quando conduzido com profissionalismo e transparência, torna-se a base para grandes transformações na vida das pessoas.
+            </p>
+            <p>
+              É com essa bagagem — herdada e fortalecida pelos ensinamentos de grandes referências do setor e pelo meu compromisso pessoal — que coloco todo o meu empenho a serviço de <strong className="font-medium text-[#16284B]">cada cliente que confia no meu trabalho.</strong>
+            </p>
+
+            {/* Assinatura — fecha a história com cara de carta pessoal */}
+            <div className="pt-6 flex items-center gap-4">
+              <span className="h-px w-12 bg-[#c9943a]"></span>
               <div>
-                <p className="text-sm font-medium text-[#16284B]">Anos de Experiência</p>
-                <p className="text-xs text-[#5d6b86] font-light">No mercado de alto padrão de Vitória da Conquista.</p>
+                <p className="font-serif text-2xl text-[#16284B] italic leading-none">Priscila Vasconcelos</p>
+                <p className="text-xs uppercase tracking-widest text-[#5d6b86] mt-1.5">Corretora de Imóveis · CRECI/BA 29.231</p>
               </div>
             </div>
           </div>
         </div>
-      </header>
+      </section>
 
       {/* Seção Pilares */}
       <section className="py-24 bg-[#16284B] text-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-20">
             <span className="text-[#c9943a] tracking-widest text-xs uppercase font-semibold mb-3 block">No que Acreditamos</span>
-            <h2 className="text-3xl md:text-5xl font-serif">Os Pilares PVSCELOS</h2>
+            <h2 className="text-3xl md:text-5xl font-serif">Os Pilares da Priscila Vasconcelos</h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-12">
@@ -122,7 +154,7 @@ export default function Sobre({ onBack }) {
             Faça parte dessa <span className="italic text-[#c9943a]">história.</span>
           </h2>
           <p className="text-lg text-[#5d6b86] font-light mb-10 leading-relaxed">
-            Seja para encontrar o primeiro aluguel perfeito, investir no próximo grande lançamento ou vender o seu patrimônio com a dignidade que ele merece. Nós estamos prontos.
+            Seja para encontrar o primeiro aluguel, comprar a casa dos sonhos, investir no próximo grande empreendimento ou vender o seu patrimônio com a dignidade que ele merece. Nós estamos prontos.
           </p>
           <button onClick={onBack} className="bg-[#16284B] text-white px-8 py-4 rounded-full text-sm font-bold uppercase tracking-widest hover:bg-[#c9943a] transition-colors inline-flex items-center gap-3">
             Explorar Catálogo <ArrowRight size={18} />

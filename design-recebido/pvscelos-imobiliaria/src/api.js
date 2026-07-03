@@ -10,13 +10,14 @@ export function imgUrl(arquivo, size = 600) {
   return `/assets/${arquivo}/${sufixo}`
 }
 
-// Preço em reais, sem centavos: R$ 1.300.000
+// Preço em reais, COM centavos: R$ 1.300.000,00
 export function formatBRL(valor) {
   if (valor == null) return 'Sob consulta'
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(valor)
 }
 
@@ -28,28 +29,41 @@ function capa(imagens = []) {
   return [...imagens].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))[0]
 }
 
+// Finalidade (venda × aluguel). O backend ainda não tem campo próprio, então
+// derivamos do título/slug ("para locação"/"aluguel" → aluguel; senão venda).
+// Quando o admin ganhar um campo `finalidade`, é só preferir ele aqui.
+function finalidadeDe(im) {
+  if (im.finalidade) return im.finalidade === 'aluguel' ? 'aluguel' : 'venda';
+  const blob = `${im.titulo || ''} ${im.slug || ''}`.toLowerCase();
+  return /alug|loca[çc]|loca[çc][aã]o|para alugar/.test(blob) ? 'aluguel' : 'venda';
+}
+
 // Normaliza o imóvel cru do backend para o formato que a UI consome.
 export function normalizeImovel(im) {
   const fotos = (im.imagens || [])
     .slice()
     .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
   const cap = capa(im.imagens)
+  const fin = finalidadeDe(im)
   return {
     id: im.id,
     slug: im.slug,
     titulo: im.titulo,
     bairro: im.bairro,
     tipo: im.tipo,
+    finalidade: fin,
     quartos: im.quartos,
     suites: im.suites,
     vagas: im.vagas,
     area: im.area_util,
     preco: im.preco,
     precoFmt: formatBRL(im.preco),
+    precoSufixo: fin === 'aluguel' ? '/mês' : '',
     descricao: im.descricao,
     caracteristicas: im.caracteristicas || [],
     destaque: im.destaque,
     tour360: im.tour_360_url || null,
+    videoUrl: im.video_url || null,
     capaUrl: cap ? imgUrl(cap.arquivo, 600) : null,
     fotos: fotos.map((f) => ({
       thumb: imgUrl(f.arquivo, 600),
@@ -137,18 +151,27 @@ export function abrirAna() {
   window.dispatchEvent(new Event('abrir-ana'))
 }
 
-// Conversão no GA4 (se o gtag carregou). tipo: 'avaliacao' | 'anunciar' | 'agendar_visita'
+// Rótulo da AÇÃO DE CONVERSÃO do Google Ads (o Google Ads gera algo tipo
+// "AW-18124594477/AbC-D_efGh12"). Enquanto estiver vazio, não dispara conversão do Ads
+// (só GA4 + Pixel). Assim que o marketing criar a ação, é só colar o rótulo aqui.
+const GOOGLE_ADS_CONVERSAO = 'AW-18124594477/wxY7CJ7igsIcEK26vcJD'
+
+// Conversão de lead. tipo: 'avaliacao' | 'financiamento' | 'anunciar' | 'agendar_visita'
 export function trackLead(tipo) {
   try {
     if (window.gtag) window.gtag('event', 'generate_lead', { lead_tipo: tipo })
   } catch { /* sem analytics, segue */ }
+  try {
+    // Conversão direta do Google Ads (só se o rótulo estiver configurado)
+    if (window.gtag && GOOGLE_ADS_CONVERSAO) window.gtag('event', 'conversion', { send_to: GOOGLE_ADS_CONVERSAO, value: 1.0, currency: 'BRL' })
+  } catch { /* segue */ }
   try {
     if (window.fbq) window.fbq('track', 'Lead', { content_name: tipo })
   } catch { /* sem pixel, segue */ }
 }
 
 // Agendar visita a um imóvel → /api/agendar-visita (vira lead + evento na agenda).
-export async function agendarVisita({ nome, telefone, data_preferida, titulo_imovel, bairro, observacoes }) {
+export async function agendarVisita({ nome, telefone, data_preferida, turno, titulo_imovel, bairro, observacoes }) {
   const r = await fetch('/api/agendar-visita', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -156,6 +179,7 @@ export async function agendarVisita({ nome, telefone, data_preferida, titulo_imo
       nome,
       telefone,
       data_preferida,
+      turno: turno || 'manha',
       titulo_imovel: titulo_imovel || null,
       bairro: bairro || null,
       observacoes: observacoes || null,
@@ -180,6 +204,72 @@ export async function enviarChat(message, history = []) {
   const data = await r.json()
   if (data.session_id) _sessionId = data.session_id
   return data // { resposta, rota, ... }
+}
+
+// ── Simulador de financiamento → /api/simular-financiamento (motor real: SAC/Price + seguros + comparativo) ──
+export async function simularFinanciamento(payload) {
+  const r = await fetch('/api/simular-financiamento', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const data = await r.json()
+  if (!r.ok) throw new Error(data.detail || 'simular HTTP ' + r.status)
+  return data
+}
+
+// ── Perfil de financiamento → /api/perfil-financiamento (enquadramento+taxa+subsídio + cadastra lead) ──
+export async function perfilFinanciamento(payload) {
+  const r = await fetch('/api/perfil-financiamento', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const data = await r.json()
+  if (!r.ok) throw new Error(data.detail || 'perfil HTTP ' + r.status)
+  return data
+}
+
+// ── Agente-guia da calculadora → /api/guia-simulador (explica só como a ferramenta funciona) ──
+export async function guiaSimulador(message, history = []) {
+  const r = await fetch('/api/guia-simulador', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, history }),
+  })
+  const data = await r.json()
+  if (!r.ok) throw new Error(data.detail || 'guia HTTP ' + r.status)
+  return data
+}
+
+// ── Agente especializado de financiamento → /api/analise-financiamento (explica o enquadramento) ──
+export async function analiseFinanciamento(payload) {
+  const r = await fetch('/api/analise-financiamento', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const data = await r.json()
+  if (!r.ok) throw new Error(data.detail || 'analise HTTP ' + r.status)
+  return data
+}
+
+// ── Avaliação de imóvel (AVM real) → /api/avaliar-imovel (faixa min/central/max + aluguel) ──
+export async function avaliarImovel(payload) {
+  const r = await fetch('/api/avaliar-imovel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  const data = await r.json()
+  if (!r.ok) throw new Error(data.detail || 'avaliar HTTP ' + r.status)
+  return data
+}
+
+// Lista de bairros disponíveis na avaliação → /api/avaliacao/bairros
+export async function getBairrosAvaliacao() {
+  const data = await getJSON('/api/avaliacao/bairros')
+  return data.bairros || []
 }
 
 // ── Captação / avaliação: quem quer anunciar ou avaliar o imóvel → /api/lead-vendedor ──

@@ -181,6 +181,7 @@ def qualify_lead(message: str, history: list[dict] | None = None) -> LeadSnapsho
             "vendedor": is_seller,
             "permuta": is_permuta,
             "intencao": has_intent,
+            "aluguel": is_rental,
         },
     )
 

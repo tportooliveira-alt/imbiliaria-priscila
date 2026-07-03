@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Calendar,
   ChevronLeft,
+  ChevronRight,
   Share2,
   Heart,
   ShieldCheck,
@@ -23,6 +24,7 @@ export default function DetalhesImovel({ slug, onBack }) {
   const [isLiked, setIsLiked] = useState(false);
   const [im, setIm] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const [galeriaIdx, setGaleriaIdx] = useState(null); // null = fechada; número = foto aberta na galeria
 
   // Agendamento de visita (modal)
   const [modalVisita, setModalVisita] = useState(false);
@@ -74,6 +76,19 @@ export default function DetalhesImovel({ slug, onBack }) {
       .finally(() => { if (vivo) setCarregando(false); });
     return () => { vivo = false; };
   }, [slug]);
+
+  // Galeria em tela cheia: Esc fecha, setas do teclado navegam
+  useEffect(() => {
+    if (galeriaIdx === null) return;
+    const n = im?.fotos?.length || 0;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setGaleriaIdx(null);
+      else if (n > 1 && e.key === 'ArrowRight') setGaleriaIdx((i) => (i + 1) % n);
+      else if (n > 1 && e.key === 'ArrowLeft') setGaleriaIdx((i) => (i - 1 + n) % n);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [galeriaIdx, im]);
 
   if (carregando) {
     return (
@@ -129,7 +144,7 @@ export default function DetalhesImovel({ slug, onBack }) {
           <div className="flex gap-4">
             <button
               onClick={async () => {
-                const url = window.location.href;
+                const url = `${window.location.origin}/i/${im.slug}`;
                 try {
                   if (navigator.share) await navigator.share({ title: im.titulo, url });
                   else { await navigator.clipboard.writeText(url); alert('Link do imóvel copiado!'); }
@@ -151,18 +166,23 @@ export default function DetalhesImovel({ slug, onBack }) {
 
       <header className="px-4 pt-4 md:px-6 md:pt-6 max-w-[1600px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-2 h-[50vh] md:h-[70vh] min-h-[400px] rounded-3xl overflow-hidden">
-          <div className="md:col-span-3 md:row-span-2 relative group cursor-pointer">
+          <div className="md:col-span-3 md:row-span-2 relative group cursor-pointer" onClick={() => fotos.length && setGaleriaIdx(0)}>
             {fotoPrincipal && <img src={fotoPrincipal} alt={im.titulo} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
+            {fotos.length > 1 && (
+              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm text-[#16284B] px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-widest shadow-md">
+                Ver as {fotos.length} fotos
+              </div>
+            )}
           </div>
-          <div className="hidden md:block col-span-1 row-span-1 relative group cursor-pointer overflow-hidden">
+          <div className="hidden md:block col-span-1 row-span-1 relative group cursor-pointer overflow-hidden" onClick={() => setGaleriaIdx(1)}>
             {foto2 && <img src={foto2} alt="Interior 1" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />}
           </div>
-          <div className="hidden md:block col-span-1 row-span-1 relative group cursor-pointer overflow-hidden">
+          <div className="hidden md:block col-span-1 row-span-1 relative group cursor-pointer overflow-hidden" onClick={() => setGaleriaIdx(2)}>
             {foto3 && <img src={foto3} alt="Interior 2" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />}
             {fotos.length > 3 && (
               <div className="absolute inset-0 bg-black/40 hover:bg-black/20 transition-colors flex items-center justify-center">
-                <button className="bg-white/20 backdrop-blur-md border border-white/40 text-white px-6 py-3 rounded-full text-sm tracking-widest uppercase font-medium hover:bg-white hover:text-[#16284B] transition-all">
+                <button onClick={(e) => { e.stopPropagation(); setGaleriaIdx(0); }} className="bg-white/20 backdrop-blur-md border border-white/40 text-white px-6 py-3 rounded-full text-sm tracking-widest uppercase font-medium hover:bg-white hover:text-[#16284B] transition-all">
                   Ver {fotos.length} Fotos
                 </button>
               </div>
@@ -208,7 +228,7 @@ export default function DetalhesImovel({ slug, onBack }) {
               </div>
               <div className="space-y-2">
                 <h3 className="text-sm font-bold uppercase tracking-widest text-[#16284B] flex items-center gap-2">
-                  Avaliação PVSCELOS <Sparkles size={14} className="text-[#c9943a]" />
+                  Avaliação Priscila Vasconcelos <Sparkles size={14} className="text-[#c9943a]" />
                 </h3>
                 <p className="text-[#5d6b86] text-sm leading-relaxed font-light">
                   Imóvel real da carteira da Priscila Vasconcelos em {im.bairro}
@@ -230,7 +250,7 @@ export default function DetalhesImovel({ slug, onBack }) {
 
           {diferenciais.length > 0 && (
             <div className="space-y-6">
-              <h3 className="font-serif text-2xl text-[#16284B]">Diferenciais Exclusivos</h3>
+              <h3 className="font-serif text-2xl text-[#16284B]">Diferenciais do Imóvel</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
                 {diferenciais.map((item, index) => (
                   <div key={index} className="flex items-center gap-3 text-[#5d6b86] text-sm font-light">
@@ -241,6 +261,27 @@ export default function DetalhesImovel({ slug, onBack }) {
               </div>
             </div>
           )}
+
+          {/* Vídeo do imóvel (YouTube) — só aparece se tiver video_url cadastrado */}
+          {im.videoUrl && (() => {
+            const ytId = im.videoUrl.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)?.[1];
+            if (!ytId) return null;
+            return (
+              <div className="space-y-4">
+                <h3 className="font-serif text-2xl text-[#16284B]">Vídeo do Imóvel</h3>
+                <div className="rounded-2xl overflow-hidden border border-[#dde5f0] shadow-sm aspect-video">
+                  <iframe
+                    title={`Vídeo — ${im.titulo}`}
+                    src={`https://www.youtube.com/embed/${ytId}`}
+                    className="w-full h-full"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Localização — mapa do bairro (sem chave; região, não endereço exato) */}
           <div className="space-y-4">
@@ -268,8 +309,8 @@ export default function DetalhesImovel({ slug, onBack }) {
             <div className="bg-white p-8 rounded-3xl border border-[#dde5f0] shadow-[0_8px_30px_rgb(0,0,0,0.03)] space-y-8">
 
               <div>
-                <span className="text-[10px] uppercase tracking-[0.2em] text-[#5d6b86] font-bold">Valor de Investimento</span>
-                <h2 className="font-serif text-4xl text-[#16284B] mt-2">{im.precoFmt}</h2>
+                <span className="text-[10px] uppercase tracking-[0.2em] text-[#5d6b86] font-bold">{im.finalidade === 'aluguel' ? 'Valor do Aluguel' : 'Valor de Investimento'}</span>
+                <h2 className="font-serif text-4xl text-[#16284B] mt-2">{im.precoFmt}{im.precoSufixo && <span className="text-xl font-sans text-[#5d6b86] font-light">{im.precoSufixo}</span>}</h2>
               </div>
 
               {/* Corretora REAL: Priscila Vasconcelos */}
@@ -288,7 +329,7 @@ export default function DetalhesImovel({ slug, onBack }) {
               <div className="space-y-3">
                 <button onClick={() => setModalVisita(true)} className="w-full bg-[#16284B] text-white py-4 rounded-xl text-sm uppercase tracking-widest font-medium hover:bg-[#0f1c38] transition-all flex items-center justify-center gap-2 group">
                   <Calendar size={18} className="text-[#c9943a] group-hover:scale-110 transition-transform" />
-                  Agendar Visita Exclusiva
+                  Agendar Visita
                 </button>
                 <button onClick={abrirAna} className="w-full bg-white border border-[#16284B] text-[#16284B] py-4 rounded-xl text-sm uppercase tracking-widest font-medium hover:bg-[#f5f0e8] transition-colors flex items-center justify-center gap-2">
                   <MessageCircle size={18} /> Falar com a Ana
@@ -297,7 +338,7 @@ export default function DetalhesImovel({ slug, onBack }) {
 
               <div className="flex items-start gap-2 text-[10px] text-[#7b95c8] leading-relaxed pt-4 border-t border-[#dde5f0]/50">
                 <ShieldCheck size={14} className="flex-shrink-0 mt-0.5" />
-                <p>A PVSCELOS garante o sigilo total das suas negociações. Visitas apenas mediante agendamento prévio com documentação.</p>
+                <p>A Priscila Vasconcelos garante o sigilo total das suas negociações. Visitas apenas mediante agendamento prévio com documentação.</p>
               </div>
 
             </div>
@@ -337,6 +378,41 @@ export default function DetalhesImovel({ slug, onBack }) {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Galeria em tela cheia — TODAS as fotos do imóvel */}
+      {galeriaIdx !== null && fotos.length > 0 && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col" onClick={() => setGaleriaIdx(null)}>
+          <div className="flex justify-between items-center px-6 py-4 text-white/90" onClick={(e) => e.stopPropagation()}>
+            <span className="text-sm tracking-widest">{galeriaIdx + 1} / {fotos.length}</span>
+            <button onClick={() => setGaleriaIdx(null)} aria-label="Fechar" className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="flex-1 flex items-center justify-center relative px-2 select-none" onClick={(e) => e.stopPropagation()}>
+            {fotos.length > 1 && (
+              <button onClick={() => setGaleriaIdx((i) => (i - 1 + fotos.length) % fotos.length)} aria-label="Foto anterior" className="absolute left-2 md:left-8 w-14 h-14 rounded-full bg-white/20 hover:bg-white/35 text-white flex items-center justify-center shadow-lg">
+                <ChevronLeft size={30} />
+              </button>
+            )}
+            <img src={fotos[galeriaIdx].grande} alt={`Foto ${galeriaIdx + 1}`} className="max-h-[78vh] max-w-[92vw] object-contain rounded-lg" />
+            {fotos.length > 1 && (
+              <button onClick={() => setGaleriaIdx((i) => (i + 1) % fotos.length)} aria-label="Próxima foto" className="absolute right-2 md:right-8 w-14 h-14 rounded-full bg-white/20 hover:bg-white/35 text-white flex items-center justify-center shadow-lg">
+                <ChevronRight size={30} />
+              </button>
+            )}
+          </div>
+          <div className="px-4 pb-5 pt-2" onClick={(e) => e.stopPropagation()}>
+            {fotos[galeriaIdx].legenda && <p className="text-center text-white/70 text-sm mb-3">{fotos[galeriaIdx].legenda}</p>}
+            <div className="flex gap-2 overflow-x-auto pb-1 md:justify-center">
+              {fotos.map((f, i) => (
+                <button key={i} onClick={() => setGaleriaIdx(i)} className={`flex-shrink-0 w-20 h-14 rounded overflow-hidden border-2 transition ${i === galeriaIdx ? 'border-[#c9943a]' : 'border-transparent opacity-50 hover:opacity-100'}`}>
+                  <img src={f.thumb} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

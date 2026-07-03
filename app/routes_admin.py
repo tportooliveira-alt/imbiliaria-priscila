@@ -54,6 +54,8 @@ class ImovelPayload(BaseModel):
     destaque: bool = False
     ativo: bool = True
     tour_360_url: str | None = None
+    finalidade: str = "venda"
+    video_url: str | None = None
 
 
 class ImovelUpdate(BaseModel):
@@ -70,6 +72,8 @@ class ImovelUpdate(BaseModel):
     destaque: bool | None = None
     ativo: bool | None = None
     tour_360_url: str | None = None
+    finalidade: str | None = None
+    video_url: str | None = None
 
 
 class ReordemPayload(BaseModel):

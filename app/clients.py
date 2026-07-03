@@ -141,55 +141,10 @@ class ClienteClaude:
                 metadata=None,
             )
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# DeepSeek — cascata quando Claude falha
-# ─────────────────────────────────────────────────────────────────────────────
-class ClienteDeepSeek:
-    """Fallback automático do Claude. Usa a API OpenAI-compatible do DeepSeek."""
-
-    BASE_URL = "https://api.deepseek.com"
-    MODELO = "deepseek-chat"
-
-    def __init__(self):
-        self._client = None
-
-    def available(self) -> bool:
-        return bool(os.getenv("DEEPSEEK_API_KEY"))
-
-    def _ensure_client(self):
-        if self._client is None:
-            from openai import OpenAI
-            self._client = OpenAI(
-                api_key=os.environ["DEEPSEEK_API_KEY"],
-                base_url=self.BASE_URL,
-            )
-        return self._client
-
-    def gerar(self, system: str, mensagem: str, historico: list[dict] | None = None) -> RespostaLLM:
-        if not self.available():
-            return ClienteFallback().gerar(system, mensagem, historico)
-        client = self._ensure_client()
-        msgs = [{"role": "system", "content": system}]
-        for h in (historico or []):
-            msgs.append(h)
-        msgs.append({"role": "user", "content": mensagem})
-        try:
-            resp = client.chat.completions.create(
-                model=self.MODELO,
-                messages=msgs,
-                max_tokens=800,
-            )
-            texto = resp.choices[0].message.content or ""
-            return RespostaLLM(texto=texto, modelo=self.MODELO, metadata={"via": "deepseek-fallback"})
-        except Exception as exc:
-            return ClienteFallback().gerar(system, mensagem, historico)
-
-
     def classificar_imagem(
         self, prompt: str, image_bytes: bytes, mime: str = "image/jpeg", max_tokens: int = 24
     ) -> str | None:
-        """Visao do Claude: envia uma imagem + prompt e devolve o texto (ou None em erro)."""
+        """Visao: envia uma imagem + prompt ao Claude e devolve o texto (ou None em erro)."""
         if not self.available():
             return None
         import base64
@@ -207,3 +162,63 @@ class ClienteDeepSeek:
             return "".join(b.text for b in resp.content if hasattr(b, "text")).strip()
         except Exception:
             return None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DeepSeek — cascata quando Claude falha
+# ─────────────────────────────────────────────────────────────────────────────
+class ClienteDeepSeek:
+    """Fallback automático do Claude. Usa a API OpenAI-compatible do DeepSeek."""
+
+    BASE_URL = "https://api.deepseek.com"
+    MODELO = "deepseek-v4-pro"
+
+    def __init__(self):
+        self._client = None
+
+    def _chaves(self) -> list[str]:
+        # Multi-chave: principal + reservas. Se a anterior falhar (sem saldo,
+        # bloqueada, rate-limit), a proxima entra sozinha. Ordem: principal, _2, _3.
+        ks: list[str] = []
+        for _n in ("DEEPSEEK_API_KEY", "DEEPSEEK_API_KEY_2", "DEEPSEEK_API_KEY_3"):
+            _v = (os.getenv(_n) or "").strip()
+            if _v and _v not in ks:
+                ks.append(_v)
+        return ks
+
+    def available(self) -> bool:
+        return bool(self._chaves())
+
+    def _ensure_client(self):
+        if self._client is None:
+            from openai import OpenAI
+            self._client = OpenAI(
+                api_key=(self._chaves() or [""])[0],
+                base_url=self.BASE_URL,
+            )
+        return self._client
+
+    def gerar(self, system: str, mensagem: str, historico: list[dict] | None = None) -> RespostaLLM:
+        chaves = self._chaves()
+        if not chaves:
+            return ClienteFallback().gerar(system, mensagem, historico)
+        from openai import OpenAI
+        msgs = [{"role": "system", "content": system}]
+        for h in (historico or []):
+            msgs.append(h)
+        msgs.append({"role": "user", "content": mensagem})
+        # tenta cada chave na ordem; a primeira que responder, vence.
+        for _i, _k in enumerate(chaves):
+            try:
+                client = OpenAI(api_key=_k, base_url=self.BASE_URL)
+                resp = client.chat.completions.create(
+                    model=self.MODELO,
+                    messages=msgs,
+                    max_tokens=800,
+                )
+                texto = resp.choices[0].message.content or ""
+                return RespostaLLM(texto=texto, modelo=self.MODELO,
+                                   metadata={"via": "deepseek", "chave": _i + 1})
+            except Exception:
+                continue  # essa chave falhou -> tenta a proxima reserva
+        return ClienteFallback().gerar(system, mensagem, historico)

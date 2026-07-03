@@ -68,6 +68,45 @@ def resumo_leads() -> dict:
 
 
 @mcp.tool
+def funil(dias: int = 30) -> dict:
+    """Funil de conversao do SITE nos ultimos N dias: visitantes que conversaram com a Ana ->
+    quantos deixaram telefone (viraram lead que a Priscila alcanca) -> quantos esquentaram ->
+    quantos agendaram. Mostra onde o funil esta vazando e os leads quentes pra agir."""
+    from app.db import db_session
+    corte = f"-{int(dias)} days"
+    with db_session() as conn:
+        site = conn.execute(
+            "SELECT lead_id, ultimo_stage FROM conversas "
+            "WHERE canal='site' AND criado_em >= date('now', ?)", (corte,),
+        ).fetchall()
+        agendou = conn.execute(
+            "SELECT COUNT(DISTINCT lead_id) AS n FROM lead_tags WHERE tag='agendou_visita'"
+        ).fetchone()
+    total = len(site)
+    com_tel = sum(1 for r in site if r["lead_id"] is not None)
+    quentes = sum(1 for r in site if (r["ultimo_stage"] or "") == "quente")
+    mornos = sum(1 for r in site if (r["ultimo_stage"] or "") == "morno")
+    pct = lambda x: round(x * 100 / total) if total else 0
+    return {
+        "periodo_dias": dias,
+        "funil_site": {
+            "1_conversaram": total,
+            "2_deixaram_contato": com_tel,
+            "3_esquentaram": quentes,
+            "agendaram_visita_total": (agendou["n"] if agendou else 0),
+        },
+        "taxa_captura_contato_pct": pct(com_tel),
+        "vazamento": (
+            "CRITICO: quase ninguem deixa contato — a Ana precisa pedir o WhatsApp como troca de valor"
+            if total and com_tel == 0 else
+            f"{total - com_tel} conversaram e sairam sem deixar contato (anonimos, Priscila nao alcanca)"
+        ),
+        "leads_morno_quente": mornos + quentes,
+        "obs": "contato = telefone capturado (lead_id != null). Fonte: tabela conversas + lead_tags.",
+    }
+
+
+@mcp.tool
 def listar_leads(estagio: str | None = None, temperatura: str | None = None, limite: int = 30) -> list:
     """Lista leads do CRM. Filtra por estagio (ex.: 'quente'/'novo'/'teste') ou temperatura. Limite padrão 30."""
     return _j(leads_repo.listar(estagio=estagio, temperatura=temperatura, limit=min(limite, 100)))

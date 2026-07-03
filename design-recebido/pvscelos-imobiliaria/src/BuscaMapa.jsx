@@ -13,9 +13,10 @@ const BAIRRO_COORDS = {
   'alto maron': [-14.8650, -40.8350], 'espirito santo': [-14.8580, -40.8520], brasil: [-14.8470, -40.8560],
 };
 
-export default function BuscaMapa({ onBack, onPropertyClick, buscaInicial = '' }) {
+export default function BuscaMapa({ onBack, onPropertyClick, buscaInicial = '', finalidadeInicial = 'todos' }) {
   const [imoveis, setImoveis] = useState([]);
   const [busca, setBusca] = useState(buscaInicial);
+  const [finalidade, setFinalidade] = useState(finalidadeInicial);
   const [ativo, setAtivo] = useState(null);
   const [viewMode, setViewMode] = useState('list');
   const mapDiv = useRef(null);
@@ -26,9 +27,19 @@ export default function BuscaMapa({ onBack, onPropertyClick, buscaInicial = '' }
 
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    if (!q) return imoveis;
-    return imoveis.filter((im) => `${im.titulo} ${im.bairro} ${im.tipo}`.toLowerCase().includes(q));
-  }, [imoveis, busca]);
+    return imoveis.filter((im) => {
+      if (finalidade !== 'todos' && im.finalidade !== finalidade) return false;
+      if (!q) return true;
+      return `${im.titulo} ${im.bairro} ${im.tipo}`.toLowerCase().includes(q);
+    });
+  }, [imoveis, busca, finalidade]);
+
+  // Contagem por finalidade (pra mostrar nas abas)
+  const contagem = useMemo(() => ({
+    todos: imoveis.length,
+    venda: imoveis.filter((im) => im.finalidade === 'venda').length,
+    aluguel: imoveis.filter((im) => im.finalidade === 'aluguel').length,
+  }), [imoveis]);
 
   // Inicializa o mapa uma vez
   useEffect(() => {
@@ -76,7 +87,7 @@ export default function BuscaMapa({ onBack, onPropertyClick, buscaInicial = '' }
           `<div style="width:190px;font-family:Inter,sans-serif">
              ${im.capaUrl ? `<img src="${im.capaUrl}" style="width:100%;height:110px;object-fit:cover"/>` : ''}
              <div style="padding:8px 10px 6px"><div style="font-weight:600;color:#16284B;font-size:13px">${im.titulo}</div>
-             <div style="color:#c9943a;font-family:Playfair Display,serif">${im.precoFmt}</div>
+             <div style="color:#c9943a;font-family:Playfair Display,serif">${im.precoFmt}<span style="color:#5d6b86;font-family:Inter,sans-serif;font-size:11px">${im.precoSufixo}</span></div>
              <div style="color:#5d6b86;font-size:11px">${im.bairro}</div></div>
            </div>`,
           { minWidth: 190, closeButton: false }
@@ -130,20 +141,32 @@ export default function BuscaMapa({ onBack, onPropertyClick, buscaInicial = '' }
               <input value={busca} onChange={(e) => setBusca(e.target.value)} type="text" placeholder="Buscar..." className="w-full bg-transparent border-none text-sm focus:outline-none" />
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 lg:pb-6">
+          {/* Abas: venda × aluguel */}
+          <div className="flex gap-2 px-4 md:px-6 pt-4 pb-1 flex-shrink-0">
+            {[['todos', 'Todos'], ['venda', 'À venda'], ['aluguel', 'Para alugar']].map(([val, label]) => (
+              <button key={val} onClick={() => setFinalidade(val)}
+                className={`px-4 py-1.5 rounded-full text-xs uppercase tracking-widest font-semibold transition-colors ${finalidade === val ? 'bg-[#16284B] text-white' : 'bg-[#f5f0e8]/60 text-[#5d6b86] border border-[#dde5f0] hover:text-[#16284B]'}`}>
+                {label} <span className="opacity-60">{contagem[val]}</span>
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-3 pb-24 lg:pb-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {filtrados.map((prop) => (
                 <div key={prop.id} className={`group cursor-pointer flex flex-col rounded-2xl transition-all ${ativo === prop.id ? 'ring-2 ring-[#c9943a]/60' : ''}`}
                   onMouseEnter={() => setAtivo(prop.id)} onMouseLeave={() => setAtivo(null)} onClick={() => onPropertyClick(prop.slug)}>
                   <div className="relative aspect-[4/3] overflow-hidden rounded-2xl mb-3 border border-[#dde5f0]">
                     {prop.capaUrl && <img src={prop.capaUrl} alt={prop.titulo} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" />}
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] tracking-widest uppercase text-[#16284B] font-semibold">{prop.tipo}</div>
+                    <div className="absolute top-3 left-3 flex gap-1.5">
+                      <span className="bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] tracking-widest uppercase text-[#16284B] font-semibold">{prop.tipo}</span>
+                      <span className={`px-2.5 py-1 rounded-md text-[10px] tracking-widest uppercase font-semibold text-white ${prop.finalidade === 'aluguel' ? 'bg-[#c9943a]' : 'bg-[#16284B]'}`}>{prop.finalidade === 'aluguel' ? 'Aluguel' : 'Venda'}</span>
+                    </div>
                     <button className="absolute top-3 right-3 p-1.5 rounded-full bg-white/70 backdrop-blur-sm text-[#5d6b86] hover:text-[#c9943a]"><Heart size={18} /></button>
                   </div>
                   <div className="px-1">
                     <div className="flex justify-between items-start mb-1 gap-2">
                       <h3 className="font-semibold text-[#16284B] text-base line-clamp-1">{prop.titulo}</h3>
-                      <span className="font-serif text-[#16284B] font-medium whitespace-nowrap">{prop.precoFmt}</span>
+                      <span className="font-serif text-[#16284B] font-medium whitespace-nowrap">{prop.precoFmt}{prop.precoSufixo && <span className="text-xs font-sans text-[#5d6b86] font-normal">{prop.precoSufixo}</span>}</span>
                     </div>
                     <p className="text-xs text-[#5d6b86] mb-2 flex items-center gap-1"><MapPin size={12} /> {prop.bairro}</p>
                     <div className="flex items-center gap-3 text-xs text-[#7b95c8] font-medium">

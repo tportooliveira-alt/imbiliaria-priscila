@@ -133,6 +133,17 @@ def _extrair_area_min(texto_norm: str) -> float | None:
     return None
 
 
+def _extrair_finalidade(texto_norm: str) -> str | None:
+    """Detecta venda x aluguel na frase. Sem sinal explicito -> None (nao filtra).
+    Intencao de COMPRA ganha do token de aluguel (evita falso-positivo de
+    'quero sair do aluguel e comprar')."""
+    if re.search(r"compr|financ|a venda", texto_norm):
+        return "venda"
+    if re.search(r"alug|locar|loca[cz]|arrend", texto_norm):
+        return "aluguel"
+    return None
+
+
 def extrair_filtros_heuristica(texto: str) -> dict[str, Any]:
     """Extrai filtros usando regex local. Sempre disponivel."""
     norm = _normalizar(texto)
@@ -145,6 +156,7 @@ def extrair_filtros_heuristica(texto: str) -> dict[str, Any]:
         "preco_max": pmax,
         "area_min": _extrair_area_min(norm),
         "tags": _extrair_tags(norm),
+        "finalidade": _extrair_finalidade(norm),
     }
 
 
@@ -196,7 +208,9 @@ def extrair_filtros(texto: str, *, usar_ia: bool = True) -> dict[str, Any]:
 
 def aplicar_filtros(filtros: dict[str, Any], *, limite: int = 30) -> list[dict]:
     """Aplica filtros nos imoveis ativos. Retorna lista pronta para o frontend."""
-    todos = imoveis_repo.listar_imoveis(somente_ativos=True)
+    todos = imoveis_repo.listar_imoveis(
+        somente_ativos=True, finalidade=filtros.get("finalidade")
+    )
 
     bairros = [_normalizar(b) for b in (filtros.get("bairros") or [])]
     tipo = filtros.get("tipo")

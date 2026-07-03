@@ -74,3 +74,17 @@ data/
 assets/imoveis/
 secret/
 backups/
+
+# Backups locais com timestamp (Claude) — nao versionar
+*.bak
+*.bak.*
+**/*.bak.*
+dist.bak.*/
+**/dist.bak.*/
+
+# Backups antigos do app/ (nao versionar)
+app.bak-*/
+
+# tralhas
+*.bak-*
+design-recebido/pvscelos-capa.tar.gz

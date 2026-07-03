@@ -16,6 +16,26 @@ router = APIRouter()
 _log = logging.getLogger("imobiliaria.publicas")
 
 
+def _faixa_preco(valor) -> str | None:
+    """Classifica o valor de interesse do cliente numa faixa de preco (vira tag do lead
+    pra Priscila/Ana lembrarem o orcamento dele)."""
+    try:
+        v = float(valor or 0)
+    except (TypeError, ValueError):
+        return None
+    if v <= 0:
+        return None
+    if v < 300_000:
+        return "faixa:ate-300k"
+    if v < 500_000:
+        return "faixa:300-500k"
+    if v < 800_000:
+        return "faixa:500-800k"
+    if v < 1_500_000:
+        return "faixa:800k-1.5mi"
+    return "faixa:1.5mi-mais"
+
+
 def _avisar_priscila_lead_quente(nome: str, remote: str, score: int, ultima_msg: str) -> None:
     """Avisa a Priscila (em background) que um lead esquentou. Loga falha, NUNCA propaga.
 
@@ -37,6 +57,137 @@ def _avisar_priscila_lead_quente(nome: str, remote: str, score: int, ultima_msg:
             _log.warning("aviso lead quente: envio falhou (lead %s)", remote)
     except Exception:
         _log.exception("erro ao avisar Priscila sobre lead quente (lead %s)", remote)
+
+
+def _rede_seguranca(lead_id: int, remote: str, nome: str | None, texto: str, motivo: str) -> bool:
+    """Cliente NUNCA sem resposta. Quando a Ana nao pode responder (teto batido / IA
+    falhou / resposta vazia), manda UM bilhete ao cliente e avisa a Priscila pra assumir.
+
+    UMA vez por lead por dia (anti-spam e anti-ban). Retorna True se o cliente ficou
+    coberto. Nunca propaga erro (nao pode quebrar o webhook).
+    """
+    try:
+        import os as _o
+        from app import whatsapp as _wn
+        if not _wn.disponivel():
+            return False
+        # ja mandamos o bilhete pra esse lead hoje? entao nao repete.
+        try:
+            from app.db import db_session as _dbs
+            with _dbs() as _c:
+                _ja = _c.execute(
+                    "SELECT 1 FROM lead_interacoes WHERE lead_id=? AND tipo='whatsapp_enviado' "
+                    "AND json_extract(metadata,'$.motivo')='rede_seguranca' "
+                    "AND date(criado_em)=date('now','localtime') LIMIT 1",
+                    (lead_id,),
+                ).fetchone()
+            if _ja:
+                return True  # cliente ja recebeu o bilhete hoje
+        except Exception:
+            pass
+        _pn = (str(nome).split()[0] if nome else "")
+        _ola = f"Oi, {_pn}! " if _pn else "Oi! "
+        bilhete = (
+            _ola + "Recebi sua mensagem aqui 😊 Nesse instante não consigo te responder "
+            "na hora, mas a Priscila já foi avisada e te retorna rapidinho, tá? "
+            "Obrigada pela paciência! 💙"
+        )
+        env = _wn.enviar_mensagem(remote, bilhete)
+        _enviado = bool(getattr(env, "enviado", False))
+        if _enviado:
+            try:
+                leads_repo.registrar_interacao(
+                    lead_id, tipo="whatsapp_enviado", descricao=bilhete[:500],
+                    metadata={"mensagem_id": getattr(env, "mensagem_id", None),
+                              "auto_reply": False, "motivo": "rede_seguranca", "gatilho": motivo},
+                )
+            except Exception:
+                pass
+        # avisa a Priscila pra assumir o atendimento
+        _num = _o.getenv("PRISCILA_WHATSAPP", "").strip()
+        if _num:
+            _aviso = (f"🟡 Ana não respondeu automático ({motivo}). Cliente "
+                      f"{nome or remote} ({remote}) está esperando — assume esse? "
+                      f"Última: \"{str(texto)[:120]}\"")
+            try:
+                _wn.enviar_mensagem(_num, _aviso)
+            except Exception:
+                pass
+        return _enviado
+    except Exception:
+        _log.exception("rede_seguranca falhou (lead %s)", remote)
+        return False
+
+
+def _dev_fotos_worker(remote: str, termo: str) -> None:
+    """Busca o imovel pelo termo e envia ate 10 fotos pro DEV (background)."""
+    try:
+        import os as _o
+        from app import whatsapp as _wa
+        from app.db import db_session as _dbs
+        site = _o.getenv("SITE_URL", "https://pvscelosimobiliaria.com").rstrip("/")
+        like = f"%{termo}%"
+        with _dbs() as _c:
+            _im = _c.execute(
+                "SELECT id, titulo, bairro, preco FROM imoveis "
+                "WHERE ativo=1 AND (bairro LIKE ? OR titulo LIKE ? OR slug LIKE ?) "
+                "ORDER BY destaque DESC, id LIMIT 1",
+                (like, like, like),
+            ).fetchone()
+            if not _im:
+                _wa.enviar_mensagem(remote, f'Nao achei imovel com "{termo}". Tenta o bairro ou o nome. 🤔')
+                return
+            _fotos = _c.execute(
+                "SELECT arquivo, legenda FROM imagens WHERE imovel_id=? ORDER BY ordem LIMIT 10",
+                (_im["id"],),
+            ).fetchall()
+        if not _fotos:
+            _wa.enviar_mensagem(remote, f'O imovel "{_im["titulo"]}" nao tem fotos cadastradas. 📭')
+            return
+        _preco = ""
+        if _im["preco"]:
+            _preco = " · R$ " + f"{int(_im['preco']):,}".replace(",", ".")
+        _wa.enviar_mensagem(
+            remote,
+            f"📸 {len(_fotos)} foto(s) — {_im['titulo']} ({_im['bairro']}){_preco}\nPra carrossel/propaganda. 👇",
+        )
+        for _f in _fotos:
+            # 1200.webp = versao COM marca d'agua (a original.jpg e limpa, sem marca)
+            _url = f"{site}/assets/{_f['arquivo']}/1200.webp"
+            _wa.enviar_imagem(remote, _url, caption=(_f["legenda"] or "").strip())
+    except Exception:
+        _log.exception("dev_fotos_worker falhou (termo=%r)", termo)
+
+
+def _dev_fotos(remote: str, texto: str) -> dict | None:
+    """CANAL DEV: 'fotos <bairro/nome>' -> manda ate 10 fotos do imovel pro dev montar
+    carrossel/propaganda. So responde ao numero DEV_WHATSAPP (comparado pelos ultimos 8
+    digitos). Retorna None se nao for pedido de fotos do dev (fluxo normal segue)."""
+    import os as _o
+    # Autorizados: o DEV (Thiago) e a Priscila. Compara pelos ultimos 8 digitos.
+    _autorizados = []
+    for _env in ("DEV_WHATSAPP", "PRISCILA_WHATSAPP"):
+        _v = "".join(c for c in _o.getenv(_env, "") if c.isdigit())
+        if _v:
+            _autorizados.append(_v[-8:])
+    if not _autorizados:
+        return None  # canal desligado ate configurar algum numero
+    _rem = "".join(c for c in (remote or "") if c.isdigit())
+    if not _rem or _rem[-8:] not in _autorizados:
+        return None
+    _t = (texto or "").strip()
+    if not _t.lower().startswith("fotos"):
+        return None
+    termo = _t[5:].strip().lstrip(":").strip()
+    from app import whatsapp as _wa
+    if not _wa.disponivel():
+        return {"dev": True, "ok": False, "motivo": "evolution_indisponivel"}
+    if not termo:
+        _wa.enviar_mensagem(remote, "Manda assim: *fotos Candeias* (bairro ou nome do imovel). 📸")
+        return {"dev": True, "ok": False, "motivo": "sem_termo"}
+    import threading as _th
+    _th.Thread(target=_dev_fotos_worker, args=(remote, termo), daemon=True).start()
+    return {"dev": True, "ok": True, "termo": termo}
 
 
 # ────────────────────────────────────────────────────────────────────────
@@ -195,6 +346,9 @@ def simular(payload: SimulacaoRequest) -> dict:
             leads_repo.adicionar_tag(lead_id, f"bairro:{payload.bairro.lower()}")
         if payload.tipo_imovel:
             leads_repo.adicionar_tag(lead_id, f"tipo:{payload.tipo_imovel.lower()}")
+        _fx = _faixa_preco(r.valor_imovel)
+        if _fx:
+            leads_repo.adicionar_tag(lead_id, _fx)
         registrar_evento_funil(
             "lead.qualificado",
             origem="simulador",
@@ -251,6 +405,413 @@ def simular(payload: SimulacaoRequest) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Perfil de financiamento — enquadramento (faixa) + taxa + subsidio a partir do
+# PERFIL do cliente (renda, vinculo, FGTS, primeiro imovel...). Sem logica chumbada
+# no front: o motor (recomendar_financiamento) decide. Tambem cadastra o lead rico.
+# ─────────────────────────────────────────────────────────────────────────────
+class PerfilFinanciamentoRequest(BaseModel):
+    renda: float = Field(..., gt=0, le=500_000)
+    valor_imovel: float = Field(..., gt=0, le=20_000_000)
+    entrada: float = Field(0, ge=0)
+    idade: int = Field(35, ge=18, le=80)
+    tem_fgts: bool = False
+    anos_fgts: int | None = Field(None, ge=0, le=50)
+    vinculo: Literal["clt", "autonomo_mei", "servidor_publico", "aposentado"] = "clt"
+    primeiro_imovel: bool = True
+    imovel_situacao: Literal["novo", "usado", "planta"] = "usado"
+    finalidade: Literal["morar", "investir"] | None = None
+    dependentes: int | None = Field(None, ge=0, le=20)
+    nome_limpo: bool | None = None
+    # Cadastro (lead)
+    nome: str | None = Field(None, max_length=120)
+    contato: str | None = Field(None, max_length=120)
+    email: str | None = Field(None, max_length=160)
+    bairro: str | None = Field(None, max_length=80)
+    tipo_imovel: str | None = Field(None, max_length=40)
+
+
+# Tetos de subsidio MCMV 2026 (verificado gov.br): F1 ate ~R$55k, F2 ate ~R$35k. Estimativa regressiva.
+_SUBSIDIO_MCMV = {"Faixa 1": (3200, 55000), "Faixa 2": (5000, 35000)}
+
+
+def _imoveis_para_perfil(valor_alvo: float, bairro: str | None, limite: int = 3) -> list[dict]:
+    """Imoveis REAIS da carteira que cabem no perfil: preco <= ~110% do alvo, de preferencia
+    no bairro pedido. Ordena pelos mais proximos do alvo (por baixo). Nunca inventa nada."""
+    teto = valor_alvo * 1.10
+    with db_session() as conn:
+        rows = conn.execute(
+            "SELECT slug, titulo, bairro, tipo, preco, quartos, area_util "
+            "FROM imoveis WHERE ativo = 1 AND preco IS NOT NULL AND preco <= ? "
+            "ORDER BY preco DESC",
+            (teto,),
+        ).fetchall()
+    itens = [dict(r) for r in rows]
+    # Evita sugerir imovel muito abaixo do orcamento (fica estranho). Se sobrar pouco, relaxa o piso.
+    piso = valor_alvo * 0.5
+    na_faixa = [i for i in itens if (i.get("preco") or 0) >= piso]
+    if len(na_faixa) >= 2:
+        itens = na_faixa
+    if bairro:
+        b = bairro.strip().lower()
+        no_bairro = [i for i in itens if (i.get("bairro") or "").strip().lower() == b]
+        itens = no_bairro or itens  # se nao tiver no bairro, mostra os mais proximos do orcamento
+    # mais perto do alvo primeiro (menor distancia ao valor pretendido)
+    itens.sort(key=lambda i: abs((i.get("preco") or 0) - valor_alvo))
+    return itens[:limite]
+
+
+def _enviar_resultado_cliente(nome: str | None, telefone: str | None, recomendada: dict,
+                              subsidio: float, imoveis: list[dict]) -> bool:
+    """Manda pro WhatsApp do CLIENTE o resultado + imoveis nossos que casam. Em background.
+
+    Retorna True se o canal esta ligado e o envio foi disparado; False se esta dormente
+    (Evolution API nao conectada -> nada e enviado, so registra). NUNCA propaga erro.
+    """
+    if not telefone or not recomendada:
+        return False
+    try:
+        from app import whatsapp as _wn
+        if not _wn.disponivel():
+            return False  # engatilhado: liga sozinho quando a chave do WhatsApp for conectada
+
+        prim = (nome or "").strip().split(" ")[0] if nome else "Olá"
+        linhas = [
+            f"Oi {prim}! Aqui é da imobiliária da Priscila Vasconcelos (CRECI/BA 29.231) 🏠",
+            "",
+            f"Pelo seu perfil, seu financiamento se encaixa em *{recomendada['nome']}* "
+            f"com taxa estimada de ~{recomendada['taxa_anual']:.2f}% a.a.",
+        ]
+        if subsidio and subsidio > 0:
+            linhas.append(f"Você pode ter direito a subsídio de até ~R${subsidio:,.0f}.".replace(",", "."))
+        if imoveis:
+            linhas += ["", "Imóveis nossos que combinam com você:"]
+            for i in imoveis:
+                preco = f"R${i['preco']:,.0f}".replace(",", ".") if i.get("preco") else "sob consulta"
+                bairro = f" — {i['bairro']}" if i.get("bairro") else ""
+                linhas.append(f"• {i['titulo']}{bairro} — {preco}\n  {i['url']}")
+        linhas += [
+            "",
+            "⚠️ Valores são *estimativa*. A Priscila vai te chamar agora pra fazer a simulação oficial "
+            "e te mostrar tudo de pertinho. 💛",
+        ]
+        msg = "\n".join(linhas)
+
+        import threading
+        threading.Thread(
+            target=lambda: _wn.enviar_mensagem(telefone, msg), daemon=True,
+        ).start()
+        return True
+    except Exception:
+        _log.exception("falha ao enviar resultado do simulador pro cliente")
+        return False
+
+
+def _estimar_subsidio(faixa_nome: str, renda: float) -> float:
+    """Estimativa do subsidio MCMV (so F1/F2): cai conforme a renda sobe dentro da faixa."""
+    for chave, (renda_teto, sub_max) in _SUBSIDIO_MCMV.items():
+        if chave in faixa_nome:
+            fator = max(0.0, 1.0 - (renda / renda_teto) * 0.7)
+            return round(sub_max * fator)
+    return 0.0
+
+
+@router.post("/api/perfil-financiamento")
+def perfil_financiamento(payload: PerfilFinanciamentoRequest) -> dict:
+    servidor = payload.vinculo == "servidor_publico"
+    # Pro-Cotista exige 3+ anos de FGTS — so vale como cotista se cumprir o tempo.
+    cotista = bool(payload.tem_fgts and (payload.anos_fgts is None or payload.anos_fgts >= 3))
+
+    rec = financiamento.recomendar_financiamento(
+        valor_imovel=payload.valor_imovel,
+        renda=payload.renda,
+        tem_fgts=cotista,
+        servidor_publico=servidor,
+    )
+
+    todas = [m for m in ([rec.get("recomendada")] + rec.get("alternativas", [])) if m]
+    # MCMV exige NAO ter outro imovel — se nao for o primeiro, tira MCMV da jogada.
+    if not payload.primeiro_imovel:
+        todas = [m for m in todas if "MCMV" not in m.get("nome", "")] or todas
+    todas.sort(key=lambda m: m["taxa_anual"])
+    recomendada = todas[0] if todas else rec.get("recomendada")
+
+    subsidio = _estimar_subsidio(recomendada["nome"], payload.renda) if (recomendada and payload.primeiro_imovel) else 0.0
+
+    # Imoveis REAIS da carteira que casam com o perfil (mostra na tela + manda no zap)
+    imoveis = _imoveis_para_perfil(payload.valor_imovel, payload.bairro)
+    imoveis_sugeridos = [
+        {
+            "slug": i["slug"], "titulo": i["titulo"], "bairro": i.get("bairro"),
+            "tipo": i.get("tipo"), "preco": i.get("preco"), "quartos": i.get("quartos"),
+            "area": i.get("area_util"), "url": f"https://pvscelosimobiliaria.com/?imovel={i['slug']}",
+        }
+        for i in imoveis
+    ]
+
+    # Cadastra o lead com o PERFIL completo (Priscila sabe exatamente o que ele quer) + handoff
+    lead_id = None
+    if payload.nome or payload.contato:
+        _vinc = {"clt": "CLT", "autonomo_mei": "Autônomo/MEI", "servidor_publico": "Servidor público", "aposentado": "Aposentado"}.get(payload.vinculo, payload.vinculo)
+        _sit = {"novo": "novo", "usado": "usado", "planta": "na planta"}.get(payload.imovel_situacao, payload.imovel_situacao)
+        partes = [
+            f"Perfil financiamento: renda R${payload.renda:.0f}",
+            f"imóvel R${payload.valor_imovel:.0f} ({_sit})",
+            f"entrada R${payload.entrada:.0f}",
+            _vinc,
+            ("tem FGTS" + (f" {payload.anos_fgts}a" if payload.anos_fgts is not None else "")) if payload.tem_fgts else "sem FGTS",
+            ("1º imóvel" if payload.primeiro_imovel else "já tem imóvel"),
+            f"enquadramento: {recomendada['nome']} ({recomendada['taxa_anual']:.2f}%)",
+        ]
+        if payload.finalidade:
+            partes.append(f"p/ {payload.finalidade}")
+        if payload.bairro:
+            partes.append(f"bairro {payload.bairro}")
+        if imoveis_sugeridos:
+            partes.append("sugeridos: " + ", ".join(i["titulo"] for i in imoveis_sugeridos))
+        _email = payload.email or (payload.contato if payload.contato and "@" in payload.contato else None)
+        lead_id = leads_repo.upsert_lead(
+            nome=payload.nome,
+            telefone=payload.contato,
+            email=_email,
+            origem="simulador",
+        )
+        leads_repo.adicionar_tag(lead_id, "comprador")
+        leads_repo.adicionar_tag(lead_id, "handoff")  # Ana fala pouco e passa pra Priscila
+        if servidor:
+            leads_repo.adicionar_tag(lead_id, "servidor")
+        if cotista:
+            leads_repo.adicionar_tag(lead_id, "fgts")
+        leads_repo.registrar_interacao(
+            lead_id, tipo="simulacao", descricao=" · ".join(partes),
+            metadata={
+                "renda": payload.renda, "valor_imovel": payload.valor_imovel,
+                "entrada": payload.entrada, "vinculo": payload.vinculo,
+                "tem_fgts": payload.tem_fgts, "anos_fgts": payload.anos_fgts,
+                "primeiro_imovel": payload.primeiro_imovel, "imovel_situacao": payload.imovel_situacao,
+                "finalidade": payload.finalidade, "enquadramento": recomendada["nome"],
+                "taxa_anual": recomendada["taxa_anual"], "subsidio_estimado": subsidio,
+                "nome_limpo": payload.nome_limpo, "bairro": payload.bairro, "email": _email,
+                "imoveis_sugeridos": [i["slug"] for i in imoveis_sugeridos],
+            },
+        )
+
+    # Manda o RESULTADO + imoveis no WhatsApp do cliente. Engatilhado: so dispara quando a
+    # Evolution API estiver conectada (hoje disponivel()=False -> apenas registra, nao envia).
+    enviado_whatsapp = _enviar_resultado_cliente(
+        payload.nome, payload.contato, recomendada, subsidio, imoveis_sugeridos,
+    )
+
+    return {
+        "enquadramento": recomendada["nome"] if recomendada else "—",
+        "taxa_anual": recomendada["taxa_anual"] if recomendada else None,
+        "lt_max": recomendada.get("lt_max", 0.80) if recomendada else 0.80,
+        "obs": recomendada.get("obs", "") if recomendada else "",
+        "subsidio_estimado": subsidio,
+        "alternativas": [
+            {"nome": m["nome"], "taxa_anual": m["taxa_anual"], "obs": m.get("obs", "")}
+            for m in todas[1:5]
+        ],
+        "imoveis_sugeridos": imoveis_sugeridos,
+        "enviado_whatsapp": enviado_whatsapp,
+        "entrada_min": rec.get("entrada_min", 0.20),
+        "atualizado_em": rec.get("atualizado_em", ""),
+        "desatualizada": rec.get("desatualizada", False),
+        "lead_cadastrado": lead_id is not None,
+        "aviso_estimativa": (
+            "⚠️ ESTIMATIVA — enquadramento, taxa e subsídio são aproximados. O banco confirma na análise "
+            "do seu perfil (score, renda, FGTS, relacionamento). A Priscila faz a simulação oficial."
+        ),
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Agente ESPECIALIZADO de financiamento — explica em detalhe o enquadramento da
+# pessoa (MCMV / SAC×Price / FGTS-Pró-Cotista / SBPE / ITBI). Conversa pouca, mais
+# resultado. SEMPRE estimativa, NUNCA crava numero. Termina passando pra Priscila.
+# ─────────────────────────────────────────────────────────────────────────────
+SYSTEM_CONSULTOR_FINANCIAMENTO = """Voce e um consultor de financiamento imobiliario da imobiliaria da
+Priscila Vasconcelos (CRECI/BA 29.231), especialista no mercado de Vitoria da Conquista/BA em 2026.
+Voce domina: MCMV (faixas 1 a 4, renda, teto, subsidio), Pro-Cotista FGTS (3+ anos, imovel novo ate ~R$500k),
+SBPE (mercado livre por banco), SAC vs Price, ITBI (3% em VCA), cartorio, seguros MIP/DFI, e o passo a passo.
+
+COMO RESPONDER:
+- Explique de forma CLARA e DIRETA o que o enquadramento da pessoa significa PRA ELA (em 2 ou 3 paragrafos curtos).
+- Diga o porque daquela faixa/taxa e 1 dica pratica (ex.: FGTS abaixa a taxa, SAC comeca mais alto e cai).
+- Conversa POUCA, mais resultado. Nao encha de pergunta.
+- Use linguagem simples, acolhedora, sem juridiques. Atende TODO mundo, nunca diminui ninguem pela renda.
+
+REGRAS DURAS (nunca quebre):
+- TUDO e ESTIMATIVA. Deixe explicito que sao valores aproximados e que SO o banco confirma na analise oficial.
+- NUNCA prometa aprovacao, taxa exata ou parcela exata como verdade. Nunca invente numero alem dos que recebeu.
+- Feche SEMPRE convidando a pessoa a falar com a Priscila pra fazer a simulacao OFICIAL e ver os imoveis de perto.
+"""
+
+
+class AnaliseFinanciamentoRequest(BaseModel):
+    enquadramento: str = Field(..., max_length=80)
+    taxa_anual: float | None = Field(None, ge=0, le=30)
+    subsidio_estimado: float | None = Field(None, ge=0)
+    renda: float | None = Field(None, ge=0)
+    valor_imovel: float | None = Field(None, ge=0)
+    entrada: float | None = Field(None, ge=0)
+    parcela_estimada: float | None = Field(None, ge=0)
+    vinculo: str | None = Field(None, max_length=40)
+    tem_fgts: bool | None = None
+    primeiro_imovel: bool | None = None
+    sistema: str | None = Field(None, max_length=10)
+    nome: str | None = Field(None, max_length=120)
+
+
+@router.post("/api/analise-financiamento")
+def analise_financiamento(payload: AnaliseFinanciamentoRequest) -> dict:
+    from app.clients import ClienteClaude
+
+    prim = (payload.nome or "").strip().split(" ")[0] if payload.nome else "o cliente"
+    dados = [f"Enquadramento: {payload.enquadramento}"]
+    if payload.taxa_anual is not None:
+        dados.append(f"taxa estimada ~{payload.taxa_anual:.2f}% a.a.")
+    if payload.subsidio_estimado:
+        dados.append(f"subsidio estimado ~R${payload.subsidio_estimado:.0f}")
+    if payload.renda:
+        dados.append(f"renda R${payload.renda:.0f}")
+    if payload.valor_imovel:
+        dados.append(f"imovel R${payload.valor_imovel:.0f}")
+    if payload.entrada is not None:
+        dados.append(f"entrada R${payload.entrada:.0f}")
+    if payload.parcela_estimada:
+        dados.append(f"parcela inicial estimada ~R${payload.parcela_estimada:.0f} ({payload.sistema or 'SAC'})")
+    if payload.vinculo:
+        dados.append(f"vinculo {payload.vinculo}")
+    if payload.tem_fgts is not None:
+        dados.append("tem FGTS" if payload.tem_fgts else "sem FGTS")
+    if payload.primeiro_imovel is not None:
+        dados.append("1o imovel" if payload.primeiro_imovel else "ja tem imovel")
+
+    msg = (
+        f"Analise o perfil de {prim} e explique o enquadramento dele de forma clara e curta. "
+        f"Dados: {', '.join(dados)}."
+    )
+    try:
+        resp = ClienteClaude("claude-sonnet-4-5").gerar(SYSTEM_CONSULTOR_FINANCIAMENTO, msg, None)
+        texto = resp.texto
+    except Exception:
+        _log.exception("analise-financiamento: falha ao gerar")
+        texto = ("Pelo seu perfil, dá pra seguir com esse enquadramento — mas os valores são uma estimativa. "
+                 "A Priscila vai te chamar pra fazer a simulação oficial e te explicar tudo certinho. 💛")
+    return {"analise": texto, "aviso": "Estimativa — a Priscila confirma na simulação oficial."}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Agente-GUIA da calculadora — explica SO como a ferramenta funciona (cada campo,
+# cada botao, o passo a passo). NAO e a Ana, NAO da consultoria de financiamento,
+# NAO fala de imovel especifico. So o sistema.
+# ─────────────────────────────────────────────────────────────────────────────
+SYSTEM_GUIA_SIMULADOR = """Voce e o assistente-guia da pagina de Calculadoras do site da Priscila
+Vasconcelos (corretora, CRECI/BA 29.231, Vitoria da Conquista). Sua UNICA funcao e explicar COMO A
+FERRAMENTA funciona — o que cada campo e botao faz e o passo a passo. Voce NAO e a Ana e NAO faz
+consultoria de financiamento nem fala de imovel especifico (pra isso, oriente a pessoa a usar os botoes
+da pagina ou falar com a Priscila).
+
+COMO A PAGINA FUNCIONA (e o que voce explica):
+- Tem 2 abas no topo: "Simular financiamento" e "Avaliar imovel".
+- Na aba Simular financiamento, a pessoa preenche o perfil em 3 partes:
+  1) Voce: nome, WhatsApp, e-mail, vinculo (CLT/autonomo/servidor/aposentado), idade, renda, dependentes.
+  2) O imovel: valor, entrada, situacao (novo/usado/na planta), bairro, finalidade, prazo, sistema SAC ou Price.
+  3) Credito: se tem FGTS e quantos anos, se e o 1o imovel, se o nome esta limpo.
+- Ao clicar em "ANALISAR MEU PERFIL", o sistema mostra: o Enquadramento (faixa MCMV, Pro-Cotista FGTS ou
+  SBPE), a Taxa estimada, o Subsidio, a parcela, graficos, e os IMOVEIS da Priscila que combinam com o perfil.
+- IMPORTANTE: assim que a pessoa preenche e analisa, o RESULTADO E ENVIADO NO WHATSAPP dela, junto com os
+  imoveis que combinam. A Priscila tambem recebe e vai chamar pra fazer a simulacao oficial.
+- Tem o botao "Explicar meu enquadramento" (um consultor que detalha MCMV/FGTS/SAC pra aquele perfil) e o
+  "Marcar horario com a Priscila" (escolhe dia e turno).
+- SAC = parcela comeca mais alta e vai caindo. Price = parcela fixa. SBPE = financiamento de mercado (banco).
+  MCMV = Minha Casa Minha Vida (taxas menores por faixa de renda). Pro-Cotista = quem tem 3+ anos de FGTS.
+
+REGRAS:
+- Responda CURTO, simpatico e direto (1 a 3 frases). Sem juridiques.
+- Deixe claro que os valores sao ESTIMATIVA e que a Priscila confirma o oficial.
+- Se perguntarem algo que nao e sobre como usar a pagina, diga gentilmente que pra isso e so preencher o
+  perfil (que ja cai no WhatsApp) ou falar direto com a Priscila.
+"""
+
+
+class GuiaSimuladorRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=1000)
+    history: list[dict] = Field(default_factory=list)
+
+
+@router.post("/api/guia-simulador")
+def guia_simulador(payload: GuiaSimuladorRequest) -> dict:
+    from app.clients import ClienteClaude
+
+    hist = [h for h in payload.history if isinstance(h, dict)][-8:]
+    try:
+        resp = ClienteClaude("claude-haiku-4-5").gerar(SYSTEM_GUIA_SIMULADOR, payload.message, hist)
+        texto = resp.texto
+    except Exception:
+        _log.exception("guia-simulador: falha ao gerar")
+        texto = ("É só preencher seu perfil (nome, WhatsApp, renda, imóvel…) e clicar em 'Analisar meu perfil'. "
+                 "O resultado chega no seu WhatsApp na hora, e a Priscila te chama. 💛")
+    return {"resposta": texto}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Auditor da Ana — valida uma resposta da Ana contra as regras (curta, 1 pergunta,
+# nao inventa taxa, tom humano). Roda na NOSSA IA (nao no Gemini). Console interno.
+# ─────────────────────────────────────────────────────────────────────────────
+SYSTEM_AUDITOR_ANA = """Voce e um auditor senior de atendimento imobiliario da Priscila Vasconcelos
+(Vitoria da Conquista/BA). Analise a MENSAGEM DA ANA (a assistente) e verifique 4 regras:
+1. CURTA e objetiva? (ideal 2 a 3 frases, ate ~60 palavras; mais que isso = LONGA demais).
+2. Fez no maximo UMA pergunta? (2 ou mais perguntas = falha).
+3. NAO inventou taxa, parcela ou calculo financeiro como verdade? (o certo e mandar pro simulador do
+   site ou pra Priscila, deixando claro que e estimativa).
+4. Tom humano, gentil e natural (sem robotice, sem forcar coisa local artificial)?
+
+Responda assim, curto:
+- VEREDITO: APROVADA ou REPROVADA.
+- Se REPROVADA, liste em bullets curtos SO os pontos que falharam (regra + por que).
+Seja direto e pratico. Nao reescreva a mensagem aqui."""
+
+SYSTEM_REESCREVER_ANA = """Voce reescreve mensagens da assistente Ana para WhatsApp imobiliario (Priscila
+Vasconcelos, Vitoria da Conquista). Deixe: BEM curta (2 a 3 frases), com UMA pergunta no final, natural e
+calorosa, SEM inventar taxa/parcela (se for financiamento, mande pro simulador do site ou pra Priscila como
+estimativa). Mantenha o essencial. Devolva SOMENTE a mensagem reescrita, nada mais."""
+
+
+class AuditarAnaRequest(BaseModel):
+    texto: str = Field(..., min_length=1, max_length=2000)
+    modo: Literal["auditar", "reescrever"] = "auditar"
+
+
+@router.post("/api/auditar-ana")
+def auditar_ana(payload: AuditarAnaRequest) -> dict:
+    import re as _re
+    from app.clients import ClienteClaude
+
+    # Metricas objetivas (rapidas, sem IA) — sempre uteis no console.
+    txt = payload.texto.strip()
+    frases = len([s for s in _re.split(r"[.!?]+", txt) if s.strip()])
+    palavras = len(txt.split())
+    perguntas = txt.count("?")
+    citou_taxa = bool(_re.search(r"\d+[,.]?\d*\s*%\s*(a\.?a\.?|ao ano)?", txt) and "%" in txt)
+    metricas = {
+        "frases": frases, "palavras": palavras, "perguntas": perguntas,
+        "curta_ok": palavras <= 60 and frases <= 3,
+        "uma_pergunta_ok": perguntas <= 1,
+        "sem_taxa_inventada": not citou_taxa,
+    }
+
+    system = SYSTEM_AUDITOR_ANA if payload.modo == "auditar" else SYSTEM_REESCREVER_ANA
+    try:
+        resp = ClienteClaude("claude-haiku-4-5").gerar(system, txt, None)
+        saida = resp.texto
+    except Exception:
+        _log.exception("auditar-ana: falha ao gerar")
+        saida = "(nao consegui rodar a auditoria por IA agora — veja as metricas objetivas acima.)"
+    return {"modo": payload.modo, "metricas": metricas, "resultado": saida}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Avaliacao de imovel (AVM)
 # ─────────────────────────────────────────────────────────────────────────────
 class AvaliacaoRequest(BaseModel):
@@ -275,6 +836,7 @@ class AvaliacaoRequest(BaseModel):
     ponto_comercial: bool = False
     nome: str | None = Field(None, max_length=120)
     contato: str | None = Field(None, max_length=120)
+    email: str | None = Field(None, max_length=160)
     prazo_venda: Literal["ja", "3_meses", "6_meses", "12_meses", "pesquisando"] | None = None
 
 
@@ -388,10 +950,15 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
         lead_id = leads_repo.upsert_lead(
             nome=payload.nome,
             telefone=payload.contato,
-            email=payload.contato if payload.contato and "@" in payload.contato else None,
+            email=payload.email or (payload.contato if payload.contato and "@" in payload.contato else None),
             origem="avaliacao",
         )
         leads_repo.adicionar_tag(lead_id, "vendedor")
+        _fx = _faixa_preco(r.valor_central)
+        if _fx:
+            leads_repo.adicionar_tag(lead_id, _fx)
+        if payload.bairro:
+            leads_repo.adicionar_tag(lead_id, f"bairro:{payload.bairro.lower()}")
         leads_repo.registrar_interacao(
             lead_id,
             tipo="avaliacao",
@@ -441,6 +1008,38 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
     aluguel_liquido = round(aluguel_estimado * 0.75)
     yield_anual_bruto = round(yield_mes * 12 * 100, 2)
 
+    # Manda a AVALIACAO no WhatsApp do cliente (1a vez o resultado vai por la — gera a conversa
+    # com a Ana/Priscila). Em background, NUNCA propaga erro. So se tiver contato + canal ligado.
+    enviado_whatsapp = False
+    _tel = "".join(ch for ch in (payload.contato or "") if ch.isdigit())
+    if len(_tel) in (10, 11):
+        _tel = "55" + _tel  # DDD+numero -> com codigo do Brasil
+    if len(_tel) >= 12:
+        try:
+            from app import whatsapp as _wn
+            if _wn.disponivel():
+                def _brl(v):
+                    return ("R$ " + f"{round(v or 0):,}").replace(",", ".")
+                _prim = (payload.nome or "").strip().split(" ")[0] if payload.nome else "Olá"
+                _msg = "\n".join([
+                    f"Oi {_prim}! Aqui é da imobiliária da Priscila Vasconcelos (CRECI/BA 29.231) 🏠",
+                    "",
+                    f"🏠 *Avaliação do seu imóvel* — {r.bairro_normalizado}",
+                    f"💰 Valor estimado: *{_brl(r.valor_central)}*",
+                    f"📊 Faixa: {_brl(r.valor_minimo)} a {_brl(r.valor_maximo)}",
+                    f"🔑 Potencial de aluguel: ~{_brl(aluguel_estimado)}/mês",
+                    "",
+                    "⚠️ É uma *estimativa* bem calibrada — o valor certo depende do padrão, do "
+                    "acabamento e do ponto. Posso avaliar seu imóvel pessoalmente e sem compromisso.",
+                    "",
+                    "Me conta pra eu te ajudar do jeito certo: você está pensando em vender? 💙",
+                ])
+                import threading as _th
+                _th.Thread(target=lambda: _wn.enviar_mensagem(_tel, _msg), daemon=True).start()
+                enviado_whatsapp = True
+        except Exception:
+            _log.exception("falha ao enviar avaliacao no whatsapp")
+
     return {
         "bairro_informado": payload.bairro,
         "bairro_normalizado": r.bairro_normalizado,
@@ -457,6 +1056,7 @@ def avaliar(payload: AvaliacaoRequest) -> dict:
         "fatores": r.fatores_aplicados,
         "confianca": r.confianca,
         "texto": texto,
+        "enviado_whatsapp": enviado_whatsapp,
     }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -781,7 +1381,11 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
     try:
         from app import secretaria
         if secretaria.acionar(remote, str(texto)):
-            res = secretaria.processar(str(texto))
+            # PERGUNTA a agenda (o que tem hoje/amanha/semana) vs MARCAR algo novo
+            if secretaria.eh_consulta_agenda(str(texto)):
+                res = secretaria.consultar(str(texto))
+            else:
+                res = secretaria.processar(str(texto))
             try:
                 import os as _os
                 from app import whatsapp as _wa
@@ -798,6 +1402,15 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
             return {"secretaria": True, "ok": res.get("ok"), "detalhe": res.get("mensagem")}
     except Exception:
         _log.exception("secretaria (Joao) falhou ao processar mensagem de %s", remote)
+
+    # ─── CANAL DEV (Thiago): "fotos <bairro/nome>" → manda as fotos pro carrossel ──
+    # Intercepta ANTES do fluxo de lead/Ana. So o numero DEV_WHATSAPP cai aqui.
+    try:
+        _dev = _dev_fotos(remote, str(texto))
+        if _dev is not None:
+            return _dev
+    except Exception:
+        _log.exception("canal dev (fotos) falhou para %s", remote)
 
     lead_id = leads_repo.upsert_lead(
         nome=push_name,
@@ -895,7 +1508,9 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
                 "WHERE tipo='whatsapp_enviado' AND date(criado_em)=date('now','localtime')"
             ).fetchone()
         if _row and _row["n"] >= _cap:
-            return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": f"teto_diario_{_cap}"}
+            _cob = _rede_seguranca(lead_id, remote, push_name, str(texto), f"teto_diario_{_cap}")
+            return {"ok": True, "lead_id": lead_id, "auto_reply": False,
+                    "motivo": f"teto_diario_{_cap}", "rede_seguranca": _cob}
     except Exception:
         pass
 
@@ -949,10 +1564,14 @@ def _processar_webhook_whatsapp(payload: WebhookWhatsApp) -> dict:
             )
             texto_ia = (resposta.get("resposta") or "").strip()
         except Exception as exc:  # IA indisponivel nao pode quebrar webhook
-            return {"ok": True, "lead_id": lead_id, "auto_reply": False, "erro_ia": str(exc)[:200]}
+            _cob = _rede_seguranca(lead_id, remote, _nome, str(texto), "ia_erro")
+            return {"ok": True, "lead_id": lead_id, "auto_reply": False,
+                    "erro_ia": str(exc)[:200], "rede_seguranca": _cob}
 
     if not texto_ia:
-        return {"ok": True, "lead_id": lead_id, "auto_reply": False, "motivo": "ia_vazia"}
+        _cob = _rede_seguranca(lead_id, remote, _nome, str(texto), "ia_vazia")
+        return {"ok": True, "lead_id": lead_id, "auto_reply": False,
+                "motivo": "ia_vazia", "rede_seguranca": _cob}
 
     # 3) ATRASO HUMANO: espera alguns segundos antes de enviar (parecer digitacao, nao robo
     #    instantaneo). Configuravel por WHATSAPP_DELAY_MIN/MAX (segundos).

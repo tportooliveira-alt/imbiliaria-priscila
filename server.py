@@ -344,6 +344,68 @@ def mercado_redirect() -> RedirectResponse:
     return RedirectResponse(url="/mercado.html")
 
 
+@app.get("/i/{slug}")
+def compartilhar_imovel(slug: str):
+    """Link de compartilhamento p/ WhatsApp: entrega as tags Open Graph com a
+    CAPA do imovel (preview) e leva a pessoa ao imovel no site. O robo do
+    WhatsApp le a foto; quem clica cai no detalhe normal do SPA."""
+    from app import imoveis as _imoveis
+
+    HOST = "https://pvscelosimobiliaria.com"
+    item = _imoveis.buscar_por_slug(slug)
+    if not item:
+        return RedirectResponse(url="/")
+
+    imgs = _imoveis.listar_imagens(item["id"])
+    capa = next((i for i in imgs if i.get("tipo") == "capa"), imgs[0] if imgs else None)
+    og_img = f"{HOST}/assets/{capa['arquivo']}/original.jpg" if capa else f"{HOST}/selo.png"
+
+    fin = item.get("finalidade") or "venda"
+    preco = item.get("preco") or 0
+    preco_fmt = (
+        "R$ " + f"{preco:,.0f}".replace(",", ".") + ("/mes" if fin == "aluguel" else "")
+    ) if preco else "Sob consulta"
+    partes = []
+    if item.get("bairro"):
+        partes.append(str(item["bairro"]))
+    if item.get("quartos"):
+        partes.append(f"{item['quartos']} quartos")
+    if item.get("area_util"):
+        partes.append(f"{item['area_util']:.0f}m2")
+    detalhe = " · ".join(partes)
+    desc = preco_fmt + (f" — {detalhe}" if detalhe else "") + ". Priscila Vasconcelos Imobiliaria."
+
+    t = html_escape(item.get("titulo") or "Imovel")
+    d = html_escape(desc)
+    img = html_escape(og_img)
+    url = html_escape(f"{HOST}/i/{slug}")
+    og = (
+        '<meta property="og:type" content="website">'
+        '<meta property="og:site_name" content="Priscila Vasconcelos Imobiliaria">'
+        f'<meta property="og:title" content="{t}">'
+        f'<meta property="og:description" content="{d}">'
+        f'<meta property="og:image" content="{img}">'
+        '<meta property="og:image:width" content="1200">'
+        '<meta property="og:image:height" content="900">'
+        f'<meta property="og:url" content="{url}">'
+        '<meta name="twitter:card" content="summary_large_image">'
+        f'<meta name="twitter:title" content="{t}">'
+        f'<meta name="twitter:description" content="{d}">'
+        f'<meta name="twitter:image" content="{img}">'
+    )
+
+    # Serve o PROPRIO SPA (index.html buildado) com as tags OG injetadas: o robo
+    # do WhatsApp le a capa; o humano carrega o site normal e ve o imovel.
+    dist_index = ROOT / "design-recebido" / "pvscelos-imobiliaria" / "dist" / "index.html"
+    try:
+        page = dist_index.read_text(encoding="utf-8")
+    except Exception:
+        return RedirectResponse(url=f"/?imovel={slug}")
+    page = page.replace("<head>", "<head>\n" + og, 1)
+    page = re.sub(r"<title>.*?</title>", lambda _m: f"<title>{t}</title>", page, count=1, flags=re.S)
+    return HTMLResponse(content=page)
+
+
 @app.get("/ads")
 def ads_redirect() -> RedirectResponse:
     """Ferramenta INTERNA: calculadora de investimento em Ads (noindex)."""

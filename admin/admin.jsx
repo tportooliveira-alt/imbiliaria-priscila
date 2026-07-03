@@ -3,9 +3,15 @@ const TOKEN_KEY = "pv_admin_token";
 const TIPOS_COMODO = [
   ["capa", "Capa"],
   ["sala", "Sala"],
+  ["sala_estar", "Sala de estar"],
   ["cozinha", "Cozinha"],
+  ["area_gourmet", "Área gourmet"],
   ["quarto", "Quarto"],
+  ["closet", "Closet"],
   ["banheiro", "Banheiro"],
+  ["banheiro_social", "Banheiro social"],
+  ["lavabo", "Lavabo"],
+  ["lavanderia", "Lavanderia"],
   ["area_externa", "Area externa"],
   ["planta", "Planta"],
 ];
@@ -175,7 +181,7 @@ function Login({ onLogin }) {
 
 function FormImovel({ inicial, aoSalvar, aoCancelar }) {
   const [dados, setDados] = React.useState(inicial || {
-    titulo: "", bairro: "", tipo: "Casa", quartos: 0, suites: 0, vagas: 0,
+    titulo: "", bairro: "", tipo: "Casa", finalidade: "venda", quartos: 0, suites: 0, vagas: 0,
     area_util: 0, preco: 0, descricao: "", caracteristicas: [], destaque: false, ativo: true,
     tour_360_url: "",
   });
@@ -272,6 +278,12 @@ function FormImovel({ inicial, aoSalvar, aoCancelar }) {
           </select>
         </div>
       </div>
+      <div className="field"><label>Finalidade</label>
+        <select value={dados.finalidade || "venda"} onChange={e => up("finalidade", e.target.value)}>
+          <option value="venda">À venda</option>
+          <option value="aluguel">Para alugar</option>
+        </select>
+      </div>
       <div className="grid-3">
         <div className="field"><label>Quartos</label><input type="number" min={0} value={dados.quartos} onChange={e => up("quartos", +e.target.value)} /></div>
         <div className="field"><label>Suites</label><input type="number" min={0} value={dados.suites} onChange={e => up("suites", +e.target.value)} /></div>
@@ -319,6 +331,15 @@ function FormImovel({ inicial, aoSalvar, aoCancelar }) {
           placeholder="https://my.matterport.com/show/?m=..."
           value={dados.tour_360_url || ""}
           onChange={e => up("tour_360_url", e.target.value)}
+        />
+      </div>
+      <div className="field">
+        <label>Vídeo do imóvel (URL do YouTube)</label>
+        <input
+          type="url"
+          placeholder="https://www.youtube.com/watch?v=..."
+          value={dados.video_url || ""}
+          onChange={e => up("video_url", e.target.value)}
         />
       </div>
       <div className="field" style={{display: "flex", gap: 18}}>

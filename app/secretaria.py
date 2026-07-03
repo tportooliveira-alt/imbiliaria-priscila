@@ -47,6 +47,34 @@ def eh_comando_agenda(texto: str) -> bool:
     return any(g in _sem_acento(texto) for g in _GATILHOS)
 
 
+# Marcadores de CONSULTA (ela PERGUNTA a agenda, em vez de marcar algo novo).
+_CONSULTA_MARKERS = (
+    "o que tem", "o que tenho", "que tem", "que tenho", "q tem", "tem marcado",
+    "tem algo", "tem hoje", "tem amanha", "quais", "minha agenda", "ver agenda",
+    "ver a agenda", "como ta", "como esta", "tem compromisso", "tem alguma coisa",
+    "me fala", "me diz", "lista",
+)
+
+
+_CREATE_VERBS = ("marca", "marcar", "agend", "remarc", "cancel", "desmarc")
+
+
+def eh_consulta_agenda(texto: str) -> bool:
+    """True se a Priscila esta PERGUNTANDO a agenda (em vez de marcar algo novo).
+
+    Ordem importa: marcador de consulta vence (inclui 'tem marcado'); depois verbo de
+    marcar = criacao; por fim pergunta curta de periodo ('e amanha?', 'hoje?').
+    """
+    t = _sem_acento(_limpar(texto))
+    if any(m in t for m in _CONSULTA_MARKERS):
+        return True
+    if any(v in t for v in _CREATE_VERBS):
+        return False
+    if ("?" in t or t.startswith("e ")) and any(p in t for p in ("hoje", "amanha", "semana")):
+        return True
+    return False
+
+
 def acionar(remote: str, texto: str) -> bool:
     """Só vira o João se: número da Priscila + a palavra 'João' na mensagem."""
     return eh_priscila(remote) and KEYWORD in _sem_acento(texto)
@@ -139,3 +167,62 @@ def _fala_data(iso: str) -> str:
         return f"{_DIAS_FALA[dt.weekday()]}, dia {dt.day} de {_MESES[dt.month]}, às {hora}"
     except Exception:
         return iso
+
+
+def _dia_brt(iso: str) -> datetime:
+    """Converte o 'inicio' do compromisso pra datetime em Brasília (aceita com/sem tz)."""
+    dt = datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=BRT)
+    return dt.astimezone(BRT)
+
+
+def consultar(texto: str) -> dict:
+    """Responde a agenda de hoje / amanhã / esta semana. Retorna {ok, mensagem, fala}.
+
+    Filtra o periodo em Python (robusto a formato de data), ignora cancelados.
+    """
+    t = _sem_acento(_limpar(texto))
+    agora = datetime.now(BRT)
+    if "amanha" in t:
+        rotulo = "amanhã"; _alvo = (agora + timedelta(days=1)).date()
+        cabe = lambda d: d == _alvo
+    elif "semana" in t:
+        rotulo = "esta semana"; _ini = agora.date(); _fim = (agora + timedelta(days=7)).date()
+        cabe = lambda d: _ini <= d <= _fim
+    else:
+        rotulo = "hoje"; _alvo = agora.date()
+        cabe = lambda d: d == _alvo
+    try:
+        todos = agenda_repo.listar()
+    except Exception as exc:
+        m = f"Opa, tentei ver a agenda mas deu um problema aqui ({type(exc).__name__}), dona Priscila."
+        return {"ok": False, "mensagem": "🤖 " + m, "fala": m}
+    itens = []
+    for it in todos:
+        if (it.get("status") or "") == "cancelado":
+            continue
+        try:
+            if cabe(_dia_brt(it["inicio"]).date()):
+                itens.append(it)
+        except Exception:
+            continue
+    itens.sort(key=lambda it: str(it.get("inicio")))
+    if not itens:
+        m = f"Sua agenda de {rotulo} tá livre, dona Priscila — nada marcado! 👍"
+        return {"ok": True, "mensagem": "🤖 " + m, "fala": m}
+    _sem = rotulo == "esta semana"
+    _wd = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"]
+    linhas, fala_itens = [], []
+    for it in itens:
+        dt = _dia_brt(it["inicio"])
+        tit = (it.get("titulo") or "Compromisso").strip()
+        if _sem:
+            linhas.append(f"• {_wd[dt.weekday()]} {dt.strftime('%d/%m %H:%M')} — {tit}")
+        else:
+            linhas.append(f"• {dt.strftime('%H:%M')} — {tit}")
+        _h = f"{dt.hour} horas" if dt.minute == 0 else f"{dt.hour} e {dt.minute:02d}"
+        fala_itens.append(f"às {_h}, {tit}")
+    m = f"📅 {rotulo.capitalize()}, dona Priscila — {len(itens)} compromisso(s):\n" + "\n".join(linhas)
+    fala = f"{rotulo.capitalize()}, dona Priscila, você tem: " + "; ".join(fala_itens) + "."
+    return {"ok": True, "mensagem": m, "fala": fala}

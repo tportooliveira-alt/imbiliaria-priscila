@@ -9,8 +9,30 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.platypus import (
-    Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle,
+    Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle,
 )
+
+import os as _os
+
+# Logo da Priscila (marca nos documentos). Caminho estavel no backend.
+_LOGO_PATH = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "branding", "selo.png")
+
+
+def _marca_dagua(canvas, doc) -> None:
+    """Desenha a logo da Priscila como marca d'agua suave, centralizada em cada pagina."""
+    if not _os.path.exists(_LOGO_PATH):
+        return
+    try:
+        canvas.saveState()
+        canvas.setFillAlpha(0.05)  # bem suave, nao atrapalha a leitura
+        largura, altura = A4
+        w = 11 * cm
+        h = 11 * cm
+        canvas.drawImage(_LOGO_PATH, (largura - w) / 2, (altura - h) / 2,
+                         width=w, height=h, mask="auto", preserveAspectRatio=True)
+        canvas.restoreState()
+    except Exception:
+        pass  # marca d'agua e cosmetica: nunca quebra a geracao do PDF
 
 
 def _moeda(valor: float | None) -> str:
@@ -54,6 +76,16 @@ def gerar_proposta_pdf(
     )
 
     flow: list = []
+
+    # Logo da Priscila no topo (marca o documento)
+    if _os.path.exists(_LOGO_PATH):
+        try:
+            logo = Image(_LOGO_PATH, width=3.2 * cm, height=3.2 * cm)
+            logo.hAlign = "CENTER"
+            flow.append(logo)
+            flow.append(Spacer(1, 8))
+        except Exception:
+            pass
 
     flow.append(Paragraph("PROPOSTA DE COMPRA", titulo))
     flow.append(Paragraph(
@@ -111,7 +143,7 @@ def gerar_proposta_pdf(
     flow.append(Spacer(1, 40))
     flow.append(_assinaturas())
 
-    doc.build(flow)
+    doc.build(flow, onFirstPage=_marca_dagua, onLaterPages=_marca_dagua)
     return buffer.getvalue()
 
 

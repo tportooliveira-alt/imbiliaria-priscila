@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console de Auditoria — Ana (Priscila Vasconcelos)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: ui-sans-serif, system-ui, sans-serif; }
+        .glass-panel { background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border: 1px solid #dde5f0; }
+        .badge { padding: 2px 10px; border-radius: 8px; font-weight: 700; font-size: .7rem; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8" style="background:linear-gradient(135deg,#FBFCFE 0%,#f5f0e8 100%);color:#16284B">
+  <div class="max-w-3xl mx-auto">
+    <header class="mb-6 text-center">
+      <h1 class="text-2xl md:text-3xl font-bold">Console de Auditoria — <span style="color:#c9943a">Ana</span></h1>
+      <p class="text-[#5d6b86] mt-1 text-sm">Roda a Ana REAL do site e valida a resposta contra as regras — com a nossa IA, antes de produção.</p>
+    </header>
+
+    <div class="glass-panel p-5 md:p-6 rounded-3xl shadow-xl space-y-5">
+      <!-- 1) Mensagem do cliente -> roda a Ana -->
+      <div>
+        <label class="block text-sm font-semibold mb-2">1. Mensagem do CLIENTE (a Ana vai responder):</label>
+        <textarea id="clienteMsg" rows="2" class="w-full p-3 rounded-2xl border-2 border-[#dde5f0] focus:border-[#5C7CB8] focus:outline-none" placeholder="ex.: oi, quero entender financiamento"></textarea>
+        <button onclick="rodarAna()" class="mt-3 w-full py-3 bg-[#16284B] text-white rounded-2xl font-bold hover:bg-[#22386b] transition-colors">▶ Rodar a Ana + Auditar</button>
+      </div>
+
+      <!-- Resposta da Ana -->
+      <div id="anaBox" class="hidden">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-sm font-semibold">Resposta da Ana:</label>
+          <span id="anaRota" class="text-xs text-[#7b95c8]"></span>
+        </div>
+        <div id="anaResp" class="p-4 rounded-2xl bg-[#eef2f8] text-[#16284B] whitespace-pre-line text-sm"></div>
+        <div class="mt-3 flex gap-2">
+          <button onclick="auditar()" class="flex-1 py-2.5 bg-[#16284B] text-white rounded-xl font-bold text-sm">🔍 Auditar</button>
+          <button onclick="reescrever()" class="flex-1 py-2.5 rounded-xl font-bold text-sm text-[#16284B]" style="background:linear-gradient(120deg,#c9943a,#e8b55a)">✨ Reescrita curta</button>
+        </div>
+      </div>
+
+      <!-- 2) Ou cole uma mensagem pra auditar direto -->
+      <details class="text-sm">
+        <summary class="cursor-pointer text-[#5d6b86] font-semibold">…ou cole uma mensagem da Ana pra auditar direto</summary>
+        <textarea id="coladaMsg" rows="3" class="mt-2 w-full p-3 rounded-2xl border-2 border-[#dde5f0] focus:border-[#5C7CB8] focus:outline-none" placeholder="Cole aqui a resposta da Ana..."></textarea>
+        <div class="mt-2 flex gap-2">
+          <button onclick="auditar(true)" class="flex-1 py-2.5 bg-[#16284B] text-white rounded-xl font-bold text-sm">🔍 Auditar texto colado</button>
+          <button onclick="reescrever(true)" class="flex-1 py-2.5 rounded-xl font-bold text-sm text-[#16284B]" style="background:linear-gradient(120deg,#c9943a,#e8b55a)">✨ Reescrita</button>
+        </div>
+      </details>
+
+      <!-- Resultado -->
+      <div id="results" class="hidden border-t border-[#dde5f0] pt-5">
+        <div id="metricas" class="flex flex-wrap gap-2 mb-3"></div>
+        <div id="auditOutput" class="text-[#33415c] bg-[#FBFCFE] p-4 rounded-2xl border border-[#dde5f0] whitespace-pre-line text-sm"></div>
+      </div>
+    </div>
+    <p class="text-center text-xs text-[#7b95c8] mt-4">Ferramenta interna · roda a Ana de produção e a auditoria na nossa IA.</p>
+  </div>
+
+  <script>
+    let ultimaAna = "";
+
+    async function rodarAna() {
+      const msg = document.getElementById('clienteMsg').value.trim();
+      if (!msg) return;
+      mostrarSaida("Rodando a Ana…");
+      document.getElementById('anaBox').classList.add('hidden');
+      try {
+        const r = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ message: msg, history: [], session_id: 'auditor-' + Date.now() }) });
+        const d = await r.json();
+        ultimaAna = d.resposta || '';
+        document.getElementById('anaResp').innerText = ultimaAna;
+        document.getElementById('anaRota').innerText = d.rota ? ('rota: ' + d.rota) : '';
+        document.getElementById('anaBox').classList.remove('hidden');
+        esconderSaida();
+        auditar(); // audita automaticamente
+      } catch (e) { mostrarSaida('Erro ao rodar a Ana: ' + e.message); }
+    }
+
+    async function auditar(colado) {
+      const texto = colado ? document.getElementById('coladaMsg').value.trim() : ultimaAna;
+      if (!texto) return;
+      mostrarSaida("Auditando…");
+      await chamarAuditoria(texto, 'auditar');
+    }
+    async function reescrever(colado) {
+      const texto = colado ? document.getElementById('coladaMsg').value.trim() : ultimaAna;
+      if (!texto) return;
+      mostrarSaida("Reescrevendo…");
+      await chamarAuditoria(texto, 'reescrever');
+    }
+
+    async function chamarAuditoria(texto, modo) {
+      try {
+        const r = await fetch('/api/auditar-ana', { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ texto, modo }) });
+        const d = await r.json();
+        const m = d.metricas || {};
+        const tag = (ok, label) => `<span class="badge" style="background:${ok?'#dcfce7':'#fee2e2'};color:${ok?'#166534':'#991b1b'}">${ok?'✓':'✕'} ${label}</span>`;
+        document.getElementById('metricas').innerHTML =
+          `<span class="badge" style="background:#eef2f8;color:#16284B">${m.frases} frases · ${m.palavras} palavras · ${m.perguntas} pergunta(s)</span>` +
+          tag(m.curta_ok, 'curta') + tag(m.uma_pergunta_ok, '1 pergunta') + tag(m.sem_taxa_inventada, 'sem taxa inventada');
+        document.getElementById('auditOutput').innerText = d.resultado || '';
+        document.getElementById('results').classList.remove('hidden');
+      } catch (e) { mostrarSaida('Erro na auditoria: ' + e.message); }
+    }
+
+    function mostrarSaida(t) { const r = document.getElementById('results'); r.classList.remove('hidden');
+      document.getElementById('metricas').innerHTML=''; document.getElementById('auditOutput').innerText = t; }
+    function esconderSaida() { document.getElementById('results').classList.add('hidden'); }
+  </script>
+</body>
+</html>

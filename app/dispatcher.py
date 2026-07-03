@@ -10,9 +10,9 @@ Mapa rota → cliente (SÓ Claude — Gemini removido 18/06, decisão do dono):
 """
 from __future__ import annotations
 
-from app.clients import ClienteClaude, ClienteFallback, LLMClient, RespostaLLM
+from app.clients import ClienteClaude, ClienteDeepSeek, ClienteFallback, LLMClient, RespostaLLM
 from app.lead import qualify_lead, track_stage
-from app.prompts import analysis_prompt, system_prompt
+from app.prompts import BLOCO_ALUGUEL, analysis_prompt, system_prompt
 
 
 def _montar_contexto_carteira() -> str:
@@ -34,7 +34,7 @@ def _montar_contexto_carteira() -> str:
             ).fetchall()
             destaques = conn.execute(
                 """SELECT titulo, bairro, preco, quartos, suites, vagas, area_util,
-                          descricao, caracteristicas
+                          descricao, caracteristicas, finalidade
                    FROM imoveis WHERE ativo=1
                    ORDER BY preco ASC LIMIT 40"""
             ).fetchall()
@@ -55,8 +55,9 @@ def _montar_contexto_carteira() -> str:
                 linhas.append(f"  - {r['bairro'].strip()}: {r['n']} imovel(is) (ticket medio {preco_fmt})")
         if destaques:
             linhas.append(
-                "IMOVEIS ATIVOS (use EXATAMENTE estes numeros — preco, bairro, metragem — "
-                "SEM arredondar; o titulo diz se e venda ou locacao/mes):"
+                "IMOVEIS ATIVOS (use EXATAMENTE estes numeros — preco, bairro, metragem — SEM arredondar). "
+                "Cada um vem marcado [VENDA] ou [ALUGUEL]: ofereca [ALUGUEL] (preco /mes) so pra quem quer "
+                "alugar, e [VENDA] pra quem quer comprar:"
             )
             import json as _json
             import re as _re
@@ -67,7 +68,10 @@ def _montar_contexto_carteira() -> str:
 
             for r in destaques:
                 p = r["preco"] or 0
-                p_fmt = "R$ " + f"{p:,.0f}".replace(",", ".")  # EXATO: 6500 -> R$ 6.500
+                fin = (r["finalidade"] or "venda")
+                tag = "[ALUGUEL]" if fin == "aluguel" else "[VENDA]"
+                # EXATO: 6500 -> R$ 6.500 (aluguel ganha sufixo /mes)
+                p_fmt = "R$ " + f"{p:,.0f}".replace(",", ".") + ("/mes" if fin == "aluguel" else "")
                 ficha = []
                 if r["quartos"]:
                     ficha.append(f"{r['quartos']} quartos")
@@ -79,7 +83,7 @@ def _montar_contexto_carteira() -> str:
                     ficha.append(f"{r['area_util']:.0f}m2")
                 ficha_str = (" · ".join(ficha)) if ficha else ""
                 detalhe = f" ({ficha_str})" if ficha_str else ""
-                linhas.append(f"  - {r['titulo'].strip()}{detalhe} — {r['bairro'].strip()} — {p_fmt}")
+                linhas.append(f"  - {tag} {r['titulo'].strip()}{detalhe} — {r['bairro'].strip()} — {p_fmt}")
                 # Diferenciais cadastrados (ex.: piscina aquecida, energia solar)
                 try:
                     carac = _json.loads(r["caracteristicas"] or "[]")
@@ -91,6 +95,36 @@ def _montar_contexto_carteira() -> str:
                 # NAO injeta a prosa de marketing da descricao (vem cheia de "sofisticado",
                 # "alto padrao", "exclusividade") — a Ana acabava repetindo isso. Os fatos
                 # uteis ja estao nas caracteristicas acima (piscina, energia solar, etc.).
+
+        # Empreendimentos / lancamentos (tabela separada — a Ana precisa CONHECER
+        # pra citar quando pedirem "lancamento", "na planta", "predio novo", "condominio").
+        try:
+            from app import empreendimentos as _emp
+
+            emps = _emp.listar_empreendimentos(somente_ativos=True)
+        except Exception:
+            emps = []
+        if emps:
+            linhas.append(
+                f"EMPREENDIMENTOS / LANCAMENTOS ({len(emps)} ativos — predios e condominios, DIFERENTE dos "
+                "imoveis avulsos acima). Quando o cliente pedir lancamento, imovel na planta, predio novo ou "
+                "condominio, CITE estes pelo nome e encaminhe pra Priscila passar tabela e condicoes. "
+                "NAO crave preco nem condicao de pagamento:"
+            )
+            _st = {"na_planta": "na planta", "pronto": "pronto pra morar", "em_obras": "em obras"}
+            for e in emps:
+                partes = [f"[EMPREENDIMENTO] {(e.get('nome') or '').strip()}"]
+                if e.get("bairro"):
+                    partes.append((e.get("bairro") or "").strip())
+                st = _st.get(e.get("status_obra") or "", (e.get("status_obra") or "").strip())
+                if st:
+                    partes.append(st)
+                if e.get("construtora"):
+                    partes.append(f"constr. {(e.get('construtora') or '').strip()}")
+                if e.get("entrega_prevista"):
+                    partes.append(f"entrega {(e.get('entrega_prevista') or '').strip()}")
+                linhas.append("  - " + " — ".join(partes))
+
         return "\n".join(linhas)
     except Exception:
         return ""
@@ -118,14 +152,18 @@ def _buscar_matches(mensagem: str, historico: list[dict] | None) -> str:
         linhas = ["IMOVEIS DA CARTEIRA QUE BATEM COM O PEDIDO DELE (cite estes, sao reais):"]
         for im in imoveis:
             tipo = (im.get("tipo") or "Imovel").strip()
+            fin = (im.get("finalidade") or "venda")
+            tag = "ALUGUEL" if fin == "aluguel" else "VENDA"
             det = []
             if im.get("quartos"):
                 det.append(f"{im.get('quartos')}q")
             if im.get("area_util"):
                 det.append(f"{im.get('area_util')}m2")
             extra = (", " + " ".join(det)) if det else ""
+            preco = im.get("preco") or 0
+            preco_fmt = ("R$ " + f"{preco:,.0f}".replace(",", ".") + "/mes") if fin == "aluguel" else _fmt(preco)
             linhas.append(
-                f"  - [{tipo}] {im.get('titulo','')} — {im.get('bairro','')}{extra} — {_fmt(im.get('preco'))}"
+                f"  - [{tag}/{tipo}] {im.get('titulo','')} — {im.get('bairro','')}{extra} — {preco_fmt}"
             )
         return "\n".join(linhas)
     except Exception:
@@ -167,14 +205,15 @@ MODEL_CLAUDE_HAIKU = "claude-haiku-4-5"
 
 
 # Mapa rota → fábrica de cliente (lazy)
-# SEM Gemini — a Ana roda no CLAUDE (decisao do dono, 18/06). Sonnet onde precisa de
-# qualidade (info/negociacao/descricao), Haiku no resto; Haiku como reserva (failover).
+# SEM Gemini. DeepSeek-chat é o PRIMÁRIO onde antes era Sonnet (decisao do dono, 22/06): teste
+# provou mesma qualidade (curta 100%, trava 100%) por ~1/11 do custo. Claude Sonnet vira a RESERVA
+# dessas rotas (se o DeepSeek cair). Haiku segue nas rotas leves (triagem/followup/handoff/visao).
 _FABRICAS: dict[Rota, callable] = {
     Rota.TRIAGEM: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
-    Rota.INFO_VDC: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
-    Rota.NEGOCIACAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
-    Rota.CAPTACAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
-    Rota.DESCRICAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
+    Rota.INFO_VDC: lambda: ClienteDeepSeek(),
+    Rota.NEGOCIACAO: lambda: ClienteDeepSeek(),
+    Rota.CAPTACAO: lambda: ClienteDeepSeek(),
+    Rota.DESCRICAO: lambda: ClienteDeepSeek(),
     Rota.FOLLOWUP: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.HANDOFF: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.VISAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
@@ -182,10 +221,10 @@ _FABRICAS: dict[Rota, callable] = {
 
 _FABRICAS_FAILOVER: dict[Rota, callable] = {
     Rota.TRIAGEM: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
-    Rota.INFO_VDC: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
-    Rota.NEGOCIACAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
-    Rota.CAPTACAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
-    Rota.DESCRICAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
+    Rota.INFO_VDC: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
+    Rota.NEGOCIACAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
+    Rota.CAPTACAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
+    Rota.DESCRICAO: lambda: ClienteClaude(MODEL_CLAUDE_SONNET),
     Rota.FOLLOWUP: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.HANDOFF: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
     Rota.VISAO: lambda: ClienteClaude(MODEL_CLAUDE_HAIKU),
@@ -255,6 +294,10 @@ def responder(mensagem: str, *, historico: list[dict] | None = None, tem_imagem:
         _m = _buscar_matches(mensagem, historico)
         if _m:
             _partes.append(_m)
+    # Sinal de locacao: injeta o bloco de aluguel SO quando o lead quer alugar
+    # (fluxo de venda fica intocado quando nao ha sinal).
+    if lead.fields.get("aluguel"):
+        _partes.append(BLOCO_ALUGUEL)
     contexto = "\n\n".join(_partes)
     system = system_prompt(cls.rota, contexto=contexto or None)
 

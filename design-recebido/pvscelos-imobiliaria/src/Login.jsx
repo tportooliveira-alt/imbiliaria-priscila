@@ -28,8 +28,8 @@ export default function Login({ onBack }) {
 
         <div className="relative z-10 max-w-lg text-white space-y-8">
           <div className="flex flex-col cursor-pointer" onClick={onBack}>
-            <span className="font-serif font-bold tracking-widest text-3xl uppercase text-white hover:text-[#c9943a] transition-colors">
-              PVSCELOS
+            <span className="font-serif font-bold tracking-wide text-3xl text-white hover:text-[#c9943a] transition-colors">
+              Priscila Vasconcelos
             </span>
             <span className="text-xs tracking-[0.3em] uppercase text-[#c9943a] mt-1">
               Imobiliária
@@ -66,11 +66,9 @@ export default function Login({ onBack }) {
       {/* LADO DIREITO - Formulário de Login Limpo e Moderno */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12 relative bg-white">
         
-        {/* Voltar para Home (Mobile) */}
-        <div className="absolute top-6 left-6 md:hidden cursor-pointer" onClick={onBack}>
-          <span className="font-serif font-bold tracking-widest text-xl uppercase text-[#16284B] hover:text-[#c9943a]">
-            PVSCELOS
-          </span>
+        {/* Voltar para Home (Mobile) — ícone discreto, não colide com o título */}
+        <div className="absolute top-6 left-6 md:hidden cursor-pointer text-[#16284B] hover:text-[#c9943a] transition-colors" onClick={onBack} title="Voltar ao início">
+          <Home size={22} />
         </div>
 
         <div className="w-full max-w-md space-y-8">

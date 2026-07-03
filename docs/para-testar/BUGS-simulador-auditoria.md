@@ -27,4 +27,11 @@ errada é enganoso/risco. Quando implantar, o certo é:
 
 Assim a gente conserta TUDO em um lugar (backend, com teste) em vez de remendar JS que vai quebrar de novo.
 
-## Status: REGISTRADO. Decidir quando implantar (com o Thiago).
+## ✅ VERIFICAÇÃO 20/06 (Claude VPS) — todos os 12 resolvidos no BACKEND
+- BUG 1-5, 6, 7, 9, 12 → mortos em `taxas_2026.py::classificar_faixa` (testado em 1830 combinações, 14/14 fronteiras).
+- BUG 8, 10, 11 → `app/financiamento.py` já tem MIP por idade + DFI + tarifa + LIMITE idade 80,5 anos + 1ª parcela.
+- BANCOS: Sicoob/Sicredi/Inter já na tabela (8 bancos). Só faltavam no HTML velho (que vai ser substituído).
+- RESTA: ligar a tela (frontend) no motor (`/api/simular-financiamento`) → aí Sicoob/Sicredi aparecem e a
+  parcela vira texto. = é a tarefa "página única" (próximo passo, com o Thiago).
+
+## Status: REGISTRADO + VERIFICADO. Falta só implantar a página (wiring frontend→backend).

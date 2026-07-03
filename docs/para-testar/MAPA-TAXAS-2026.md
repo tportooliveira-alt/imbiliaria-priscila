@@ -32,6 +32,12 @@ Fonte: relatório do Sonnet/PC (MySide, BCB, Caixa). Já plugado em `taxas_2026.
 - **VCA Facilita** (LOCAL de Conquista): até 240x, sem IGPM/INCC, entrada em 36x — p/ autônomo/MEI.
 - **Direto construtora** (Gráfico, AGRA, JC): parcelado, INCC durante a obra.
 
+## Bancos analisados e que NÃO entram no residencial
+- **Banco do Nordeste (BNB):** banco de desenvolvimento (FNE), NÃO faz financiamento residencial p/ pessoa
+  física. Sua linha imobiliária de 2026 (R$ 5,6 bi, fev/2026) é EXCLUSIVA p/ imóvel de **atividade produtiva**
+  (comercial/empresarial), micro/pequena empresa, teto R$ 4,3M. → fora do simulador residencial; SÓ é caminho
+  p/ quem compra **ponto comercial** (ex.: Zabelê comercial). Fonte: bnb.gov.br + PoderNews 03/02/2026.
+
 ## Bugs do simulador JS que a lógica nova (taxas_2026.py) já resolve
 Fronteiras de faixa · teto MCMV R$600k · Pró-Cotista no SBPE · taxa por banco (não 11% fixo) ·
 bancos faltando (Inter/Sicoob/Sicredi). Validado em `teste_taxas.py` (8/8).

@@ -126,6 +126,64 @@ def enviar_lembretes_priscila_1h() -> dict:
     return {"total": len(itens), "enviados": enviados, "fallback": False}
 
 
+# ─── Resumo da agenda de MANHÃ pra Priscila (1x/dia, na janela da manhã) ───────
+_HORA_RESUMO = int(os.getenv("AGENTE_RESUMO_MANHA_HORA", "7"))  # hora BRT alvo
+_STATE_RESUMO = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", ".resumo_manha"
+)
+_ultimo_resumo_dia = None
+
+
+def _resumo_enviado_hoje(dia: str) -> bool:
+    if _ultimo_resumo_dia == dia:
+        return True
+    try:
+        with open(_STATE_RESUMO) as f:
+            return f.read().strip() == dia
+    except Exception:
+        return False
+
+
+def _marcar_resumo(dia: str) -> None:
+    global _ultimo_resumo_dia
+    _ultimo_resumo_dia = dia
+    try:
+        with open(_STATE_RESUMO, "w") as f:
+            f.write(dia)
+    except Exception:
+        pass
+
+
+def enviar_resumo_manha_priscila() -> dict:
+    """Manda o resumo da agenda de HOJE pra Priscila (reusa secretaria.consultar)."""
+    pri = "".join(c for c in os.getenv("PRISCILA_WHATSAPP", "") if c.isdigit())
+    if not pri or not whatsapp.disponivel():
+        return {"enviado": False, "motivo": "sem_numero_ou_evolution"}
+    from app import secretaria
+    res = secretaria.consultar("o que tem hoje")
+    corpo = (res.get("mensagem") or "").replace("🤖 ", "")
+    msg = "☀️ Bom dia, dona Priscila!\n\n" + corpo
+    resp = whatsapp.enviar_mensagem(pri, msg)
+    return {"enviado": bool(resp.enviado), "erro": getattr(resp, "erro", None)}
+
+
+def resumo_manha_se_hora() -> None:
+    """Só na janela da manhã (evita 'bom dia' à tarde) e só 1x por dia."""
+    import datetime as _dt
+    agora = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=-3)))
+    if not (_HORA_RESUMO <= agora.hour < _HORA_RESUMO + 4):
+        return
+    dia = agora.strftime("%Y-%m-%d")
+    if _resumo_enviado_hoje(dia):
+        return
+    res = enviar_resumo_manha_priscila()
+    if res.get("enviado"):
+        _marcar_resumo(dia)
+        log.info("Resumo da manha enviado pra Priscila (%s)", dia)
+    else:
+        log.warning("Resumo da manha nao enviado: %s", res)
+
+
 def main() -> None:
     signal.signal(signal.SIGTERM, _parar)
     signal.signal(signal.SIGINT, _parar)
@@ -145,6 +203,7 @@ def main() -> None:
             resumo_pri = enviar_lembretes_priscila_1h()
             if resumo_pri["total"]:
                 log.info("Lembrete 1h Priscila: %s", resumo_pri)
+            resumo_manha_se_hora()
         except Exception:
             log.exception("Erro no ciclo do agente")
         time.sleep(INTERVALO_SEGUNDOS)

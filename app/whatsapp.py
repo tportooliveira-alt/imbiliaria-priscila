@@ -120,6 +120,41 @@ def enviar_mensagem(telefone: str, texto: str, *, timeout: float = 8.0) -> Respo
         )
 
 
+def enviar_imagem(telefone: str, media_url: str, *, caption: str = "", timeout: float = 30.0) -> RespostaEnvio:
+    """Envia uma IMAGEM (por URL publica) via Evolution sendMedia. Mesmo padrao do sendText."""
+    if not telefone_valido(telefone):
+        return RespostaEnvio(enviado=False, fallback=False, erro="telefone invalido")
+    if not (media_url or "").strip():
+        return RespostaEnvio(enviado=False, fallback=False, erro="url da imagem vazia")
+    cfg = _config()
+    if cfg is None:
+        return RespostaEnvio(enviado=False, fallback=True, erro="EVOLUTION_API_URL/KEY nao configurados")
+    base, key, instancia = cfg
+    numero = _normalizar_telefone(telefone)
+    url = f"{base}/message/sendMedia/{instancia}"
+    payload = {"number": numero, "mediatype": "image", "media": media_url}
+    if (caption or "").strip():
+        payload["caption"] = caption
+    body = _json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        url, data=body, method="POST",
+        headers={"Content-Type": "application/json", "apikey": key},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+            try:
+                dados = _json.loads(raw)
+            except ValueError:
+                dados = {"raw": raw}
+        msg_id = dados.get("key", {}).get("id") if isinstance(dados, dict) else None
+        return RespostaEnvio(enviado=True, fallback=False, mensagem_id=msg_id, detalhes=dados)
+    except urllib.error.HTTPError as exc:
+        return RespostaEnvio(enviado=False, fallback=False, erro=f"HTTP {exc.code}: {exc.reason}")
+    except (urllib.error.URLError, TimeoutError) as exc:
+        return RespostaEnvio(enviado=False, fallback=False, erro=f"falha de rede: {exc}")
+
+
 def baixar_midia_base64(msg: dict) -> tuple[bytes, str] | None:
     """Baixa a midia (imagem/documento) do WhatsApp via Evolution e devolve (bytes, mime).
     None se nao configurado ou erro. Reusa o mesmo getBase64FromMediaMessage do audio."""

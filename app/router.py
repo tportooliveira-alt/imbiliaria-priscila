@@ -40,6 +40,9 @@ PALAVRAS_NEGOCIACAO = {
     "financiamento", "entrada", "parcelar", "parcela", "interessado",
     "interessada", "quero esse", "quero este", "tô pronto", "estou pronto",
     "fechamos", "vamos fechar", "preço final", "desconto", "abaixar",
+    # Locação/aluguel: intenção de transacionar (a finalidade venda×aluguel é
+    # tratada no contexto/busca; aqui só evita que "quero alugar" caia em triagem).
+    "alugar", "aluguel", "alugo", "locar", "locação", "locacao", "arrendar",
 }
 
 PALAVRAS_CAPTACAO = {

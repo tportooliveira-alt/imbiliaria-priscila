@@ -7,30 +7,38 @@ import Captacao from './Captacao';
 import Sobre from './Sobre';
 import BuscaMapa from './BuscaMapa';
 import ChatAna from './ChatAna';
+import Calculadoras from './Calculadoras';
 
 export default function App() {
-  // Estado inicial vem da URL (?imovel=slug abre o detalhe — link compartilhável)
-  const slug0 = new URLSearchParams(window.location.search).get('imovel');
-  const [currentPage, setCurrentPage] = useState(slug0 ? 'detalhes' : 'home');
+  // slug do imóvel: do caminho bonito /i/<slug> (com preview no WhatsApp) OU do
+  // formato antigo ?imovel=<slug> (links já compartilhados continuam funcionando).
+  const slugDaUrl = () => {
+    const m = window.location.pathname.match(/^\/i\/([^/?#]+)/);
+    return m ? decodeURIComponent(m[1]) : new URLSearchParams(window.location.search).get('imovel');
+  };
+  // Estado inicial vem da URL
+  const params0 = new URLSearchParams(window.location.search);
+  const slug0 = slugDaUrl();
+  // Página de calculadoras é de TESTE: só abre por ?calc=1 (fora do menu).
+  const calc0 = params0.has('calc');
+  const [currentPage, setCurrentPage] = useState(calc0 ? 'calculadoras' : slug0 ? 'detalhes' : 'home');
   const [imovelSlug, setImovelSlug] = useState(slug0 || null);
   const [buscaTermo, setBuscaTermo] = useState('');
+  const [buscaFinalidade, setBuscaFinalidade] = useState('todos');
 
   // Abre um imóvel e reflete na URL (pra copiar/compartilhar no WhatsApp).
   const abrirImovel = (slug) => {
     setImovelSlug(slug);
     setCurrentPage('detalhes');
-    const u = new URL(window.location);
-    u.searchParams.set('imovel', slug);
-    window.history.pushState({}, '', u);
+    // URL bonita /i/<slug> — é a que mostra a capa quando colada no WhatsApp.
+    window.history.pushState({}, '', '/i/' + slug);
     window.scrollTo(0, 0);
   };
 
   const voltarHome = () => {
     setCurrentPage('home');
     setImovelSlug(null);
-    const u = new URL(window.location);
-    u.searchParams.delete('imovel');
-    window.history.pushState({}, '', u);
+    window.history.pushState({}, '', '/');
     window.scrollTo(0, 0);
   };
 
@@ -39,7 +47,7 @@ export default function App() {
   // Botão "voltar" do navegador / celular
   useEffect(() => {
     const onPop = () => {
-      const slug = new URLSearchParams(window.location.search).get('imovel');
+      const slug = slugDaUrl();
       if (slug) { setImovelSlug(slug); setCurrentPage('detalhes'); }
       else { setCurrentPage('home'); }
     };
@@ -48,7 +56,9 @@ export default function App() {
   }, []);
 
   let page;
-  if (currentPage === 'detalhes') {
+  if (currentPage === 'calculadoras') {
+    page = <Calculadoras onBack={() => { const u = new URL(window.location); u.searchParams.delete('calc'); window.history.pushState({}, '', u); ir('home'); }} />;
+  } else if (currentPage === 'detalhes') {
     page = <DetalhesImovel slug={imovelSlug} onBack={voltarHome} />;
   } else if (currentPage === 'lancamentos') {
     page = <Lancamentos onBack={() => ir('home')} onLoginClick={() => ir('login')} />;
@@ -59,7 +69,7 @@ export default function App() {
   } else if (currentPage === 'sobre') {
     page = <Sobre onBack={() => ir('home')} />;
   } else if (currentPage === 'busca') {
-    page = <BuscaMapa onBack={() => ir('home')} onPropertyClick={abrirImovel} buscaInicial={buscaTermo} />;
+    page = <BuscaMapa onBack={() => ir('home')} onPropertyClick={abrirImovel} buscaInicial={buscaTermo} finalidadeInicial={buscaFinalidade} />;
   } else {
     page = (
       <Home
@@ -68,7 +78,12 @@ export default function App() {
         onLoginClick={() => ir('login')}
         onCaptacaoClick={() => ir('captacao')}
         onSobreClick={() => ir('sobre')}
-        onBuscaClick={(termo) => { setBuscaTermo(typeof termo === 'string' ? termo : ''); ir('busca'); }}
+        onBuscaClick={(arg) => {
+          const termo = typeof arg === 'string' ? arg : (arg?.termo || '');
+          const fin = (arg && typeof arg === 'object' && arg.finalidade) ? arg.finalidade : 'todos';
+          setBuscaTermo(termo); setBuscaFinalidade(fin); ir('busca');
+        }}
+        onCalculadorasClick={() => { const u = new URL(window.location); u.searchParams.set('calc', '1'); window.history.pushState({}, '', u); ir('calculadoras'); }}
       />
     );
   }
@@ -76,8 +91,9 @@ export default function App() {
   return (
     <>
       {page}
-      {/* A Ana acompanha o cliente em todas as telas */}
-      <ChatAna />
+      {/* A Ana acompanha o cliente em todas as telas — MENOS na calculadora,
+          que tem o próprio agente-guia (só sabe do sistema). */}
+      {currentPage !== 'calculadoras' && <ChatAna />}
       {/* Botão WhatsApp fixo — sempre visível em todas as páginas */}
       <a
         href="https://wa.me/5577999395511?text=Olá%20Priscila!%20Vi%20seu%20site%20e%20gostaria%20de%20mais%20informações."

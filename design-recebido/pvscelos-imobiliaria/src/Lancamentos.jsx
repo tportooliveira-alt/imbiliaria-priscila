@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Building2, CheckCircle2, Sparkles, ArrowRight, Compass, Clock, Camera, ChevronLeft } from 'lucide-react';
+import { MapPin, Building2, CheckCircle2, Sparkles, ArrowRight, Compass, Clock, Camera, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getEmpreendimentos, abrirAna } from './api';
 import EvolucaoObra from './EvolucaoObra';
 
@@ -7,6 +7,22 @@ export default function Lancamentos({ onBack, onLoginClick }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [emps, setEmps] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  // Galeria em tela cheia: { fotos, idx }
+  const [galeria, setGaleria] = useState(null);
+  const abrirGaleria = (fotos, idx = 0) => setGaleria({ fotos, idx });
+  const fecharGaleria = () => setGaleria(null);
+  const irFoto = (d) => setGaleria((g) => ({ ...g, idx: (g.idx + d + g.fotos.length) % g.fotos.length }));
+
+  useEffect(() => {
+    if (!galeria) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') fecharGaleria();
+      else if (e.key === 'ArrowRight') irFoto(1);
+      else if (e.key === 'ArrowLeft') irFoto(-1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [galeria]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -60,13 +76,13 @@ export default function Lancamentos({ onBack, onLoginClick }) {
         <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto mt-20">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8">
             <span className="w-2 h-2 bg-[#c9943a] rounded-full animate-ping"></span>
-            <span className="text-[10px] uppercase tracking-widest font-semibold">Curadoria PVSCELOS</span>
+            <span className="text-[10px] uppercase tracking-widest font-semibold">Curadoria Priscila Vasconcelos</span>
           </div>
           <h1 className="font-serif text-5xl md:text-7xl font-light mb-6 leading-tight">
             Os Melhores <span className="italic text-[#c9943a]">Empreendimentos</span>
           </h1>
           <p className="font-light text-lg md:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
-            Os lançamentos e condomínios de alto padrão de Vitória da Conquista, selecionados pela Priscila Vasconcelos.
+            Os melhores empreendimentos e condomínios de Vitória da Conquista, selecionados a dedo pela Priscila Vasconcelos.
           </p>
         </div>
       </header>
@@ -99,8 +115,8 @@ export default function Lancamentos({ onBack, onLoginClick }) {
 
               {/* Foto principal + faixa de mini-fotos */}
               <div className="w-full lg:w-1/2">
-                <div className="relative rounded-3xl overflow-hidden shadow-xl border border-[#dde5f0] aspect-[4/3]">
-                  {e.capaUrl && <img src={e.capaUrl} alt={e.nome} className="w-full h-full object-cover" />}
+                <div className="relative rounded-3xl overflow-hidden shadow-xl border border-[#dde5f0] aspect-[4/3] cursor-pointer group" onClick={() => e.fotos.length && abrirGaleria(e.fotos, 0)}>
+                  {e.capaUrl && <img src={e.capaUrl} alt={e.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />}
                   {e.status && (
                     <span className={`absolute top-5 left-5 px-4 py-1.5 text-[10px] uppercase tracking-widest rounded-full font-semibold ${e.statusRaw === 'pronto' ? 'bg-[#c9943a] text-[#16284B]' : 'bg-[#16284B] text-white'}`}>
                       {e.status}
@@ -108,14 +124,14 @@ export default function Lancamentos({ onBack, onLoginClick }) {
                   )}
                   {e.fotos.length > 1 && (
                     <span className="absolute bottom-5 right-5 flex items-center gap-2 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 text-[11px] rounded-full">
-                      <Camera size={13} /> {e.fotos.length} fotos
+                      <Camera size={13} /> Ver {e.fotos.length} fotos
                     </span>
                   )}
                 </div>
                 {e.fotos.length > 1 && (
                   <div className="grid grid-cols-4 gap-2 mt-2">
                     {e.fotos.slice(1, 5).map((f, idx) => (
-                      <div key={idx} className="aspect-square rounded-xl overflow-hidden border border-[#dde5f0]">
+                      <div key={idx} onClick={() => abrirGaleria(e.fotos, idx + 1)} className="aspect-square rounded-xl overflow-hidden border border-[#dde5f0] cursor-pointer hover:opacity-80 transition-opacity">
                         <img src={f.thumb} alt="" className="w-full h-full object-cover" />
                       </div>
                     ))}
@@ -186,6 +202,40 @@ export default function Lancamentos({ onBack, onLoginClick }) {
           </button>
         </div>
       </section>
+
+      {/* Galeria em tela cheia */}
+      {galeria && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col" onClick={fecharGaleria}>
+          <div className="flex justify-between items-center px-6 py-4 text-white/90" onClick={(e) => e.stopPropagation()}>
+            <span className="text-sm tracking-widest">{galeria.idx + 1} / {galeria.fotos.length}</span>
+            <button onClick={fecharGaleria} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"><X size={20} /></button>
+          </div>
+          <div className="flex-1 flex items-center justify-center relative px-2" onClick={(e) => e.stopPropagation()}>
+            {galeria.fotos.length > 1 && (
+              <button onClick={() => irFoto(-1)} className="absolute left-2 md:left-8 w-14 h-14 rounded-full bg-white/20 hover:bg-white/35 text-white flex items-center justify-center shadow-lg">
+                <ChevronLeft size={30} />
+              </button>
+            )}
+            <img src={galeria.fotos[galeria.idx].grande} alt={`Foto ${galeria.idx + 1}`} className="max-h-[78vh] max-w-[92vw] object-contain rounded-lg" />
+            {galeria.fotos.length > 1 && (
+              <button onClick={() => irFoto(1)} className="absolute right-2 md:right-8 w-14 h-14 rounded-full bg-white/20 hover:bg-white/35 text-white flex items-center justify-center shadow-lg">
+                <ChevronRight size={30} />
+              </button>
+            )}
+          </div>
+          <div className="px-4 pb-5 pt-2" onClick={(e) => e.stopPropagation()}>
+            {galeria.fotos[galeria.idx].legenda && <p className="text-center text-white/70 text-sm mb-3">{galeria.fotos[galeria.idx].legenda}</p>}
+            <div className="flex gap-2 overflow-x-auto pb-1 md:justify-center">
+              {galeria.fotos.map((f, i) => (
+                <button key={i} onClick={() => setGaleria((g) => ({ ...g, idx: i }))}
+                  className={`flex-shrink-0 w-20 h-14 rounded overflow-hidden border-2 transition ${i === galeria.idx ? 'border-[#c9943a]' : 'border-transparent opacity-50 hover:opacity-100'}`}>
+                  <img src={f.thumb} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

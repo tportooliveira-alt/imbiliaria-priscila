@@ -410,6 +410,18 @@ def init_db() -> None:
         _migrar_coluna(conn, "simulacoes", "tipo_imovel", "TEXT")
         # W6: tour 360 por imovel
         _migrar_coluna(conn, "imoveis", "tour_360_url", "TEXT")
+        # Video de apresentacao do imovel (YouTube ou outro embed)
+        _migrar_coluna(conn, "imoveis", "video_url", "TEXT")
+        # Finalidade: venda x aluguel. Coluna nullable + backfill 1x dos imoveis
+        # antigos pelo titulo/slug (so onde ainda NULL — nao atropela edicao manual).
+        _migrar_coluna(conn, "imoveis", "finalidade", "TEXT")
+        conn.execute(
+            """UPDATE imoveis SET finalidade =
+                   CASE WHEN lower(titulo || ' ' || slug) LIKE '%alug%'
+                          OR lower(titulo || ' ' || slug) LIKE '%loca%'
+                        THEN 'aluguel' ELSE 'venda' END
+               WHERE finalidade IS NULL OR finalidade = ''"""
+        )
         # Ponte Google Calendar: id do evento espelhado no Google (NULL = nao espelhado)
         _migrar_coluna(conn, "agenda", "gcal_event_id", "TEXT")
         # Lembrete 1h antes PRA PRISCILA (separado do lembrete_enviado de 24h pro cliente)
@@ -459,7 +471,12 @@ def init_db() -> None:
 def _migrar_coluna(conn: sqlite3.Connection, tabela: str, coluna: str, tipo: str) -> None:
     cols = [r["name"] for r in conn.execute(f"PRAGMA table_info({tabela})")]
     if coluna not in cols:
-        conn.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {tipo}")
+        try:
+            conn.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {tipo}")
+        except sqlite3.OperationalError as e:
+            # Corrida entre workers no startup: outro worker ja adicionou a coluna.
+            if "duplicate column" not in str(e).lower():
+                raise
 
 
 @contextmanager
