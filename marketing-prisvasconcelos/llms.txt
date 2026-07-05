@@ -1,0 +1,21 @@
+# Marketing Priscila Vasconcelos — Mapa para Agentes LLM
+
+> Leia CLAUDE.md primeiro (regras + contexto do negócio).
+
+## Documentação (docs/)
+- setup-meta.md        — Meta Marketing API + restrições HOUSING
+- setup-google.md      — Data Manager API, GCLID, Enhanced Conversions, SHA-256
+- fluxo-conversoes.md  — loop lead→venda→algoritmo, dedup event_id/order_id
+- versoes-e-datas.md   — versões atuais e datas críticas das APIs
+
+## Operação
+- campanhas/estrutura.md       — 3 campanhas, HOUSING, CONVERSATIONS p/ WhatsApp
+- criativos/registro.md        — carrossel (child_attachments) + geração de imagem
+- calculadora/roi_imobiliario.md — ROI ticket R$350k / comissão R$21k
+
+## Skills (contexto passivo)
+- skills/criar-mcp.md       — como construir tools MCP de alta qualidade
+- skills/deteccao-fadiga.md — rotação de criativos (freq>4, CTR -20% WoW)
+
+## Execução
+- mcp/mcp_server.py — ferramentas (sempre PAUSED, confirmar antes de gastar)

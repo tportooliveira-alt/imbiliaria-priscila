@@ -67,6 +67,38 @@ O melhor caminho agora e:
 | Make AI Web Search | Buscar noticias atuais para rascunho, nunca publicacao direta |
 | Make AI Agent/MCP | Futuro: agente com ferramentas limitadas para pesquisa e organizacao |
 
+## Atualizacao 04/07/2026 - Make MCP e agentes
+
+Estudo avancado salvo em:
+
+- `_marketing_ia/pesquisas-avancadas/2026-07-04-estudo-avancado-make-agentes-mcp.md`
+
+Conclusao pratica:
+
+1. Make MCP Server permite que agentes externos chamem cenarios Make como ferramentas.
+2. Make MCP Client permite que um scenario Make chame ferramentas de outros MCPs.
+3. Make AI Agent cria agentes dentro da Make, com tools, knowledge, memoria por `conversation_id` e saida estruturada.
+4. Maia ajuda a montar e corrigir cenarios dentro do Scenario Builder, mas tudo precisa ser revisado antes de ativar.
+
+Cenarios seguros para virar ferramenta primeiro:
+
+| Ferramenta | Status recomendado | Observacao |
+|---|---|---|
+| `registrar_pacote_criativo_pendente` | Liberar primeiro | Recebe JSON e grava `PENDENTE_REVISAO` |
+| `listar_status_fila_instagram` | Liberar primeiro | So leitura |
+| `registrar_lead_teste` | Liberar primeiro | Teste sem campanha real |
+| `gerar_relatorio_funil_agregado` | Liberar depois | Sem PII |
+
+Cenarios que ficam bloqueados ate aprovacao explicita:
+
+- publicar no Instagram;
+- enviar WhatsApp;
+- ativar campanha;
+- alterar orcamento;
+- apagar registros.
+
+Regra MCP: usar token secreto fora do chat, com escopo minimo e restricao por `scenarioId` sempre que possivel.
+
 ## Arquitetura recomendada
 
 ### Fluxo A - Fila aprovada para Instagram direto
@@ -147,8 +179,8 @@ Nome sugerido: `Fila Instagram Priscila`
 | legenda | texto final | revisado antes |
 | media_url | URL HTTPS | foto unica |
 | media_urls | URLs separadas por linha ou JSON | carrossel |
-| publish_at | `2026-07-04T09:00:00-03:00` | horario Brasilia |
-| timezone | `America/Bahia` | padrao |
+| publish_at | `2026-07-04T09:00:00-03:00` | horario de Brasilia, UTC-3 |
+| localidade | `Vitoria da Conquista - BA` | texto humano para fila e copy |
 | slug | slug do imovel | obrigatorio se for imovel |
 | canal | `instagram` | futuro: facebook/postiz |
 | fonte_url | URL da noticia | obrigatorio para noticia |
@@ -216,7 +248,8 @@ Planilha Google criada:
 - `Fila Instagram Priscila - Make - 2026-07-03`
 - URL: https://docs.google.com/spreadsheets/d/1Wij86hNcqsYsglZQH4Wp5v7-1OanGLy8gmDxdSEslgU/edit
 - Abas: `Fila Instagram` e `Como usar no Make`
-- Fuso ajustado para `America/Sao_Paulo`
+- Localidade humana na fila: `Vitoria da Conquista - BA`
+- Horarios operacionais em Brasilia, UTC-3
 
 Estado do Make em 03/07/2026:
 

@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Suite de Marketing | Priscila Vasconcelos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="../../../assets/marketing/logo-mono-gold.png" alt="Priscila Vasconcelos Imoveis">
+      <div>
+        <p class="eyebrow">Sala de Marketing</p>
+        <h1>Ferramentas de Marketing</h1>
+      </div>
+    </div>
+    <div class="status-pill">Prepara e revisa. Nao publica sozinho.</div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar" aria-label="Ferramentas">
+      <button class="nav-button active" data-target="painel">Painel</button>
+      <button class="nav-button" data-target="post">Post de imovel</button>
+      <button class="nav-button" data-target="validador">Validador</button>
+      <button class="nav-button" data-target="campanha">Campanha</button>
+      <button class="nav-button" data-target="make">Fila Make/MCP</button>
+      <button class="nav-button" data-target="calculadoras">Calculadoras</button>
+      <button class="nav-button" data-target="agentes">Agentes</button>
+    </aside>
+
+    <section class="workspace">
+      <section id="painel" class="tool-section active">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Snapshot vivo</p>
+            <h2>Comando da operacao</h2>
+          </div>
+          <span>Dados agregados do MCP em 04/07/2026</span>
+        </div>
+        <div id="metrics" class="metric-grid"></div>
+        <div class="split">
+          <article class="panel">
+            <h3>Prioridade sugerida</h3>
+            <p id="priorityText"></p>
+          </article>
+          <article class="panel">
+            <h3>Fila segura</h3>
+            <p>Todo criativo sai como <strong>PENDENTE_REVISAO</strong>. So passa para Make, Instagram, WhatsApp ou Ads depois de aprovacao humana.</p>
+          </article>
+        </div>
+        <div class="property-strip" id="propertyStrip"></div>
+      </section>
+
+      <section id="post" class="tool-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Copy pronta</p>
+            <h2>Gerador de post de imovel</h2>
+          </div>
+          <span>Usa somente campos reais da carteira</span>
+        </div>
+        <div class="form-grid">
+          <label>Imovel
+            <select id="postProperty"></select>
+          </label>
+          <label>Formato
+            <select id="postFormat">
+              <option value="feed">Feed</option>
+              <option value="story">Story</option>
+              <option value="carrossel">Carrossel</option>
+              <option value="reel">Reel curto</option>
+            </select>
+          </label>
+          <label>Objetivo
+            <select id="postGoal">
+              <option value="visita">Agendar visita</option>
+              <option value="site">Levar para o site</option>
+              <option value="whatsapp">Chamar no WhatsApp</option>
+              <option value="avaliacao">Captar proprietario</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="generatePost" class="primary">Gerar texto</button>
+          <button id="copyPost">Copiar</button>
+        </div>
+        <textarea id="postOutput" class="output" rows="13" aria-label="Texto gerado"></textarea>
+      </section>
+
+      <section id="validador" class="tool-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Controle de qualidade</p>
+            <h2>Validador de criativo</h2>
+          </div>
+          <span>Evita localidade errada, promessa perigosa e foto incoerente</span>
+        </div>
+        <div class="form-grid">
+          <label>Imovel de referencia
+            <select id="validatorProperty"></select>
+          </label>
+          <label>Status da fila
+            <select id="approvalStatus">
+              <option value="PENDENTE_REVISAO">PENDENTE_REVISAO</option>
+              <option value="APROVADO">APROVADO</option>
+              <option value="PUBLICADO">PUBLICADO</option>
+            </select>
+          </label>
+        </div>
+        <textarea id="validatorText" class="output" rows="9" placeholder="Cole aqui a legenda, roteiro ou texto do carrossel..."></textarea>
+        <div class="actions">
+          <button id="runValidator" class="primary">Validar</button>
+          <button id="useGenerated">Usar texto gerado</button>
+        </div>
+        <div id="validatorResult" class="result-list"></div>
+      </section>
+
+      <section id="campanha" class="tool-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Estrategia rapida</p>
+            <h2>Planejador de campanha</h2>
+          </div>
+          <span>Briefing pronto para criativo, Meta ou Make</span>
+        </div>
+        <div class="form-grid">
+          <label>Prioridade
+            <select id="campaignPriority">
+              <option value="captacao">Captar vendedores</option>
+              <option value="alto_padrao">Vender alto padrao</option>
+              <option value="aluguel_comercial">Locacao comercial</option>
+              <option value="calculadoras">Calculadoras do site</option>
+              <option value="lead_ads">Meta Lead Ads</option>
+              <option value="noticias">Noticias frescas</option>
+            </select>
+          </label>
+          <label>Canal
+            <select id="campaignChannel">
+              <option value="instagram">Instagram organico</option>
+              <option value="meta_ads">Meta Ads pausado</option>
+              <option value="whatsapp">WhatsApp revisado</option>
+              <option value="site">Site oficial</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="generateCampaign" class="primary">Montar briefing</button>
+          <button id="copyCampaign">Copiar</button>
+        </div>
+        <pre id="campaignOutput" class="pre-output"></pre>
+      </section>
+
+      <section id="make" class="tool-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Automacao segura</p>
+            <h2>Montador de fila Make/MCP</h2>
+          </div>
+          <span>Payload para scenario seguro: registrar_pacote_criativo_pendente</span>
+        </div>
+        <div class="form-grid">
+          <label>Titulo interno
+            <input id="makeTitle" value="Post aprovado para revisao">
+          </label>
+          <label>Tipo
+            <select id="makeType">
+              <option value="foto">foto</option>
+              <option value="carrossel">carrossel</option>
+              <option value="story">story</option>
+              <option value="reel">reel</option>
+            </select>
+          </label>
+          <label>Publicar em
+            <input id="makeDate" type="datetime-local">
+          </label>
+        </div>
+        <div class="actions">
+          <button id="buildPayload" class="primary">Gerar payload</button>
+          <button id="copyPayload">Copiar JSON</button>
+          <button id="downloadCsv">Baixar CSV</button>
+        </div>
+        <pre id="payloadOutput" class="pre-output"></pre>
+      </section>
+
+      <section id="calculadoras" class="tool-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Lead magnet</p>
+            <h2>Calculadoras como captacao</h2>
+          </div>
+          <span>Financiamento para comprador. Avaliacao para proprietario.</span>
+        </div>
+        <div class="tool-grid">
+          <article class="panel">
+            <h3>Financiamento</h3>
+            <p>Entrada para comprador que quer saber parcela, entrada e faixa de compra. CTA ideal: acessar o site e simular com calma.</p>
+            <button class="mini-copy" data-copy="financiamento">Copiar CTA</button>
+          </article>
+          <article class="panel">
+            <h3>Avaliacao online</h3>
+            <p>Entrada para proprietario. A estimativa online e isca gratuita; laudo formal continua sendo servico profissional pago.</p>
+            <button class="mini-copy" data-copy="avaliacao">Copiar CTA</button>
+          </article>
+          <article class="panel">
+            <h3>Rota Make</h3>
+            <p>Evento do site -> classificar interesse -> CRM -> alerta interno -> relatorio semanal, sem expor dado pessoal em criativo.</p>
+            <button class="mini-copy" data-copy="rota">Copiar rota</button>
+          </article>
+        </div>
+        <textarea id="calculatorCopy" class="output" rows="8"></textarea>
+      </section>
+
+      <section id="agentes" class="tool-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Agentes de bastidor</p>
+            <h2>Ferramentas que vamos plugar</h2>
+          </div>
+          <span>Agentes ajudam. Quem aprova continua sendo humano.</span>
+        </div>
+        <div id="agentGrid" class="tool-grid"></div>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

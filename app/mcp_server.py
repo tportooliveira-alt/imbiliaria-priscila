@@ -8,7 +8,9 @@ SEGURANÇA:
 - Ferramentas de ESCRITA/correção só ligam com MCP_WRITE_ENABLED=1 (senão nem aparecem).
 - Envio de WhatsApp arbitrário só com MCP_WHATSAPP_ENABLED=1 (padrão off) — evita abuso/prompt-injection.
 - IMÓVEL nunca é apagado de verdade: usa desativar_imovel (ativo=0). (regra do dono)
+- Publicação no Instagram só com MCP_IG_PUBLISH_ENABLED=1 (padrão off).
 - Roda em 127.0.0.1:8765 atrás de túnel/nginx com token (MCP_PUBLIC_TOKEN).
+- Rodar atrás de nginx com auth/HTTPS antes de expor publicamente (ver docs/SETUP-DOIS-LADOS.md).
 
 Rodar local (teste):   python -m app.mcp_server
 """
@@ -31,11 +33,13 @@ from app import depoimentos as depoimentos_repo  # noqa: E402
 from app import empreendimentos as emp_repo  # noqa: E402
 from app import financeiro as financeiro_repo  # noqa: E402
 from app import imoveis as imoveis_repo  # noqa: E402
+from app import instagram as ig_mod  # noqa: E402
 from app import leads as leads_repo  # noqa: E402
 from app import whatsapp as whatsapp_mod  # noqa: E402
 
 WRITE = os.getenv("MCP_WRITE_ENABLED", "0") == "1"
 WA_OK = os.getenv("MCP_WHATSAPP_ENABLED", "0") == "1"
+IG_PUBLISH = os.getenv("MCP_IG_PUBLISH_ENABLED", "0") == "1"
 
 mcp = FastMCP("Priscila Vasconcelos — Imobiliária")
 
@@ -325,6 +329,184 @@ def saude_ads() -> dict:
     except Exception as e:
         resultado["erro"] = str(e)
     return resultado
+
+
+# ─── INSTAGRAM · LEITURA (seguro — sempre disponível se houver token) ─────────
+@mcp.tool
+def ig_status() -> dict:
+    """Status seguro da configuração Instagram/Meta sem expor tokens."""
+    return ig_mod.status_config()
+
+
+@mcp.tool
+def ig_perfil() -> dict:
+    """Dados da conta IG da Priscila (seguidores, nº de posts, bio). Graph API oficial."""
+    r = ig_mod.perfil()
+    return {"ok": r.ok, "dados": r.dados, "erro": r.erro}
+
+
+@mcp.tool
+def ig_listar_midias(limite: int = 12) -> dict:
+    """Últimas publicações do Instagram com curtidas/comentários."""
+    r = ig_mod.listar_midias(limite=limite)
+    return {"ok": r.ok, "dados": r.dados, "erro": r.erro}
+
+
+@mcp.tool
+def ig_insights(periodo: str = "day") -> dict:
+    """Insights da conta IG (alcance/impressões/visitas). periodo: day/week/days_28."""
+    r = ig_mod.insights_conta(periodo=periodo)
+    return {"ok": r.ok, "dados": r.dados, "erro": r.erro}
+
+
+@mcp.tool
+def status_ecossistema() -> dict:
+    """Status seguro do ecossistema Codex, site, Instagram, WhatsApp e IAs da VPS.
+
+    Nao retorna tokens, telefones, nomes de leads ou qualquer segredo.
+    """
+    try:
+        funil = leads_repo.dashboard()
+    except Exception as exc:  # noqa: BLE001
+        funil = {"erro": type(exc).__name__}
+
+    try:
+        imoveis_ativos = len(imoveis_repo.listar_imoveis(somente_ativos=True))
+    except Exception as exc:  # noqa: BLE001
+        imoveis_ativos = None
+        funil.setdefault("avisos", []).append(f"imoveis_indisponiveis:{type(exc).__name__}")
+
+    instagram = ig_mod.status_config()
+    whatsapp_disponivel = whatsapp_mod.disponivel()
+
+    return {
+        "mcp_codex": {
+            "nome": "imobiliaria_priscila",
+            "modo_recomendado": "stdio local no Codex",
+            "leitura_ok": True,
+            "escrita_habilitada": WRITE,
+            "whatsapp_habilitado_no_mcp": WRITE and WA_OK,
+            "instagram_publicacao_habilitada_no_mcp": IG_PUBLISH,
+        },
+        "site": {
+            "rotas_chave": [
+                "/api/health",
+                "/api/chat",
+                "/api/imoveis",
+                "/api/simular-financiamento",
+                "/api/avaliar-imovel",
+                "/api/whatsapp/webhook",
+            ],
+            "carteira_injetada_na_ana": True,
+            "imoveis_ativos": imoveis_ativos,
+        },
+        "funil_agregado": {
+            "total_leads": funil.get("total_leads"),
+            "novos_7d": funil.get("novos_7d"),
+            "por_temperatura": funil.get("por_temperatura"),
+            "por_origem": funil.get("por_origem"),
+            "simulacoes": funil.get("simulacoes"),
+            "avaliacoes": funil.get("avaliacoes"),
+        },
+        "instagram": instagram,
+        "whatsapp": {
+            "evolution_configurada": whatsapp_disponivel,
+            "instancia": os.getenv("EVOLUTION_INSTANCIA", "priscila"),
+            "numero_alerta_interno_configurado": bool(os.getenv("ALERTA_WHATSAPP_NUMERO", "").strip()),
+            "auto_reply_habilitado": os.getenv("WHATSAPP_AUTO_REPLY", "0") == "1",
+            "modo_teste_configurado": bool(os.getenv("WHATSAPP_TEST_NUMBER", "").strip()),
+            "limite_diario_auto_reply": os.getenv("WHATSAPP_DAILY_CAP", "30"),
+            "historico_horas": os.getenv("WHATSAPP_HISTORY_HOURS", "48"),
+            "transcricao_audio_configurada": bool(os.getenv("GROQ_API_KEY", "").strip()),
+            "voz_configurada": bool(
+                os.getenv("ELEVENLABS_API_KEY", "").strip()
+                and os.getenv("ELEVENLABS_VOICE_ID", "").strip()
+            ),
+        },
+        "ias_vps": {
+            "gemini_configurado": bool(os.getenv("GOOGLE_API_KEY", "").strip()),
+            "claude_configurado": bool(os.getenv("ANTHROPIC_API_KEY", "").strip()),
+            "fallback_offline_disponivel": True,
+            "modelos": {
+                "gemini_flash": "gemini-2.5-flash",
+                "gemini_pro": "gemini-2.5-pro",
+                "claude_sonnet": "claude-sonnet-4-6",
+                "claude_haiku": "claude-haiku-4-5-20251001",
+            },
+        },
+        "campanhas_resultados": {
+            "meta_facebook_instagram": {
+                "access_token_configurado": bool(os.getenv("META_ACCESS_TOKEN", "").strip()),
+                "ad_account_configurada": bool(os.getenv("META_AD_ACCOUNT_ID", "").strip()),
+                "page_id_configurada": bool(os.getenv("META_PAGE_ID", "").strip()),
+                "instagram_actor_configurado": bool(os.getenv("META_INSTAGRAM_ACTOR_ID", "").strip()),
+                "pixel_id_configurado": bool(os.getenv("META_PIXEL_ID", "").strip()),
+                "modo_recomendado": "somente leitura primeiro; criacao apenas PAUSED e HOUSING",
+            },
+            "google_ads": {
+                "developer_token_configurado": bool(os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN", "").strip()),
+                "oauth_client_configurado": bool(
+                    os.getenv("GOOGLE_ADS_CLIENT_ID", "").strip()
+                    and os.getenv("GOOGLE_ADS_CLIENT_SECRET", "").strip()
+                ),
+                "refresh_token_configurado": bool(os.getenv("GOOGLE_ADS_REFRESH_TOKEN", "").strip()),
+                "customer_id_configurado": bool(os.getenv("GOOGLE_ADS_CUSTOMER_ID", "").strip()),
+                "login_customer_id_configurado": bool(os.getenv("GOOGLE_ADS_LOGIN_CUSTOMER_ID", "").strip()),
+                "modo_recomendado": "somente leitura de gasto, conversoes, termos e campanhas",
+            },
+            "metricas_que_precisamos_cruzar": [
+                "gasto",
+                "impressoes",
+                "cliques",
+                "ctr",
+                "cpc",
+                "leads",
+                "cpl",
+                "conversas_whatsapp",
+                "avaliacoes_online",
+                "visitas_agendadas",
+                "lead_quente",
+                "custo_por_lead_quente",
+            ],
+        },
+        "travas": [
+            "Ana nao revela bastidores de marketing ou sistema",
+            "Instagram so publica se MCP_IG_PUBLISH_ENABLED=1",
+            "WhatsApp so envia pelo MCP se MCP_WRITE_ENABLED=1 e MCP_WHATSAPP_ENABLED=1",
+            "Auto-resposta WhatsApp so liga com WHATSAPP_AUTO_REPLY=1",
+            "Meta/Facebook/Instagram e Google Ads comecam em leitura para relatorio",
+            "Fotos publicas de marketing precisam de marca d'agua real da Priscila",
+            "Ads imobiliarios sempre HOUSING e PAUSED ate aprovacao humana",
+        ],
+        "proximas_acoes": [
+            "Configurar credenciais Meta/Instagram no cofre ou .env da VPS, sem colar no chat",
+            "Validar Evolution API e auto-resposta primeiro em numero interno",
+            "Instalar/validar Meta Pixel, GA4 e eventos do site",
+            "Configurar Google Ads somente para leitura de resultados antes de qualquer otimizacao",
+            "Usar status_ecossistema antes de acionar automacoes sensiveis",
+        ],
+    }
+
+
+# ─── INSTAGRAM · PUBLICAÇÃO (só com MCP_IG_PUBLISH_ENABLED=1) ──────────────────
+if IG_PUBLISH:
+    @mcp.tool
+    def ig_publicar_foto(image_url: str, legenda: str = "") -> dict:
+        """Publica 1 foto no Insta. image_url DEVE ser URL pública (servir pela VPS)."""
+        r = ig_mod.publicar_foto(image_url, legenda)
+        return {"ok": r.ok, "dados": r.dados, "erro": r.erro}
+
+    @mcp.tool
+    def ig_publicar_carrossel(image_urls: list[str], legenda: str = "") -> dict:
+        """Publica carrossel (2-10 imagens públicas) no Insta."""
+        r = ig_mod.publicar_carrossel(image_urls, legenda)
+        return {"ok": r.ok, "dados": r.dados, "erro": r.erro}
+
+    @mcp.tool
+    def ig_publicar_reel(video_url: str, legenda: str = "", capa_url: str | None = None) -> dict:
+        """Publica um Reel (vídeo de URL pública) no Insta."""
+        r = ig_mod.publicar_reel(video_url, legenda, capa_url)
+        return {"ok": r.ok, "dados": r.dados, "erro": r.erro}
 
 
 # ═══════════════ ESCRITA / CORREÇÃO (só com MCP_WRITE_ENABLED=1) ═══════════════

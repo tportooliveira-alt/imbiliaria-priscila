@@ -1,0 +1,15 @@
+{
+  "name": "imobiliaria-priscila",
+  "description": "Operar o negocio da corretora Priscila Vasconcelos (Vitoria da Conquista-BA): leads, imoveis, agenda, financeiro, a IA Ana e o site pvscelosimobiliaria.com. Use no Cowork para tarefas do negocio imobiliario da Priscila.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Thiago"
+  },
+  "keywords": [
+    "imobiliaria",
+    "priscila",
+    "vdc",
+    "leads",
+    "ana"
+  ]
+}

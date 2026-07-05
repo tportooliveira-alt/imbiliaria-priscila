@@ -1,0 +1,30 @@
+{
+  "name": "imobiliaria-priscila",
+  "owner": {
+    "name": "Thiago"
+  },
+  "metadata": {
+    "description": "Plugin do negocio da corretora Priscila Vasconcelos (Vitoria da Conquista-BA): site + IA Ana + CRM.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "imobiliaria-priscila",
+      "source": "./",
+      "description": "Operar o negocio da corretora Priscila Vasconcelos: leads, imoveis, agenda, financeiro, a IA Ana e o site pvscelosimobiliaria.com.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Thiago"
+      },
+      "keywords": [
+        "imobiliaria",
+        "priscila",
+        "vdc",
+        "leads",
+        "ana",
+        "cowork"
+      ],
+      "category": "workflow"
+    }
+  ]
+}

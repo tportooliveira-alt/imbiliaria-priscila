@@ -1,0 +1,130 @@
+{
+  "name": "priscila_marketing_tools",
+  "version": "0.1.0",
+  "updated_at": "2026-07-04",
+  "principles": [
+    "Nao publicar, enviar mensagem, ativar campanha ou gastar dinheiro sem confirmacao humana.",
+    "Usar somente dados reais da carteira, CRM, site, MCP ou fontes verificadas.",
+    "Nao expor PII de leads em criativos, relatorios publicos ou ferramentas de campanha.",
+    "Todo item criado para Make/Instagram nasce como PENDENTE_REVISAO.",
+    "Ads imobiliarios usam categoria HOUSING e nascem pausados."
+  ],
+  "tools": [
+    {
+      "name": "gerar_copy_imovel_priscila",
+      "risk": "low",
+      "description": "Gera legenda, roteiro ou estrutura de carrossel para um imovel real da carteira.",
+      "inputs": {
+        "slug": "string",
+        "formato": "feed|story|carrossel|reel",
+        "objetivo": "visita|site|whatsapp|avaliacao"
+      },
+      "outputs": {
+        "texto": "string",
+        "slug": "string",
+        "status_sugerido": "PENDENTE_REVISAO",
+        "alertas": "array"
+      }
+    },
+    {
+      "name": "validar_criativo_priscila",
+      "risk": "low",
+      "description": "Confere localidade, finalidade, tipo de imovel, CTA, termos proibidos e coerencia basica do criativo.",
+      "inputs": {
+        "slug": "string",
+        "texto": "string",
+        "status": "PENDENTE_REVISAO|APROVADO|PUBLICADO"
+      },
+      "outputs": {
+        "aprovavel": "boolean",
+        "problemas": "array",
+        "avisos": "array",
+        "proxima_acao": "string"
+      }
+    },
+    {
+      "name": "gerar_briefing_campanha_priscila",
+      "risk": "low",
+      "description": "Transforma uma prioridade de marketing em briefing com objetivo, publico, oferta, canal, CTA e metrica.",
+      "inputs": {
+        "prioridade": "captacao|alto_padrao|aluguel_comercial|calculadoras|lead_ads|noticias",
+        "canal": "instagram|meta_ads|whatsapp|site"
+      },
+      "outputs": {
+        "briefing": "object",
+        "status_sugerido": "PENDENTE_REVISAO|RASCUNHO_PAUSADO",
+        "restricoes": "array"
+      }
+    },
+    {
+      "name": "montar_payload_make_priscila",
+      "risk": "medium",
+      "description": "Monta payload para scenario Make registrar itens na fila segura como PENDENTE_REVISAO.",
+      "inputs": {
+        "items": "array",
+        "origem": "string",
+        "canal": "instagram|facebook|postiz|crm"
+      },
+      "outputs": {
+        "payload": "object",
+        "status": "PENDENTE_REVISAO",
+        "scenario_recomendado": "registrar_pacote_criativo_pendente"
+      },
+      "gate": "Nao publica direto. Apenas registra fila."
+    },
+    {
+      "name": "relatorio_funil_agregado_priscila",
+      "risk": "low",
+      "description": "Gera leitura agregada de funil, sem nomes, telefones ou mensagens pessoais.",
+      "inputs": {
+        "periodo": "hoje|7d|30d|semana_atual",
+        "incluir_recomendacoes": "boolean"
+      },
+      "outputs": {
+        "resumo": "object",
+        "insights": "array",
+        "proximas_acoes": "array"
+      }
+    },
+    {
+      "name": "relatorio_resultados_campanhas_priscila",
+      "risk": "low",
+      "description": "Cruza resultados de Meta/Facebook/Instagram Ads, Google Ads, WhatsApp e CRM sem expor PII.",
+      "inputs": {
+        "periodo": "hoje|7d|30d|mes_atual",
+        "canais": "array"
+      },
+      "outputs": {
+        "gasto_por_canal": "object",
+        "leads_por_canal": "object",
+        "cpl_qualificado": "object",
+        "campanhas_para_revisar": "array",
+        "observacoes": "array"
+      },
+      "gate": "Somente leitura. Nao altera campanha, verba, anuncio ou publicacao."
+    },
+    {
+      "name": "sugerir_prioridade_marketing_priscila",
+      "risk": "low",
+      "description": "Sugere a prioridade da semana com base em carteira, leads agregados e objetivos da sala.",
+      "inputs": {
+        "snapshot_funil": "object",
+        "snapshot_carteira": "object",
+        "restricoes": "array"
+      },
+      "outputs": {
+        "prioridade": "string",
+        "motivo": "string",
+        "acao_recomendada": "string",
+        "metrica": "string"
+      }
+    }
+  ],
+  "blocked_initially": [
+    "publicar_instagram_agora",
+    "enviar_whatsapp",
+    "ativar_campanha",
+    "alterar_orcamento",
+    "apagar_registro"
+  ]
+}
